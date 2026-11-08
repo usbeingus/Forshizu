@@ -9,6 +9,7 @@
     * { box-sizing: border-box; }
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; text-align: center; padding: 20px; background: var(--bg); color: var(--text); margin: 0; -webkit-tap-highlight-color: transparent; }
     
+    /* Splash & Animation */
     #splash-screen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: var(--bg); display: flex; justify-content: center; align-items: center; z-index: 9999; transition: opacity 0.5s; }
     .splash-logo { font-size: 3.5rem; font-weight: 800; color: var(--yellow); animation: fadeIn 1s forwards; opacity: 0; }
     .fade-out { opacity: 0 !important; pointer-events: none; }
@@ -20,6 +21,7 @@
     #transition-overlay.active img { animation: spinAndGrow 1.2s cubic-bezier(0.25, 1, 0.5, 1) forwards; }
     @keyframes spinAndGrow { 0% { transform: scale(0.6) rotate(0deg); opacity: 0; } 20% { opacity: 1; } 100% { transform: scale(1.5) rotate(360deg); opacity: 1; } }
 
+    /* Main UI */
     h1, h2, h3 { font-weight: 700; margin-top: 0; }
     h1 { color: var(--yellow); font-size: 2.2rem; margin-bottom: 20px; }
     .container { max-width: 500px; margin: 0 auto; }
@@ -41,10 +43,9 @@
     
     .hidden { display: none !important; }
     
+    /* Status & Dots */
     .status-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #555; margin-right: 8px; transition: 0.3s; }
     .status-dot.online { background: var(--green); box-shadow: 0 0 8px var(--green); }
-
-    /* Unread Message Dot */
     .unread-dot { position: absolute; top: -5px; right: -5px; width: 12px; height: 12px; background: var(--red); border-radius: 50%; display: none; border: 2px solid var(--bg); }
 
     .room-badge { display: inline-block; border: 1px solid var(--yellow); color: var(--yellow); padding: 12px 24px; border-radius: 6px; font-size: 24px; font-weight: 700; letter-spacing: 4px; margin: 15px 0; }
@@ -53,21 +54,23 @@
     .round-badge { border: 1px solid var(--border); padding: 6px 12px; border-radius: 4px; font-size: 12px; font-weight: 600; color: var(--muted); }
     .timer-badge { border: 1px solid var(--yellow); color: var(--yellow); padding: 6px 12px; border-radius: 4px; font-size: 12px; font-weight: 600; }
 
-    .votes-list { list-style: none; padding: 15px; text-align: left; margin-top: 20px; font-size: 14px; background: var(--bg); border-radius: 6px; border: 1px solid var(--border); }
-    .votes-list li { margin-bottom: 8px; color: var(--muted); }
-    .votes-list b { color: var(--text); }
+    /* Result Card (Shows after both vote) */
+    .result-card { background: var(--bg); border: 2px solid var(--yellow); border-radius: 8px; padding: 20px; margin-top: 20px; text-align: left; animation: fadeIn 0.3s ease-in; }
+    .result-row { margin-bottom: 10px; font-size: 16px; }
+    .result-match { font-size: 20px; font-weight: 800; color: var(--yellow); text-align: center; margin-top: 15px; border-top: 1px solid var(--border); padding-top: 15px; }
     
-    .summary-item { background: var(--bg); margin-bottom: 12px; padding: 20px; border-radius: 6px; text-align: left; border-left: 2px solid var(--yellow); }
-    .summary-q { font-weight: 600; color: var(--text); margin-bottom: 8px; }
+    .summary-item { background: var(--bg); margin-bottom: 12px; padding: 15px; border-radius: 6px; text-align: left; border-left: 2px solid var(--yellow); }
+    .summary-q { font-weight: 600; color: var(--text); margin-bottom: 8px; font-size: 14px;}
     .summary-votes { color: var(--muted); font-size: 14px; line-height: 1.5; }
+    .summary-match { color: var(--yellow); font-weight: bold; margin-top: 5px; }
     
+    /* Chat */
     .chat-box { height: 350px; overflow-y: auto; background: var(--bg); border-radius: 6px; padding: 15px; margin-bottom: 15px; text-align: left; display: flex; flex-direction: column; border: 1px solid var(--border); }
     .msg { margin-bottom: 12px; padding: 10px 14px; border-radius: 6px; max-width: 85%; font-size: 14px; line-height: 1.4; position: relative; }
     .msg-me { background: var(--border); align-self: flex-end; border-bottom-right-radius: 2px; }
     .msg-other { background: #1a1a1a; border: 1px solid var(--border); align-self: flex-start; border-bottom-left-radius: 2px; }
     .msg-meta { font-size: 11px; color: var(--muted); margin-bottom: 4px; display: block; }
     .msg-status { font-size: 11px; color: var(--muted); align-self: flex-end; margin-top: -5px; margin-bottom: 10px; margin-right: 5px; font-style: italic;}
-    
     .chat-input-container { display: flex; gap: 10px; }
     .chat-input-container input { margin-bottom: 0; text-align: left; }
     .chat-input-container button { width: auto; padding: 16px 20px; margin: 0; }
@@ -84,6 +87,7 @@
 <div class="container">
   <h1>Shizu</h1>
 
+  <!-- AUTH PAGE -->
   <div id="page-auth" class="card hidden">
     <h2 id="authTitle">Login</h2>
     <input type="text" id="username" class="input" placeholder="Username" style="text-transform:none;" />
@@ -95,6 +99,7 @@
     </p>
   </div>
 
+  <!-- PAIRING PAGE -->
   <div id="page-pairing" class="card hidden">
     <h2>Pair</h2>
     <p style="color: var(--muted);">Send this 6-digit code to your partner:</p>
@@ -106,6 +111,7 @@
     <p id="pairingStatus" style="color: var(--yellow); margin-top: 15px; font-size: 14px;"></p>
   </div>
 
+  <!-- LOBBY PAGE -->
   <div id="page-lobby" class="card hidden">
     <h2>Connected</h2>
     <p style="color: var(--muted); margin-bottom: 5px;">Playing with:</p>
@@ -137,9 +143,10 @@
     <br>
     <a href="#" onclick="window.leavePartner()" class="settings-link">Settings / Change Partner</a>
     <br><br>
-    <a href="#" onclick="window.logout()" class="logout-link">Log out</a>
+    <a href="#" onclick="window.logout()" class="logout-link" style="color: var(--muted); text-decoration: none; font-size: 13px;">Log out</a>
   </div>
 
+  <!-- GAME PAGE -->
   <div id="page-game" class="card hidden">
     <div class="badge-container">
       <div id="roundBadge" class="round-badge">ROUND 1 OF 10</div>
@@ -150,8 +157,10 @@
     
     <div id="voteButtonsContainer" style="margin-top: 20px;"></div>
     
+    <!-- Container for showing the result (who picked what) -->
+    <div id="resultContainer" class="hidden"></div>
+    
     <div id="myVoteStatus" style="margin-top: 20px; font-size: 14px; color: var(--yellow); font-weight: 600;"></div>
-    <ul id="liveVotesList" class="votes-list hidden"></ul>
 
     <br>
     <button class="btn" onclick="window.openChat()" style="margin-bottom: 10px;">
@@ -160,12 +169,14 @@
     <button class="btn" onclick="window.leaveGame()" style="background: transparent; border-color: #555; color: #aaa;">Leave Game</button>
   </div>
 
+  <!-- SUMMARY PAGE -->
   <div id="page-summary" class="card hidden">
     <h2>Results</h2>
     <div id="summaryContainer" style="max-height: 400px; overflow-y: auto; margin-top: 20px;"></div>
     <button class="btn" onclick="window.backToLobby()" style="margin-top: 20px;">Back to Lobby</button>
   </div>
 
+  <!-- CHAT PAGE -->
   <div id="page-chat" class="card hidden">
     <h2>Chat</h2>
     <div id="chatBox" class="chat-box"></div>
@@ -179,6 +190,7 @@
   </div>
 </div>
 
+<!-- FIREBASE SDK & APP LOGIC -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
   import { getFirestore, doc, setDoc, getDoc, updateDoc, onSnapshot, collection, addDoc, query, orderBy, serverTimestamp, getDocs, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
@@ -197,6 +209,7 @@
 
   const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbx9DwCUGQtAfTHcPGj62BIyvUhIz-NH4jpx6_jZV8e_DlqRw4J0jdJsB9nQHPXIUgVN4g/exec";
 
+  // --- STATE VARIABLES ---
   let currentUser = '', roomId = '', partnerName = '', isHost = false;
   let currentMode = 'moreLikely', currentQuestionText = '', currentRound = 0;
   let currentQuestions = [];
@@ -207,6 +220,7 @@
   let isSignupMode = false;
   let unsubRoom, unsubVotes, unsubChat, unsubTyping, unsubPartner, unsubMyStatus;
 
+  // --- INIT ---
   window.onload = () => {
     setTimeout(() => {
       document.getElementById('splash-screen').classList.add('fade-out');
@@ -230,6 +244,7 @@
     document.getElementById(pageId).classList.remove('hidden');
   }
 
+  // --- AUTH LOGIC ---
   function toggleAuth(e) {
     if(e) e.preventDefault(); 
     isSignupMode = !isSignupMode;
@@ -291,16 +306,17 @@
     }
   }
 
-  // Heartbeat keeps us "online" every 10 seconds
+  // --- HEARTBEAT (Presence) ---
   function startHeartbeat() {
     if (heartbeatInterval) clearInterval(heartbeatInterval);
     heartbeatInterval = setInterval(() => {
       if (currentUser) {
         updateDoc(doc(db, "users", currentUser.toLowerCase()), { lastSeen: Date.now() });
       }
-    }, 10000);
+    }, 10000); // Update every 10s
   }
 
+  // --- PAIRING LOGIC ---
   async function linkPartner() {
     const input = document.getElementById('partnerCodeInput').value.trim();
     if (!input) return alert('Enter username or code.');
@@ -344,12 +360,9 @@
   async function leavePartner() {
     if(!confirm("Are you sure you want to unlink from " + partnerName + "?")) return;
     
-    // Unlink me
     await updateDoc(doc(db, "users", currentUser.toLowerCase()), { partner: '', roomId: '' });
-    // Unlink partner
     await updateDoc(doc(db, "users", partnerName.toLowerCase()), { partner: '', roomId: '' });
     
-    // Cleanup listeners
     if (unsubRoom) unsubRoom();
     if (unsubPartner) unsubPartner();
     
@@ -358,9 +371,11 @@
     showPage('page-pairing');
   }
 
+  // --- LOBBY & GAME LOGIC ---
   function enterLobby() {
     document.getElementById('partnerNameDisplay').innerText = partnerName;
     
+    // Host is determined alphabetically
     isHost = (currentUser.toLowerCase() < partnerName.toLowerCase());
     document.getElementById('hostControls').classList.toggle('hidden', !isHost);
     document.getElementById('guestControls').classList.toggle('hidden', isHost);
@@ -368,20 +383,20 @@
     currentRound = 0; 
     showPage('page-lobby');
 
-    // Listen to Partner's Heartbeat
+    // Listen for Partner Online Status
     if (unsubPartner) unsubPartner();
     unsubPartner = onSnapshot(doc(db, "users", partnerName.toLowerCase()), (docSnap) => {
       if (docSnap.exists()) {
         const dot = document.getElementById('partnerStatusDot');
         const lastSeen = docSnap.data().lastSeen;
-        const isOnline = lastSeen && (Date.now() - lastSeen < 30000); // Online if seen in last 30s
+        const isOnline = lastSeen && (Date.now() - lastSeen < 30000); 
         
         if (isOnline) dot.classList.add('online');
         else dot.classList.remove('online');
       }
     });
 
-    // Listen to My Unread Status
+    // Listen for Unread Chat Messages
     if (unsubMyStatus) unsubMyStatus();
     unsubMyStatus = onSnapshot(doc(db, "users", currentUser.toLowerCase()), (docSnap) => {
       if (docSnap.exists()) {
@@ -399,7 +414,7 @@
       }
     });
 
-    // Listen to Room State
+    // Listen for Game State Changes
     if (unsubRoom) unsubRoom();
     unsubRoom = onSnapshot(doc(db, "rooms", roomId), (docSnap) => {
       if (docSnap.exists() && docSnap.data().gameState) {
@@ -429,7 +444,7 @@
       }
     });
     
-    // Listen to Typing
+    // Listen for Typing Status
     if (unsubTyping) unsubTyping();
     unsubTyping = onSnapshot(doc(db, "rooms", roomId), (docSnap) => {
       if (docSnap.exists() && docSnap.data().typing) {
@@ -494,14 +509,51 @@
       localVotes = [];
       snapshot.forEach(doc => { if(doc.data().round === currentRound) localVotes.push(doc.data()); });
       
-      if (localVotes.length > 0) {
-        const list = document.getElementById('liveVotesList');
-        list.classList.remove('hidden');
-        list.innerHTML = '<strong>Live Votes:</strong>' + localVotes.map(v => `<li><b>${v.voter}</b> voted for <b>${v.target}</b></li>`).join('');
+      // If both voted, show the result card
+      if (localVotes.length >= 2) {
+        showRoundResult(localVotes);
+        if (isHost) checkIfNextQuestionReady();
       }
-      
-      if (isHost) checkIfNextQuestionReady();
     });
+  }
+
+  function showRoundResult(votes) {
+    document.getElementById('voteButtonsContainer').classList.add('hidden'); // Hide buttons
+    
+    const myVoteObj = votes.find(v => v.voter === currentUser);
+    const partnerVoteObj = votes.find(v => v.voter === partnerName);
+    
+    const myChoice = myVoteObj ? myVoteObj.target : "?";
+    const partnerChoice = partnerVoteObj ? partnerVoteObj.target : "?";
+    const isMatch = myChoice === partnerChoice;
+
+    const resContainer = document.getElementById('resultContainer');
+    resContainer.classList.remove('hidden');
+    
+    resContainer.innerHTML = `
+      <div class="result-card">
+        <div class="result-row">You picked: <b>${myChoice}</b></div>
+        <div class="result-row">${partnerName} picked: <b>${partnerChoice}</b></div>
+        <div class="result-match">${isMatch ? 'MATCH! You both agree.' : 'Different choices!'}</div>
+      </div>
+    `;
+  }
+
+  async function checkIfNextQuestionReady() {
+    clearInterval(questionTimerInterval);
+    if (window.isAdvancing) return;
+    window.isAdvancing = true;
+
+    // Wait 4 seconds to read the result before moving on
+    setTimeout(async () => {
+      if (currentRound >= 10) {
+        await updateDoc(doc(db, "rooms", roomId), { "gameState.status": "finished" });
+      } else {
+        const nextQ = currentQuestions[currentRound];
+        await updateDoc(doc(db, "rooms", roomId), { "gameState.round": currentRound + 1, "gameState.question": nextQ });
+      }
+      window.isAdvancing = false;
+    }, 4000);
   }
 
   function loadQuestionUI() {
@@ -512,9 +564,12 @@
       document.getElementById('roundBadge').innerText = `ROUND ${currentRound} OF 10`;
       document.getElementById('questionDisplay').innerText = currentQuestionText;
       document.getElementById('myVoteStatus').innerText = "";
+      
+      // Reset UI for the new question
+      document.getElementById('voteButtonsContainer').classList.remove('hidden');
       document.getElementById('voteButtonsContainer').innerHTML = "";
-      document.getElementById('liveVotesList').innerHTML = "";
-      document.getElementById('liveVotesList').classList.add('hidden');
+      document.getElementById('resultContainer').classList.add('hidden');
+      document.getElementById('resultContainer').innerHTML = "";
       
       buildVoteButtons();
       startTimer();
@@ -577,24 +632,6 @@
     });
   }
 
-  async function checkIfNextQuestionReady() {
-    if (localVotes.length >= 2) {
-      clearInterval(questionTimerInterval);
-      if (window.isAdvancing) return;
-      window.isAdvancing = true;
-
-      setTimeout(async () => {
-        if (currentRound >= 10) {
-          await updateDoc(doc(db, "rooms", roomId), { "gameState.status": "finished" });
-        } else {
-          const nextQ = currentQuestions[currentRound];
-          await updateDoc(doc(db, "rooms", roomId), { "gameState.round": currentRound + 1, "gameState.question": nextQ });
-        }
-        window.isAdvancing = false;
-      }, 2000);
-    }
-  }
-
   async function leaveGame() {
     if(confirm("Leave the game?")) {
       if (isHost) {
@@ -619,12 +656,27 @@
     });
     
     let html = '';
+    let matchCount = 0;
+    
     Object.values(summary).forEach(item => {
-      html += `<div class="summary-item"><div class="summary-q">Round ${item.round}</div><div class="summary-votes">`;
-      item.votes.forEach(v => html += `${v.voter} voted for <b>${v.target}</b><br>`);
-      html += `</div></div>`;
+      const myV = item.votes.find(v => v.voter === currentUser);
+      const partV = item.votes.find(v => v.voter === partnerName);
+      
+      if (myV && partV) {
+        const isMatch = myV.target === partV.target;
+        if (isMatch) matchCount++;
+        
+        html += `<div class="summary-item">`;
+        html += `<div class="summary-q">Round ${item.round}</div>`;
+        html += `<div class="summary-votes">You: <b>${myV.target}</b><br>${partnerName}: <b>${partV.target}</b></div>`;
+        html += `<div class="summary-match">${isMatch ? 'Matched!' : 'Different'}</div>`;
+        html += `</div>`;
+      }
     });
-    summaryContainer.innerHTML = html || '<p>No votes recorded.</p>';
+    
+    // Add total matches at the top
+    let finalHtml = `<h3 style="color:var(--yellow); margin-bottom: 20px;">You matched on ${matchCount} out of 10 rounds!</h3>` + html;
+    summaryContainer.innerHTML = finalHtml || '<p>No votes recorded.</p>';
   }
 
   function backToLobby() { 
@@ -632,11 +684,11 @@
     currentRound = 0;
   }
 
+  // --- CHAT LOGIC ---
   async function openChat() {
     lastPageBeforeChat = document.getElementById('page-game').classList.contains('hidden') ? 'page-lobby' : 'page-game';
     showPage('page-chat');
     
-    // Clear unread status
     await updateDoc(doc(db, "users", currentUser.toLowerCase()), { unread: false });
     document.getElementById('lobbyUnreadDot').style.display = 'none';
     document.getElementById('gameUnreadDot').style.display = 'none';
@@ -662,12 +714,10 @@
     const input = document.getElementById('chatInput');
     if (!input.value.trim()) return;
     
-    // Send message
     await addDoc(collection(db, "rooms", roomId, "messages"), {
       user: currentUser, text: input.value.trim(), time: serverTimestamp()
     });
     
-    // Mark partner as having unread message
     await updateDoc(doc(db, "users", partnerName.toLowerCase()), { unread: true });
     
     input.value = '';
@@ -692,6 +742,7 @@
     window.location.reload();
   }
 
+  // 🛑 EXPOSE FUNCTIONS TO HTML BUTTONS 🛑
   window.toggleAuth = toggleAuth;
   window.handleAuth = handleAuth;
   window.linkPartner = linkPartner;
@@ -708,4 +759,4 @@
 
 </script>
 </body>
-</html>
+  </html>
