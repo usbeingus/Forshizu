@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🎉 Party Game</title>
+  <style>
+    body { font-family: 'Segoe UI', sans-serif; text-align: center; padding: 20px; background: #1a1a2e; color: #fff; margin: 0; }
+    h1 { color: #e94560; font-size: 2.5rem; margin-bottom: 5px; }
+    h2, h3 { color: #fff; margin-top: 0; }
+    .container { max-width: 600px; margin: 0 auto; }
+    .card { background: #16213e; border-radius: 12px; padding: 20px; margin: 20px auto; box-shadow: 0 8px 20px rgba(0,0,0,0.5); }
+    .btn { background: #e94560; color: #fff; border: none; padding: 15px 30px; margin: 10px; border-radius: 8px; font-size: 18px; cursor: pointer; width: 100%; font-weight: bold; transition: 0.2s; }
+    .btn:hover { background: #c73652; transform: scale(1.02); }
+    .btn-secondary { background: #0f3460; }
+    .btn-secondary:hover { background: #164a8a; }
+    .btn-vote { background: #2a2a4a; border: 2px solid #e94560; margin: 5px; width: calc(50% - 20px); display: inline-block; padding: 15px 10px; font-size: 16px; color: white; cursor: pointer;}
+    .btn-vote:hover { background: #e94560; }
+    .btn-vote-full { width: 100%; display: block; }
+    .question { font-size: 24px; margin: 20px 0; font-weight: bold; color: #fff; line-height: 1.3; }
+    .input { padding: 15px; border-radius: 8px; border: none; width: 90%; font-size: 16px; margin-bottom: 15px; text-align: center; text-transform: uppercase; }
+    .input-name { text-transform: none; }
+    .hidden { display: none !important; }
+    .room-badge { display: inline-block; background: #4CAF50; color: #fff; padding: 8px 20px; border-radius: 20px; font-size: 20px; font-weight: bold; letter-spacing: 2px; margin-bottom: 15px;}
+    .round-badge { display: inline-block; background: #e94560; padding: 5px 15px; border-radius: 20px; font-size: 14px; font-weight: bold; margin-bottom: 10px;}
+    .timer-badge { display: inline-block; background: #f1c40f; color: #000; padding: 5px 15px; border-radius: 20px; font-size: 14px; font-weight: bold; margin-bottom: 10px; margin-left: 10px;}
+    .votes-list { list-style: none; padding: 0; text-align: left; margin-top: 15px; font-size: 16px; background: #0f3460; padding: 15px; border-radius: 8px; }
+    .votes-list li { margin-bottom: 8px; }
+    .summary-item { background: #0f3460; margin-bottom: 15px; padding: 15px; border-radius: 8px; text-align: left; }
+    .summary-q { font-weight: bold; color: #e94560; font-size: 18px; margin-bottom: 10px; }
+    .chat-box { height: 300px; overflow-y: auto; background: #0f3460; border-radius: 8px; padding: 15px; margin-bottom: 15px; text-align: left; display: flex; flex-direction: column; }
+    .msg { margin-bottom: 10px; padding: 8px 12px; border-radius: 8px; max-width: 80%; font-size: 15px; line-height: 1.3; }
+    .msg-me { background: #e94560; align-self: flex-end; border-bottom-right-radius: 0; }
+    .msg-other { background: #2a2a4a; align-self: flex-start; border-bottom-left-radius: 0; }
+    .msg-meta { font-size: 11px; color: #ccc; margin-bottom: 3px; display: block; }
+    .chat-input-container { display: flex; gap: 10px; }
+    .chat-input-container input { flex: 1; margin-bottom: 0; text-align: left; text-transform: none;}
+    .chat-input-container button { width: auto; padding: 15px 20px; margin: 0; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>🎉 Party Game</h1>
+
+  <!-- PAGE 1: LANDING -->
+  <div id="page-landing" class="card">
+    <h2>Private Rooms</h2>
+    <input type="text" id="playerName" class="input input-name" placeholder="Your Name" />
+    <hr style="border-color: #2a2a4a; margin: 20px 0;">
+    <h3>Host a Game</h3>
+    <button class="btn" onclick="createRoom()">Create New Room</button>
+    <h3>Join a Game</h3>
+    <input type="text" id="roomInput" class="input" placeholder="ENTER 4-LETTER CODE" maxlength="4" />
+    <button class="btn btn-secondary" onclick="joinRoom()">Join Room</button>
+  </div>
+
+  <!-- PAGE 2: LOBBY -->
+  <div id="page-lobby" class="card hidden">
+    <p>Share this code with your friend:</p>
+    <div id="lobbyRoomCode" class="room-badge">----</div>
+    <h3>Players in Room:</h3>
+    <ul id="lobbyPlayerList" style="list-style: none; padding: 0; font-size: 20px; margin-bottom: 30px;">
+      <li>Waiting...</li>
+    </ul>
+    <div id="hostControls" class="hidden">
+      <div style="margin: 15px 0; font-size: 18px;">
+        <label><input type="checkbox" id="spicyToggle" style="transform: scale(1.5); margin-right: 10px;"> 🌶️ Enable Spicy Mode</label>
+      </div>
+      <button class="btn" onclick="startGame('moreLikely')">Play: Who is more likely to...</button>
+      <button class="btn" onclick="startGame('neverHaveIEver')">Play: Never Have I Ever</button>
+      <button class="btn" onclick="startGame('thisOrThat')">Play: This or That</button>
+    </div>
+    <p id="waitingText" class="hidden" style="color: #4CAF50; font-weight: bold; margin-top: 20px;">
+      Waiting for the Host to start the game...
+    </p>
+    <button class="btn btn-secondary" onclick="openChat()">💬 Chat</button>
+  </div>
+
+  <!-- PAGE 3: GAME -->
+  <div id="page-game" class="card hidden">
+    <div style="display: flex; justify-content: center; align-items: center;">
+      <div id="roundBadge" class="round-badge">Round 1 of 10</div>
+      <div id="timerDisplay" class="timer-badge">⏳ 15s</div>
+    </div>
+    
+    <h2 id="gameTitle">Game Mode</h2>
+    <div id="questionDisplay" class="question">Loading...</div>
+    
+    <div id="voteButtonsContainer">
+      <!-- Dynamic buttons go here -->
+    </div>
+    
+    <div id="myVoteStatus" style="margin-top: 15px; font-size: 16px; color: #4CAF50; font-weight: bold;"></div>
+    <ul id="liveVotesList" class="votes-list hidden"></ul>
+
+    <br>
+    <div id="gameHostControls" class="hidden">
+      <button class="btn" onclick="clickNextQuestion()">Skip to Next Question ➡️</button>
+    </div>
+    <div id="gameGuestControls" class="hidden" style="color: #ccc; margin-top: 10px;">
+      Waiting for host to continue...
+    </div>
+    <br>
+    <button class="btn btn-secondary" onclick="openChat()">💬 Chat</button>
+  </div>
+
+  <!-- PAGE 4: SUMMARY -->
+  <div id="page-summary" class="card hidden">
+    <h2>🏁 Game Over!</h2>
+    <div id="summaryContainer" style="max-height: 400px; overflow-y: auto;"></div>
+    <button class="btn" onclick="leaveRoom()">Back to Home</button>
+  </div>
+
+  <!-- PAGE 5: CHAT -->
+  <div id="page-chat" class="card hidden">
+    <h2>💬 Room Chat</h2>
+    <div id="chatBox" class="chat-box"></div>
+    <div class="chat-input-container">
+      <input type="text" id="chatInput" class="input" placeholder="Type a message..." onkeypress="handleChatEnter(event)">
+      <button class="btn" onclick="sendChat()">Send</button>
+    </div>
+    <br>
+    <button class="btn btn-secondary" onclick="closeChat()">Back</button>
+  </div>
+</div>
+
+<script>
+  // --- YOUR LIVE GOOGLE APPS SCRIPT URL ---
+  const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbx9DwCUGQtAfTHcPGj62BIyvUhIz-NH4jpx6_jZV8e_DlqRw4J0jdJsB9nQHPXIUgVN4g/exec";
+
+  // Timer speed (in seconds)
+  const QUESTION_TIME_SECONDS = 15; 
+
+  let currentPlayer = '';
+  let currentRoom = '';
+  let isHost = false;
+  
+  let currentMode = 'moreLikely';
+  let currentQuestionText = '';
+  let currentRound = 1;
+  let playersList = [];
+
+  let pollInterval;
+  let questionTimerInterval; 
+  let timeLeft = QUESTION_TIME_SECONDS;
+
+  let isFetchingChat = false;
+  let lastPageBeforeChat = 'page-lobby';
+
+  async function apiCall(action, payload) {
+    try {
+      const response = await fetch(WEB_APP_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action: action, ...payload })
+      });
+      return await response.json();
+    } catch (error) {
+      console.error("API Error:", error);
+      return { success: false, message: "Network error" };
+    }
+  }
+
+  function showPage(pageId) {
+    ['page-landing', 'page-lobby', 'page-game', 'page-summary', 'page-chat'].forEach(id => {
+      document.getElementById(id).classList.add('hidden');
+    });
+    document.getElementById(pageId).classList.remove('hidden');
+  }
+
+  async function createRoom() {
+    const name = document.getElementById('playerName').value.trim();
+    if (!name) return alert('Please enter your name.');
+    currentPlayer = name;
+    isHost = true;
+
+    const res = await apiCall('createRoom', { name: name });
+    if (res.success) {
+      currentRoom = res.roomCode;
+      enterLobby();
+    }
+  }
+
+  async function joinRoom() {
+    const name = document.getElementById('playerName').value.trim();
+    const code = document.getElementById('roomInput').value.trim().toUpperCase();
+    if (!name) return alert('Please enter your name.');
+    if (code.length !== 4) return alert('Room code must be 4 letters.');
+
+    currentPlayer = name;
+    isHost = false;
+
+    const res = await apiCall('joinRoom', { name: name, roomCode: code });
+    if (res.success) {
+      currentRoom = res.roomCode;
+      enterLobby();
+    } else {
+      alert(res.message);
+    }
+  }
+
+  function enterLobby() {
+    document.getElementById('lobbyRoomCode').innerText = currentRoom;
+    if (isHost) {
+      document.getElementById('hostControls').classList.remove('hidden');
+      document.getElementById('waitingText').classList.add('hidden');
+    } else {
+      document.getElementById('hostControls').classList.add('hidden');
+      document.getElementById('waitingText').classList.remove('hidden');
+    }
+    showPage('page-lobby');
+    startPolling();
+  }
+
+  function startPolling() {
+    if (pollInterval) clearInterval(pollInterval);
+    pollInterval = setInterval(checkState, 2000);
+  }
+
+  async function checkState() {
+    // 1. Check who is in the room
+    const players = await apiCall('getRoomPlayers', { roomCode: currentRoom });
+    if (Array.isArray(players)) {
+      playersList = players;
+      const list = document.getElementById('lobbyPlayerList');
+      list.innerHTML = '';
+      players.forEach(p => {
+        list.innerHTML += `<li>👤 ${p} ${p === currentPlayer ? '(You)' : ''}</li>`;
+      });
+    }
+
+    // 2. Check Game State
+    const state = await apiCall('getRoomState', { roomCode: currentRoom });
+    if (!state) return;
+
+    if (state.status === 'Playing') {
+      if (!document.getElementById('page-lobby').classList.contains('hidden') || !document.getElementById('page-game').classList.contains('hidden')) {
+         if (document.getElementById('page-lobby').classList.contains('hidden') === false) {
+             currentMode = state.mode;
+             document.getElementById('gameTitle').innerText = 
+                state.mode === 'moreLikely' ? 'Who is more likely to...' :
+                state.mode === 'neverHaveIEver' ? 'Never Have I Ever...' : 'This or That';
+             
+             if (isHost) document.getElementById('gameHostControls').classList.remove('hidden');
+             else document.getElementById('gameGuestControls').classList.remove('hidden');
+             
+             showPage('page-game');
+         }
+         syncGameQuestion(state);
+      }
+    } else if (state.status === 'Finished') {
+      if (document.getElementById('page-summary').classList.contains('hidden') && !document.getElementById('page-landing').classList.contains('hidden') === false) {
+        showSummary();
+      }
+    }
+  }
+
+  function syncGameQuestion(state) {
+    if (!state.question || state.round === currentRound) return;
+    
+    currentRound = state.round;
+    currentQuestionText = state.question;
+    
+    document.getElementById('roundBadge').innerText = `Round ${currentRound} of 10`;
+    document.getElementById('questionDisplay').innerText = currentQuestionText;
+    document.getElementById('myVoteStatus').innerText = "";
+    document.getElementById('voteButtonsContainer').innerHTML = "";
+    document.getElementById('liveVotesList').innerHTML = "";
+    document.getElementById('liveVotesList').classList.add('hidden');
+    
+    buildVoteButtons();
+    startQuestionTimer();
+  }
+
+  function startQuestionTimer() {
+    clearInterval(questionTimerInterval);
+    timeLeft = QUESTION_TIME_SECONDS;
+    document.getElementById('timerDisplay').innerText = `⏳ ${timeLeft}s`;
+
+    if (!isHost) {
+      document.getElementById('timerDisplay').innerText = `⏳ Wait...`;
+      return; 
+    }
+
+    questionTimerInterval = setInterval(() => {
+      timeLeft--;
+      document.getElementById('timerDisplay').innerText = `⏳ ${timeLeft}s`;
+      
+      if (timeLeft <= 0) {
+        clearInterval(questionTimerInterval);
+        document.getElementById('timerDisplay').innerText = `⏳ 0s`;
+        clickNextQuestion(); 
+      }
+    }, 1000);
+  }
+
+  async function startGame(mode) {
+    const spice = document.getElementById('spicyToggle').checked ? 'spicy' : 'normal';
+    const res = await apiCall('startGameSession', { roomCode: currentRoom, mode: mode, spice: spice });
+    
+    if (res.success) {
+      currentMode = mode;
+      currentRound = 1;
+      currentQuestionText = res.question;
+      
+      document.getElementById('gameTitle').innerText = 
+        mode === 'moreLikely' ? 'Who is more likely to...' :
+        mode === 'neverHaveIEver' ? 'Never Have I Ever...' : 'This or That';
+      
+      document.getElementById('roundBadge').innerText = `Round 1 of 10`;
+      document.getElementById('questionDisplay').innerText = currentQuestionText;
+      document.getElementById('voteButtonsContainer').innerHTML = "";
+      document.getElementById('liveVotesList').classList.add('hidden');
+      
+      buildVoteButtons();
+      
+      showPage('page-game');
+      document.getElementById('gameHostControls').classList.remove('hidden');
+      document.getElementById('gameGuestControls').classList.add('hidden');
+      
+      startQuestionTimer(); 
+    }
+  }
+
+  async function clickNextQuestion() {
+    clearInterval(questionTimerInterval); 
+    
+    const res = await apiCall('fetchNextQuestion', { roomCode: currentRoom });
+    if (res.finished) {
+      showSummary(); 
+    } else {
+      syncGameQuestion({ question: res.question, round: res.round });
+    }
+  }
+
+  // --- UPDATED VOTING BUTTON LOGIC (SHOWS YOUR NAME) ---
+  function buildVoteButtons() {
+    const container = document.getElementById('voteButtonsContainer');
+    container.innerHTML = '';
+    
+    // If testing alone, show a message
+    if (playersList.length < 2) {
+      container.innerHTML = '<p style="color: #f1c40f; margin: 20px 0; font-weight: bold;">⚠️ Waiting for another player to join the room...</p>';
+      return;
+    }
+    
+    if (currentMode === 'moreLikely') {
+      // Loop through ALL players (including yourself)
+      playersList.forEach(p => {
+        const btn = document.createElement('button');
+        btn.className = 'btn btn-vote btn-vote-full';
+        // Add "(You)" next to your own name so you know which one is yours
+        btn.innerText = p + (p === currentPlayer ? ' (You)' : '');
+        btn.onclick = () => submitVote(p);
+        container.appendChild(btn);
+      });
+    } else if (currentMode === 'neverHaveIEver') {
+      const btn1 = document.createElement('button');
+      btn1.className = 'btn btn-vote'; btn1.innerText = 'True (I have)';
+      btn1.onclick = () => submitVote('True');
+      const btn2 = document.createElement('button');
+      btn2.className = 'btn btn-vote'; btn2.innerText = 'False (I haven\'t)';
+      btn2.onclick = () => submitVote('False');
+      container.appendChild(btn1); container.appendChild(btn2);
+    } else if (currentMode === 'thisOrThat') {
+      let opt1 = 'Option A', opt2 = 'Option B';
+      if (currentQuestionText.includes('This or That:')) {
+        let text = currentQuestionText.replace('This or That:', '').trim().replace(/\?$/, ''); 
+        const parts = text.split(' or ');
+        if (parts.length >= 2) { opt1 = parts[0].trim(); opt2 = parts[1].trim(); }
+      }
+      const btn1 = document.createElement('button');
+      btn1.className = 'btn btn-vote'; btn1.innerText = opt1;
+      btn1.onclick = () => submitVote(opt1);
+      const btn2 = document.createElement('button');
+      btn2.className = 'btn btn-vote'; btn2.innerText = opt2;
+      btn2.onclick = () => submitVote(opt2);
+      container.appendChild(btn1); container.appendChild(btn2);
+    }
+  }
+
+  async function submitVote(target) {
+    const res = await apiCall('submitVote', { roomCode: currentRoom, voter: currentPlayer, target: target });
+    if (res.success) {
+      document.getElementById('myVoteStatus').innerText = `✅ You voted for: ${target}`;
+      fetchVotes(); 
+    } else {
+      alert(res.message);
+    }
+  }
+
+  async function fetchVotes() {
+    if (!currentQuestionText) return;
+    const votes = await apiCall('getRoundVotes', { roomCode: currentRoom, round: currentRound });
+    const list = document.getElementById('liveVotesList');
+    if (!votes || votes.length === 0) { list.classList.add('hidden'); return; }
+    
+    list.classList.remove('hidden');
+    list.innerHTML = '<strong>Live Votes:</strong>';
+    votes.forEach(v => {
+      list.innerHTML += `<li>🗳️ <b>${v.voter}</b> voted for <b>${v.target}</b></li>`;
+    });
+  }
+
+  async function showSummary() {
+    clearInterval(questionTimerInterval);
+    showPage('page-summary');
+    document.getElementById('summaryContainer').innerHTML = '<p>Loading...</p>';
+    
+    const summary = await apiCall('getGameSummary', { roomCode: currentRoom });
+    const container = document.getElementById('summaryContainer');
+    if (!summary || summary.length === 0) { container.innerHTML = '<p>No votes recorded.</p>'; return; }
+    
+    let html = '';
+    summary.forEach(item => {
+      html += `<div class="summary-item">`;
+      html += `<div class="summary-q">Q${item.round}: ${item.question}</div>`;
+      html += `<div>`;
+      item.votes.forEach(v => {
+         html += `🗳️ <b>${v.voter}</b> voted for <b>${v.target}</b><br>`;
+      });
+      html += `</div></div>`;
+    });
+    container.innerHTML = html;
+  }
+
+  function openChat() {
+    lastPageBeforeChat = document.getElementById('page-game').classList.contains('hidden') ? 'page-lobby' : 'page-game';
+    showPage('page-chat');
+    fetchChat();
+    if (!window.chatInterval) window.chatInterval = setInterval(fetchChat, 2000);
+  }
+
+  function closeChat() { showPage(lastPageBeforeChat); }
+
+  async function fetchChat() {
+    if (isFetchingChat) return; 
+    isFetchingChat = true;
+    
+    const messages = await apiCall('getMessages', { roomCode: currentRoom });
+    
+    if (Array.isArray(messages)) {
+      const box = document.getElementById('chatBox');
+      const isScrolledToBottom = box.scrollHeight - box.clientHeight <= box.scrollTop + 50;
+      if (box.dataset.count != messages.length) {
+        box.dataset.count = messages.length;
+        box.innerHTML = messages.length === 0 ? '<div style="color:#888;text-align:center;">No messages yet.</div>' : '';
+        messages.forEach(m => {
+          const div = document.createElement('div');
+          div.className = 'msg ' + (m.player === currentPlayer ? 'msg-me' : 'msg-other');
+          div.innerHTML = `<span class="msg-meta">${m.player} • ${m.time}</span>${m.text}`;
+          box.appendChild(div);
+        });
+        if (isScrolledToBottom) box.scrollTop = box.scrollHeight;
+      }
+    }
+    isFetchingChat = false;
+  }
+
+  async function sendChat() {
+    const input = document.getElementById('chatInput');
+    const text = input.value.trim();
+    if (!text) return;
+    
+    const box = document.getElementById('chatBox');
+    const div = document.createElement('div');
+    div.className = 'msg msg-me';
+    div.innerHTML = `<span class="msg-meta">${currentPlayer} • Now</span>${text}`;
+    box.appendChild(div);
+    box.scrollTop = box.scrollHeight;
+    box.dataset.count = "";
+    input.value = ''; 
+    
+    await apiCall('sendMessage', { roomCode: currentRoom, player: currentPlayer, text: text });
+    fetchChat();
+  }
+
+  function handleChatEnter(e) { if (e.key === 'Enter') sendChat(); }
+
+  function leaveRoom() {
+    clearInterval(pollInterval);
+    clearInterval(window.chatInterval);
+    clearInterval(questionTimerInterval);
+    window.location.reload(); 
+  }
+</script>
+</body>
+  </html>
