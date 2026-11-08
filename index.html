@@ -136,7 +136,7 @@
       <div id="timerDisplay" class="timer-badge">20s</div>
     </div>
     <div id="gameTitle" style="color: var(--muted); font-size: 14px; margin-bottom: 10px; text-transform: uppercase;">Game Mode</div>
-    <div id="questionDisplay" class="question">Generating questions...</div>
+    <div id="questionDisplay" class="question">Loading...</div>
     
     <div id="voteButtonsContainer" style="margin-top: 20px;"></div>
     
@@ -144,7 +144,8 @@
     <ul id="liveVotesList" class="votes-list hidden"></ul>
 
     <br>
-    <button class="btn" onclick="window.openChat()">Chat</button>
+    <button class="btn" onclick="window.openChat()" style="margin-bottom: 10px;">Chat</button>
+    <button class="btn" onclick="window.leaveGame()" style="background: transparent; border-color: #555; color: #aaa;">Leave Game</button>
   </div>
 
   <div id="page-summary" class="card hidden">
@@ -185,7 +186,7 @@
   const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbx9DwCUGQtAfTHcPGj62BIyvUhIz-NH4jpx6_jZV8e_DlqRw4J0jdJsB9nQHPXIUgVN4g/exec";
 
   let currentUser = '', roomId = '', partnerName = '', isHost = false;
-  let currentMode = 'moreLikely', currentQuestionText = '', currentRound = 0; // Round starts at 0
+  let currentMode = 'moreLikely', currentQuestionText = '', currentRound = 0;
   let currentQuestions = [];
   let localVotes = [];
   let questionTimerInterval, timeLeft = 20;
@@ -324,7 +325,7 @@
     document.getElementById('hostControls').classList.toggle('hidden', !isHost);
     document.getElementById('guestControls').classList.toggle('hidden', isHost);
     
-    currentRound = 0; // Reset round when returning to lobby
+    currentRound = 0; 
     showPage('page-lobby');
 
     if (unsubPartner) unsubPartner();
@@ -348,13 +349,15 @@
              showPage('page-game');
           }
 
-          // THE FIX: We check if the question actually changed, not just the round number
-          if (gs.question !== currentQuestionText) {
+          if (gs.question && gs.question !== currentQuestionText) {
             currentRound = gs.round;
             currentQuestionText = gs.question;
             setupVotesListener();
             loadQuestionUI();
           }
+        } else if (gs.status === 'waiting') {
+           showPage('page-lobby');
+           clearInterval(questionTimerInterval);
         } else if (gs.status === 'finished') {
           if (document.getElementById('page-summary').classList.contains('hidden') && document.getElementById('page-lobby').classList.contains('hidden') === false) {
             showSummary();
@@ -381,25 +384,46 @@
     document.getElementById('questionDisplay').innerText = "Generating questions...";
     showPage('page-game');
 
+    let questions = [];
     try {
+      // 8-second timeout so it doesn't hang forever
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 8000);
+
       const res = await fetch(WEB_APP_URL, {
         method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify({ action: 'fetchQuestions', mode: mode, spice: spice })
+        body: JSON.stringify({ action: 'fetchQuestions', mode: mode, spice: spice }),
+        signal: controller.signal
       });
+      clearTimeout(timeoutId);
+      
       const data = await res.json();
-      currentQuestions = data.questions;
-      
-      await setDoc(doc(db, "rooms", roomId), {
-        gameState: { mode: mode, round: 1, question: currentQuestions[0], status: 'playing', host: currentUser }
-      }, { merge: true });
-      
-      currentRound = 1;
-      currentQuestionText = currentQuestions[0];
-      setupVotesListener();
-      loadQuestionUI();
+      if (data && data.questions && data.questions.length > 0) {
+        questions = data.questions;
+      } else {
+        throw new Error("Invalid data");
+      }
     } catch(e) {
-      alert("Failed to load questions. Check internet or Apps Script URL.");
+      console.log("Apps Script failed. Using local fallback.");
+      questions = getLocalFallback(mode);
     }
+
+    currentQuestions = questions;
+    
+    await setDoc(doc(db, "rooms", roomId), {
+      gameState: { mode: mode, round: 1, question: currentQuestions[0], status: 'playing', host: currentUser }
+    }, { merge: true });
+    
+    currentRound = 1;
+    currentQuestionText = currentQuestions[0];
+    setupVotesListener();
+    loadQuestionUI();
+  }
+
+  function getLocalFallback(mode) {
+    if (mode === 'moreLikely') return ["Who is most likely to forget their own birthday?", "Who is most likely to secretly be a superhero?", "Who is most likely to eat food that fell on the floor?", "Who is most likely to cry at a sad commercial?", "Who is most likely to become famous on TikTok?", "Who is most likely to trip up the stairs?", "Who is most likely to spend all their money on a weird hobby?", "Who is most likely to fall asleep during a movie?", "Who is most likely to win an argument with a toddler?", "Who is most likely to accidentally send a text to the wrong person?"];
+    if (mode === 'neverHaveIEver') return ["Never have I ever pretended to be sick to get out of work.", "Never have I ever stalked an ex on social media.", "Never have I ever lied about my age.", "Never have I ever eaten an entire pizza by myself.", "Never have I ever fallen asleep in the shower.", "Never have I ever laughed so hard I cried.", "Never have I ever broken a bone.", "Never have I ever forgotten someone's name right after meeting them.", "Never have I ever sung loudly in the car thinking no one could hear.", "Never have I ever stayed awake for 24 hours straight."];
+    return ["This or That: Coffee or Tea?", "This or That: Morning shower or night shower?", "This or That: Call or Text?", "This or That: Sweet or Salty?", "This or That: Netflix or YouTube?", "This or That: Cats or Dogs?", "This or That: Mountains or Beach?", "This or That: Early bird or Night owl?", "This or That: Cook at home or Eat out?", "This or That: Fly or Drive?"];
   }
 
   function setupVotesListener() {
@@ -509,6 +533,15 @@
     }
   }
 
+  async function leaveGame() {
+    if(confirm("Leave the game?")) {
+      if (isHost) {
+        await updateDoc(doc(db, "rooms", roomId), { "gameState.status": "waiting" });
+      }
+      showPage('page-lobby');
+    }
+  }
+
   async function showSummary() {
     clearInterval(questionTimerInterval);
     showPage('page-summary');
@@ -532,7 +565,10 @@
     summaryContainer.innerHTML = html || '<p>No votes recorded.</p>';
   }
 
-  function backToLobby() { showPage('page-lobby'); }
+  function backToLobby() { 
+    showPage('page-lobby'); 
+    currentRound = 0;
+  }
 
   function openChat() {
     lastPageBeforeChat = document.getElementById('page-game').classList.contains('hidden') ? 'page-lobby' : 'page-game';
@@ -592,6 +628,7 @@
   window.handleTyping = handleTyping;
   window.handleChatEnter = handleChatEnter;
   window.backToLobby = backToLobby;
+  window.leaveGame = leaveGame;
   window.logout = logout;
 
 </script>
