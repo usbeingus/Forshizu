@@ -93,10 +93,10 @@
     <h2 id="authTitle">Login</h2>
     <input type="text" id="username" class="input" placeholder="Username" style="text-transform:none;" />
     <input type="password" id="password" class="input" placeholder="Password" style="text-transform:none;" />
-    <button class="btn btn-primary" onclick="handleAuth()" id="authBtn">Login</button>
+    <button class="btn btn-primary" onclick="window.handleAuth()" id="authBtn">Login</button>
     <p style="margin-top: 20px; font-size: 14px; color: var(--muted);">
       <span id="authSwitchText">New here?</span> 
-      <a href="#" onclick="toggleAuth(event)" style="color: var(--yellow); text-decoration: none; font-weight: 600;" id="authSwitchLink">Sign up</a>
+      <a href="#" onclick="window.toggleAuth(event)" style="color: var(--yellow); text-decoration: none; font-weight: 600;" id="authSwitchLink">Sign up</a>
     </p>
   </div>
 
@@ -108,7 +108,7 @@
     <hr style="border-color: var(--border); margin: 30px 0;">
     <p style="color: var(--muted);">Or enter their Username:</p>
     <input type="text" id="partnerCodeInput" class="input" placeholder="USERNAME OR CODE" style="text-transform:none;" />
-    <button class="btn" onclick="linkPartner()">Link Accounts</button>
+    <button class="btn" onclick="window.linkPartner()">Link Accounts</button>
     <p id="pairingStatus" style="color: var(--yellow); margin-top: 15px; font-size: 14px;"></p>
   </div>
 
@@ -128,17 +128,17 @@
           <span style="color: var(--yellow); font-weight: 600;">Spicy Mode</span>
         </label>
       </div>
-      <button class="btn" onclick="startGame('moreLikely')">Who is more likely to...</button>
-      <button class="btn" onclick="startGame('neverHaveIEver')">Never Have I Ever</button>
-      <button class="btn" onclick="startGame('thisOrThat')">This or That</button>
+      <button class="btn" onclick="window.startGame('moreLikely')">Who is more likely to...</button>
+      <button class="btn" onclick="window.startGame('neverHaveIEver')">Never Have I Ever</button>
+      <button class="btn" onclick="window.startGame('thisOrThat')">This or That</button>
     </div>
     
     <div id="guestControls" class="hidden">
       <p style="color: var(--muted); margin-top: 30px;">Waiting for host to start...</p>
     </div>
 
-    <button class="btn" onclick="openChat()" style="margin-top: 20px;">Open Chat</button>
-    <a href="#" onclick="logout()" class="logout-link">Log out</a>
+    <button class="btn" onclick="window.openChat()" style="margin-top: 20px;">Open Chat</button>
+    <a href="#" onclick="window.logout()" class="logout-link">Log out</a>
   </div>
 
   <!-- PAGE 4: GAME -->
@@ -156,14 +156,14 @@
     <ul id="liveVotesList" class="votes-list hidden"></ul>
 
     <br>
-    <button class="btn" onclick="openChat()">Chat</button>
+    <button class="btn" onclick="window.openChat()">Chat</button>
   </div>
 
   <!-- PAGE 5: SUMMARY -->
   <div id="page-summary" class="card hidden">
     <h2>Results</h2>
     <div id="summaryContainer" style="max-height: 400px; overflow-y: auto; margin-top: 20px;"></div>
-    <button class="btn" onclick="backToLobby()" style="margin-top: 20px;">Back to Lobby</button>
+    <button class="btn" onclick="window.backToLobby()" style="margin-top: 20px;">Back to Lobby</button>
   </div>
 
   <!-- PAGE 6: CHAT -->
@@ -172,11 +172,11 @@
     <div id="chatBox" class="chat-box"></div>
     <div id="typingIndicator" class="msg-status hidden">Partner is typing...</div>
     <div class="chat-input-container">
-      <input type="text" id="chatInput" class="input" placeholder="Type a message..." oninput="handleTyping()" onkeypress="handleChatEnter(event)">
-      <button class="btn btn-primary" onclick="sendChat()">Send</button>
+      <input type="text" id="chatInput" class="input" placeholder="Type a message..." oninput="window.handleTyping()" onkeypress="window.handleChatEnter(event)">
+      <button class="btn btn-primary" onclick="window.sendChat()">Send</button>
     </div>
     <br>
-    <button class="btn" onclick="closeChat()">Back</button>
+    <button class="btn" onclick="window.closeChat()">Back</button>
   </div>
 </div>
 
@@ -307,7 +307,6 @@
     let partnerSnap = await getDoc(partnerRef);
     
     if (!partnerSnap.exists()) {
-      // Maybe it's a pair code? Query the users collection.
       const q = query(collection(db, "users"), where("pairCode", "==", input));
       const qSnap = await getDocs(q);
       if (!qSnap.empty) {
@@ -325,13 +324,11 @@
     if (pData.displayName.toLowerCase() === currentUser.toLowerCase()) return alert('Cannot pair with yourself.');
     if (pData.roomId) return alert('That person is already paired with someone.');
 
-    // Generate a consistent Room ID based on both usernames
     const names = [currentUser.toLowerCase(), pData.displayName.toLowerCase()].sort();
     const newRoomId = names[0] + "_" + names[1];
 
     const myRef = doc(db, "users", currentUser.toLowerCase());
     
-    // Link both users
     await updateDoc(myRef, { partner: pData.displayName, roomId: newRoomId });
     await updateDoc(partnerRef, { partner: currentUser, roomId: newRoomId });
 
@@ -344,14 +341,12 @@
   function enterLobby() {
     document.getElementById('partnerNameDisplay').innerText = partnerName;
     
-    // Determine host (alphabetical)
     isHost = (currentUser.toLowerCase() < partnerName.toLowerCase());
     document.getElementById('hostControls').classList.toggle('hidden', !isHost);
     document.getElementById('guestControls').classList.toggle('hidden', isHost);
     
     showPage('page-lobby');
 
-    // Listen to Partner's Online Status
     onSnapshot(doc(db, "users", partnerName.toLowerCase()), (docSnap) => {
       if (docSnap.exists()) {
         const dot = document.getElementById('partnerStatusDot');
@@ -360,7 +355,6 @@
       }
     });
 
-    // Listen to Room State
     if (roomUnsubscribe) roomUnsubscribe();
     roomUnsubscribe = onSnapshot(doc(db, "rooms", roomId), (docSnap) => {
       if (docSnap.exists() && docSnap.data().gameState) {
@@ -605,6 +599,20 @@
     localStorage.removeItem('shizu_pass');
     window.location.reload();
   }
+
+  // 🛑 THIS IS THE FIX: Exposing functions so HTML buttons can click them
+  window.toggleAuth = toggleAuth;
+  window.handleAuth = handleAuth;
+  window.linkPartner = linkPartner;
+  window.startGame = startGame;
+  window.openChat = openChat;
+  window.closeChat = closeChat;
+  window.sendChat = sendChat;
+  window.handleTyping = handleTyping;
+  window.handleChatEnter = handleChatEnter;
+  window.backToLobby = backToLobby;
+  window.logout = logout;
+
 </script>
 </body>
-  </html>
+</html>
