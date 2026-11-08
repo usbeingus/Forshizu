@@ -3,132 +3,266 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>🎉 Party Game</title>
+  <title>Shizu</title>
   <style>
-    body { font-family: 'Segoe UI', sans-serif; text-align: center; padding: 20px; background: #1a1a2e; color: #fff; margin: 0; }
-    h1 { color: #e94560; font-size: 2.5rem; margin-bottom: 5px; }
-    h2, h3 { color: #fff; margin-top: 0; }
-    .container { max-width: 600px; margin: 0 auto; }
-    .card { background: #16213e; border-radius: 12px; padding: 20px; margin: 20px auto; box-shadow: 0 8px 20px rgba(0,0,0,0.5); }
-    .btn { background: #e94560; color: #fff; border: none; padding: 15px 30px; margin: 10px; border-radius: 8px; font-size: 18px; cursor: pointer; width: 100%; font-weight: bold; transition: 0.2s; }
-    .btn:hover { background: #c73652; transform: scale(1.02); }
-    .btn-secondary { background: #0f3460; }
-    .btn-secondary:hover { background: #164a8a; }
-    .btn-vote { background: #2a2a4a; border: 2px solid #e94560; margin: 5px; width: calc(50% - 20px); display: inline-block; padding: 15px 10px; font-size: 16px; color: white; cursor: pointer;}
-    .btn-vote:hover { background: #e94560; }
-    .btn-vote-full { width: 100%; display: block; }
-    .question { font-size: 24px; margin: 20px 0; font-weight: bold; color: #fff; line-height: 1.3; }
-    .input { padding: 15px; border-radius: 8px; border: none; width: 90%; font-size: 16px; margin-bottom: 15px; text-align: center; text-transform: uppercase; }
+    :root {
+      --bg: #050505;
+      --card: #111111;
+      --text: #ffffff;
+      --muted: #888888;
+      --yellow: #FFD700;
+      --border: #333333;
+    }
+
+    * { box-sizing: border-box; }
+
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      text-align: center; 
+      padding: 20px; 
+      background: var(--bg); 
+      color: var(--text); 
+      margin: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* --- SPLASH SCREEN --- */
+    #splash-screen {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background: var(--bg);
+      display: flex; flex-direction: column; justify-content: center; align-items: center;
+      z-index: 9999;
+      transition: opacity 0.5s ease-out;
+    }
+    .splash-logo {
+      font-size: 3.5rem; font-weight: 800; letter-spacing: -2px;
+      color: var(--yellow); margin: 0;
+      animation: fadeIn 1s ease-in forwards;
+      opacity: 0;
+    }
+    .fade-out { opacity: 0 !important; pointer-events: none; }
+
+    @keyframes fadeIn { to { opacity: 1; } }
+
+    /* --- IMAGE TRANSITION OVERLAY --- */
+    #transition-overlay {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background: var(--bg);
+      display: flex; justify-content: center; align-items: center;
+      z-index: 9998; opacity: 0; pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+    
+    #transition-overlay.active { 
+      opacity: 1; 
+      pointer-events: all; 
+    }
+
+    #transition-overlay img { 
+      width: 120px; 
+      height: 120px; 
+      object-fit: contain; 
+      transform-origin: center;
+    }
+
+    #transition-overlay.active img {
+      animation: spinAndGrow 1.2s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+    }
+
+    @keyframes spinAndGrow {
+      0% { transform: scale(0.6) rotate(0deg); opacity: 0; }
+      20% { opacity: 1; }
+      100% { transform: scale(1.5) rotate(360deg); opacity: 1; }
+    }
+
+    /* --- MAIN UI --- */
+    h1, h2, h3 { font-weight: 700; margin-top: 0; letter-spacing: -0.5px; }
+    h1 { color: var(--yellow); font-size: 2.2rem; margin-bottom: 20px; }
+    
+    .container { max-width: 500px; margin: 0 auto; }
+    
+    .card { 
+      background: var(--card); 
+      border: 1px solid var(--border);
+      border-radius: 8px; 
+      padding: 30px 20px; 
+      margin: 20px auto; 
+    }
+
+    .btn { 
+      background: transparent; 
+      color: var(--text); 
+      border: 1px solid var(--border); 
+      padding: 16px; 
+      margin: 8px 0; 
+      border-radius: 6px; 
+      font-size: 16px; 
+      font-weight: 600;
+      cursor: pointer; 
+      width: 100%; 
+      transition: all 0.15s ease;
+    }
+    .btn:hover { border-color: var(--yellow); color: var(--yellow); }
+    .btn:active { background: var(--yellow); color: #000; border-color: var(--yellow); }
+
+    .btn-primary { background: var(--yellow); color: #000; border-color: var(--yellow); }
+    .btn-primary:hover { background: #e6c200; color: #000; border-color: #e6c200; }
+    
+    .btn-vote { 
+      background: var(--card); border: 1px solid var(--border); margin: 6px; width: calc(50% - 12px); 
+      display: inline-block; padding: 16px 10px; font-size: 15px; font-weight: 600;
+      color: var(--text); cursor: pointer; border-radius: 6px;
+    }
+    .btn-vote:hover { border-color: var(--yellow); }
+    .btn-vote-full { width: 100%; display: block; margin: 6px 0; }
+
+    .question { font-size: 1.4rem; margin: 20px 0; font-weight: 600; line-height: 1.4; color: var(--text); }
+
+    .input { 
+      padding: 16px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg); color: var(--text);
+      width: 100%; font-size: 16px; margin-bottom: 15px; text-align: center; font-family: inherit;
+    }
+    .input:focus { outline: none; border-color: var(--yellow); }
+    .input-code { text-transform: uppercase; }
     .input-normal { text-transform: none; }
+    
     .hidden { display: none !important; }
-    .room-badge { display: inline-block; background: #4CAF50; color: #fff; padding: 8px 20px; border-radius: 20px; font-size: 24px; font-weight: bold; letter-spacing: 2px; margin-bottom: 15px;}
-    .round-badge { display: inline-block; background: #e94560; padding: 5px 15px; border-radius: 20px; font-size: 14px; font-weight: bold; margin-bottom: 10px;}
-    .timer-badge { display: inline-block; background: #f1c40f; color: #000; padding: 5px 15px; border-radius: 20px; font-size: 14px; font-weight: bold; margin-bottom: 10px; margin-left: 10px;}
-    .votes-list { list-style: none; padding: 0; text-align: left; margin-top: 15px; font-size: 16px; background: #0f3460; padding: 15px; border-radius: 8px; }
-    .votes-list li { margin-bottom: 8px; }
-    .summary-item { background: #0f3460; margin-bottom: 15px; padding: 15px; border-radius: 8px; text-align: left; }
-    .summary-q { font-weight: bold; color: #e94560; font-size: 18px; margin-bottom: 10px; }
-    .chat-box { height: 300px; overflow-y: auto; background: #0f3460; border-radius: 8px; padding: 15px; margin-bottom: 15px; text-align: left; display: flex; flex-direction: column; }
-    .msg { margin-bottom: 10px; padding: 8px 12px; border-radius: 8px; max-width: 80%; font-size: 15px; line-height: 1.3; }
-    .msg-me { background: #e94560; align-self: flex-end; border-bottom-right-radius: 0; }
-    .msg-other { background: #2a2a4a; align-self: flex-start; border-bottom-left-radius: 0; }
-    .msg-meta { font-size: 11px; color: #ccc; margin-bottom: 3px; display: block; }
+    
+    .room-badge { 
+      display: inline-block; border: 1px solid var(--yellow); color: var(--yellow); 
+      padding: 12px 24px; border-radius: 6px; font-size: 24px; font-weight: 700; letter-spacing: 4px; margin: 15px 0;
+    }
+    
+    .badge-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;}
+    .round-badge { border: 1px solid var(--border); padding: 6px 12px; border-radius: 4px; font-size: 12px; font-weight: 600; letter-spacing: 1px; color: var(--muted);}
+    .timer-badge { border: 1px solid var(--yellow); color: var(--yellow); padding: 6px 12px; border-radius: 4px; font-size: 12px; font-weight: 600;}
+
+    .votes-list { list-style: none; padding: 15px; text-align: left; margin-top: 20px; font-size: 14px; background: var(--bg); border-radius: 6px; border: 1px solid var(--border); }
+    .votes-list li { margin-bottom: 8px; color: var(--muted); }
+    .votes-list b { color: var(--text); }
+    
+    .summary-item { background: var(--bg); margin-bottom: 12px; padding: 20px; border-radius: 6px; text-align: left; border-left: 2px solid var(--yellow); }
+    .summary-q { font-weight: 600; color: var(--text); margin-bottom: 8px; }
+    .summary-votes { color: var(--muted); font-size: 14px; line-height: 1.5; }
+    
+    .chat-box { height: 350px; overflow-y: auto; background: var(--bg); border-radius: 6px; padding: 15px; margin-bottom: 15px; text-align: left; display: flex; flex-direction: column; border: 1px solid var(--border); }
+    .msg { margin-bottom: 12px; padding: 10px 14px; border-radius: 6px; max-width: 85%; font-size: 14px; line-height: 1.4; }
+    .msg-me { background: var(--border); color: var(--text); align-self: flex-end; }
+    .msg-other { background: var(--bg); border: 1px solid var(--border); color: var(--text); align-self: flex-start; }
+    .msg-meta { font-size: 11px; color: var(--muted); margin-bottom: 4px; display: block;}
+    
     .chat-input-container { display: flex; gap: 10px; }
-    .chat-input-container input { flex: 1; margin-bottom: 0; text-align: left; text-transform: none;}
-    .chat-input-container button { width: auto; padding: 15px 20px; margin: 0; }
+    .chat-input-container input { margin-bottom: 0; text-align: left; text-transform: none;}
+    .chat-input-container button { width: auto; padding: 16px 20px; margin: 0; }
+    
+    .logout-link { color: var(--muted); text-decoration: none; font-size: 13px; margin-top: 30px; display: inline-block; }
+    .logout-link:hover { color: var(--text); }
   </style>
 </head>
 <body>
 
-<div class="container">
-  <h1>🎉 Party Game</h1>
+<div id="splash-screen">
+  <h1 class="splash-logo">Shizu</h1>
+</div>
 
-  <div id="page-auth" class="card">
+<div id="transition-overlay">
+  <img src="animation.png" alt="Loading...">
+</div>
+
+<div class="container">
+  <h1>Shizu</h1>
+
+  <!-- PAGE 1: AUTH -->
+  <div id="page-auth" class="card hidden">
     <h2 id="authTitle">Login</h2>
     <input type="text" id="username" class="input input-normal" placeholder="Username" />
     <input type="password" id="password" class="input input-normal" placeholder="Password" />
-    <button class="btn" onclick="handleAuth()" id="authBtn">Login</button>
-    <p style="margin-top: 15px; font-size: 14px; color: #aaa;">
-      <span id="authSwitchText">Don't have an account?</span> 
-      <a href="#" onclick="toggleAuth(event)" style="color: #e94560; text-decoration: none; font-weight: bold;" id="authSwitchLink">Sign Up</a>
+    <button class="btn btn-primary" onclick="handleAuth()" id="authBtn">Login</button>
+    <p style="margin-top: 20px; font-size: 14px; color: var(--muted);">
+      <span id="authSwitchText">New here?</span> 
+      <a href="#" onclick="toggleAuth(event)" style="color: var(--yellow); text-decoration: none; font-weight: 600;" id="authSwitchLink">Sign up</a>
     </p>
   </div>
 
+  <!-- PAGE 2: PAIRING -->
   <div id="page-pairing" class="card hidden">
-    <h2>Pair with your Friend</h2>
-    <p>Give this code to your friend so they can pair with you:</p>
+    <h2>Pair</h2>
+    <p style="color: var(--muted);">Send this code to your partner:</p>
     <div id="myPairCode" class="room-badge">------</div>
     
-    <hr style="border-color: #2a2a4a; margin: 20px 0;">
+    <hr style="border-color: var(--border); margin: 30px 0;">
     
-    <p>Or enter their 6-digit code to pair:</p>
-    <input type="text" id="partnerCodeInput" class="input" placeholder="6-DIGIT CODE" maxlength="6" />
-    <button class="btn btn-secondary" onclick="linkPartner()">Link Accounts</button>
-    <p id="pairingStatus" style="color: #f1c40f; margin-top: 15px; font-size: 14px;"></p>
+    <p style="color: var(--muted);">Or enter their Username or Code:</p>
+    <input type="text" id="partnerCodeInput" class="input input-code" placeholder="USERNAME OR CODE" />
+    <button class="btn" onclick="linkPartner()">Link Accounts</button>
+    <p id="pairingStatus" style="color: var(--yellow); margin-top: 15px; font-size: 14px;"></p>
   </div>
 
-  <!-- LOBBY: Now shows game buttons to BOTH players -->
+  <!-- PAGE 3: LOBBY -->
   <div id="page-lobby" class="card hidden">
-    <h2>Waiting Room</h2>
-    <p>You are paired with: <b id="partnerNameDisplay" style="color: #4CAF50;">...</b></p>
+    <h2>Connected</h2>
+    <p style="color: var(--muted);">You are playing with:</p>
+    <p id="partnerNameDisplay" style="color: var(--yellow); font-size: 1.5rem; font-weight: 700; margin-bottom: 30px;">...</p>
     
     <div id="hostControls">
-      <p style="color: #4CAF50; font-weight: bold;">Start a game whenever you're ready!</p>
-      <div style="margin: 15px 0; font-size: 18px;">
-        <label><input type="checkbox" id="spicyToggle" style="transform: scale(1.5); margin-right: 10px;"> 🌶️ Enable Spicy Mode</label>
+      <div style="margin: 20px 0; font-size: 14px;">
+        <label style="cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px;">
+          <input type="checkbox" id="spicyToggle" style="transform: scale(1.2); accent-color: var(--yellow);"> 
+          <span style="color: var(--yellow); font-weight: 600;">Spicy Mode</span>
+        </label>
       </div>
-      <button class="btn" onclick="startGame('moreLikely')">Play: Who is more likely to...</button>
-      <button class="btn" onclick="startGame('neverHaveIEver')">Play: Never Have I Ever</button>
-      <button class="btn" onclick="startGame('thisOrThat')">Play: This or That</button>
+      <button class="btn" onclick="startGame('moreLikely')">Who is more likely to...</button>
+      <button class="btn" onclick="startGame('neverHaveIEver')">Never Have I Ever</button>
+      <button class="btn" onclick="startGame('thisOrThat')">This or That</button>
     </div>
     
-    <button class="btn btn-secondary" onclick="openChat()">💬 Chat</button>
-    <button class="btn btn-secondary" onclick="logout()" style="background: #4a1a1a; margin-top: 30px;">Logout</button>
+    <button class="btn" onclick="openChat()" style="margin-top: 20px;">Open Chat</button>
+    <a href="#" onclick="logout()" class="logout-link">Log out</a>
   </div>
 
+  <!-- PAGE 4: GAME -->
   <div id="page-game" class="card hidden">
-    <div style="display: flex; justify-content: center; align-items: center;">
-      <div id="roundBadge" class="round-badge">Round 1 of 10</div>
-      <div id="timerDisplay" class="timer-badge">⏳ 15s</div>
+    <div class="badge-container">
+      <div id="roundBadge" class="round-badge">ROUND 1 OF 10</div>
+      <div id="timerDisplay" class="timer-badge">20s</div>
     </div>
     
-    <h2 id="gameTitle">Game Mode</h2>
     <div id="questionDisplay" class="question">Loading...</div>
     
-    <div id="voteButtonsContainer"></div>
+    <div id="voteButtonsContainer" style="margin-top: 20px;"></div>
     
-    <div id="myVoteStatus" style="margin-top: 15px; font-size: 16px; color: #4CAF50; font-weight: bold;"></div>
+    <div id="myVoteStatus" style="margin-top: 20px; font-size: 14px; color: var(--yellow); font-weight: 600;"></div>
     <ul id="liveVotesList" class="votes-list hidden"></ul>
 
     <br>
-    <div id="gameHostControls">
-      <button class="btn" onclick="clickNextQuestion()">Next Question ➡️</button>
-    </div>
-    <br>
-    <button class="btn btn-secondary" onclick="openChat()">💬 Chat</button>
+    <button class="btn" onclick="openChat()" style="background: transparent; border-color: var(--border);">Chat</button>
   </div>
 
+  <!-- PAGE 5: SUMMARY -->
   <div id="page-summary" class="card hidden">
-    <h2>🏁 Game Over!</h2>
-    <div id="summaryContainer" style="max-height: 400px; overflow-y: auto;"></div>
-    <button class="btn" onclick="backToLobby()">Back to Lobby</button>
+    <h2>Results</h2>
+    <div id="summaryContainer" style="max-height: 400px; overflow-y: auto; margin-top: 20px;"></div>
+    <button class="btn" onclick="backToLobby()" style="margin-top: 20px;">Back to Lobby</button>
   </div>
 
+  <!-- PAGE 6: CHAT -->
   <div id="page-chat" class="card hidden">
-    <h2>💬 Room Chat</h2>
+    <h2>Chat</h2>
     <div id="chatBox" class="chat-box"></div>
     <div class="chat-input-container">
       <input type="text" id="chatInput" class="input" placeholder="Type a message..." onkeypress="handleChatEnter(event)">
-      <button class="btn" onclick="sendChat()">Send</button>
+      <button class="btn btn-primary" onclick="sendChat()">Send</button>
     </div>
     <br>
-    <button class="btn btn-secondary" onclick="closeChat()">Back</button>
+    <button class="btn" onclick="closeChat()">Back</button>
   </div>
 </div>
 
 <script>
+  // 🛑 PASTE YOUR LATEST GOOGLE APPS SCRIPT URL HERE 🛑
   const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbx9DwCUGQtAfTHcPGj62BIyvUhIz-NH4jpx6_jZV8e_DlqRw4J0jdJsB9nQHPXIUgVN4g/exec";
-  const QUESTION_TIME_SECONDS = 15; 
+  
+  const QUESTION_TIME_SECONDS = 20; 
 
   let currentUser = '';
   let partnerName = '';
@@ -142,22 +276,31 @@
   let pairingPollInterval; 
   let questionTimerInterval; 
   let timeLeft = QUESTION_TIME_SECONDS;
+  let isAdvancing = false;
 
   let isFetchingChat = false;
   let lastPageBeforeChat = 'page-lobby';
   let isSignupMode = false;
 
   window.onload = () => {
-    const savedUser = localStorage.getItem('pg_user');
-    const savedPair = localStorage.getItem('pg_pair');
-    const savedPartner = localStorage.getItem('pg_partner');
-    
-    if (savedUser && savedPair) {
-      currentUser = savedUser;
-      myPairCode = savedPair;
-      partnerName = savedPartner;
-      enterLobby();
-    }
+    setTimeout(() => {
+      document.getElementById('splash-screen').classList.add('fade-out');
+      setTimeout(() => {
+        document.getElementById('splash-screen').style.display = 'none';
+        const savedUser = localStorage.getItem('pg_user');
+        const savedPair = localStorage.getItem('pg_pair');
+        const savedPartner = localStorage.getItem('pg_partner');
+        
+        if (savedUser && savedPair) {
+          currentUser = savedUser;
+          myPairCode = savedPair;
+          partnerName = savedPartner;
+          enterLobby();
+        } else {
+          showPage('page-auth');
+        }
+      }, 500);
+    }, 1500);
   };
 
   async function apiCall(action, payload) {
@@ -185,8 +328,8 @@
     isSignupMode = !isSignupMode;
     document.getElementById('authTitle').innerText = isSignupMode ? 'Create Account' : 'Login';
     document.getElementById('authBtn').innerText = isSignupMode ? 'Sign Up' : 'Login';
-    document.getElementById('authSwitchText').innerText = isSignupMode ? 'Already have an account?' : "Don't have an account?";
-    document.getElementById('authSwitchLink').innerText = isSignupMode ? 'Login' : 'Sign Up';
+    document.getElementById('authSwitchText').innerText = isSignupMode ? 'Already have an account?' : "New here?";
+    document.getElementById('authSwitchLink').innerText = isSignupMode ? 'Login' : 'Sign up';
   }
 
   async function handleAuth() {
@@ -219,11 +362,11 @@
   }
 
   async function linkPartner() {
-    const code = document.getElementById('partnerCodeInput').value.trim();
-    if (code.length !== 6) return alert('Code must be 6 digits.');
+    const input = document.getElementById('partnerCodeInput').value.trim();
+    if (input.length < 2) return alert('Please enter a valid Username or Code.');
 
     document.getElementById('pairingStatus').innerText = "Linking...";
-    const res = await apiCall('linkPartner', { username: currentUser, partnerCode: code });
+    const res = await apiCall('linkPartner', { username: currentUser, partnerCode: input });
     if (res.success) {
       partnerName = res.partner;
       localStorage.setItem('pg_partner', partnerName);
@@ -243,15 +386,14 @@
         partnerName = res.partner;
         localStorage.setItem('pg_partner', partnerName);
         clearInterval(pairingPollInterval);
-        alert(`You are now paired with ${partnerName}!`);
+        alert(`You are now paired with ${partnerName}.`);
         enterLobby();
       }
     }, 3000); 
   }
 
   function enterLobby() {
-    document.getElementById('partnerNameDisplay').innerText = partnerName || 'Waiting for partner...';
-    // Removed the isHost check. Both players can now start the game.
+    document.getElementById('partnerNameDisplay').innerText = partnerName || 'Waiting...';
     showPage('page-lobby');
     startPolling();
   }
@@ -262,7 +404,6 @@
   }
 
   async function checkState() {
-    // NEW: Update partner name dynamically if they pair with us while we are waiting
     const userStatus = await apiCall('getUserStatus', { username: currentUser });
     if (userStatus && userStatus.success && userStatus.partner) {
       if (partnerName !== userStatus.partner) {
@@ -281,13 +422,13 @@
          
          if (document.getElementById('page-lobby').classList.contains('hidden') === false) {
              currentMode = state.mode;
-             document.getElementById('gameTitle').innerText = 
-                state.mode === 'moreLikely' ? 'Who is more likely to...' :
-                state.mode === 'neverHaveIEver' ? 'Never Have I Ever...' : 'This or That';
-             
              showPage('page-game');
          }
-         syncGameQuestion(state);
+         
+         if (state.round > currentRound) {
+            isAdvancing = false; 
+            syncGameQuestion(state);
+         }
       }
     } else if (state.status === 'Finished') {
       if (document.getElementById('page-summary').classList.contains('hidden') && document.getElementById('page-lobby').classList.contains('hidden') === false) {
@@ -296,36 +437,47 @@
     }
   }
 
-  function syncGameQuestion(state) {
+  async function syncGameQuestion(state) {
     if (!state.question || state.round === currentRound) return;
     
-    currentRound = state.round;
-    currentQuestionText = state.question;
-    
-    document.getElementById('roundBadge').innerText = `Round ${currentRound} of 10`;
-    document.getElementById('questionDisplay').innerText = currentQuestionText;
-    document.getElementById('myVoteStatus').innerText = "";
-    document.getElementById('voteButtonsContainer').innerHTML = "";
-    document.getElementById('liveVotesList').innerHTML = "";
-    document.getElementById('liveVotesList').classList.add('hidden');
-    
-    buildVoteButtons();
-    startQuestionTimer();
+    const overlay = document.getElementById('transition-overlay');
+    overlay.classList.add('active');
+
+    setTimeout(() => {
+      currentRound = state.round;
+      currentQuestionText = state.question;
+      
+      document.getElementById('roundBadge').innerText = `ROUND ${currentRound} OF 10`;
+      document.getElementById('questionDisplay').innerText = currentQuestionText;
+      document.getElementById('myVoteStatus').innerText = "";
+      document.getElementById('voteButtonsContainer').innerHTML = "";
+      document.getElementById('liveVotesList').innerHTML = "";
+      document.getElementById('liveVotesList').classList.add('hidden');
+      
+      buildVoteButtons();
+      startQuestionTimer();
+      isAdvancing = false; 
+
+      setTimeout(() => {
+        overlay.classList.remove('active');
+      }, 200);
+
+    }, 1500);
   }
 
   function startQuestionTimer() {
     clearInterval(questionTimerInterval);
     timeLeft = QUESTION_TIME_SECONDS;
-    document.getElementById('timerDisplay').innerText = `⏳ ${timeLeft}s`;
+    document.getElementById('timerDisplay').innerText = `${timeLeft}s`;
 
-    // Removed host restriction, both players run the timer, it's synchronized by the sheet
     questionTimerInterval = setInterval(() => {
       timeLeft--;
-      document.getElementById('timerDisplay').innerText = `⏳ ${timeLeft}s`;
-      if (timeLeft <= 0) {
+      document.getElementById('timerDisplay').innerText = `${timeLeft}s`;
+      
+      if (timeLeft <= 0 && !isAdvancing) {
         clearInterval(questionTimerInterval);
-        document.getElementById('timerDisplay').innerText = `⏳ 0s`;
-        clickNextQuestion(); 
+        document.getElementById('timerDisplay').innerText = `0s`;
+        forceNextQuestion(); 
       }
     }, 1000);
   }
@@ -338,27 +490,24 @@
       currentMode = mode;
       currentRound = 1;
       currentQuestionText = res.question;
+      isAdvancing = false;
       
-      document.getElementById('gameTitle').innerText = 
-        mode === 'moreLikely' ? 'Who is more likely to...' :
-        mode === 'neverHaveIEver' ? 'Never Have I Ever...' : 'This or That';
-      
-      document.getElementById('roundBadge').innerText = `Round 1 of 10`;
+      document.getElementById('roundBadge').innerText = `ROUND 1 OF 10`;
       document.getElementById('questionDisplay').innerText = currentQuestionText;
       document.getElementById('voteButtonsContainer').innerHTML = "";
       document.getElementById('liveVotesList').classList.add('hidden');
       
       buildVoteButtons();
-      
       showPage('page-game');
       startQuestionTimer(); 
     }
   }
 
-  async function clickNextQuestion() {
-    clearInterval(questionTimerInterval); 
-    const res = await apiCall('fetchNextQuestion', { pairCode: myPairCode });
+  async function forceNextQuestion() {
+    if (isAdvancing) return;
+    isAdvancing = true;
     
+    const res = await apiCall('fetchNextQuestion', { pairCode: myPairCode });
     if (res.finished) {
       showSummary(); 
     } else {
@@ -382,10 +531,10 @@
       });
     } else if (currentMode === 'neverHaveIEver') {
       const btn1 = document.createElement('button');
-      btn1.className = 'btn btn-vote'; btn1.innerText = 'True (I have)';
+      btn1.className = 'btn btn-vote'; btn1.innerText = 'I have';
       btn1.onclick = () => submitVote('True');
       const btn2 = document.createElement('button');
-      btn2.className = 'btn btn-vote'; btn2.innerText = 'False (I haven\'t)';
+      btn2.className = 'btn btn-vote'; btn2.innerText = 'I haven\'t';
       btn2.onclick = () => submitVote('False');
       container.appendChild(btn1); container.appendChild(btn2);
     } else if (currentMode === 'thisOrThat') {
@@ -408,7 +557,8 @@
   async function submitVote(target) {
     const res = await apiCall('submitVote', { pairCode: myPairCode, voter: currentUser, target: target });
     if (res.success) {
-      document.getElementById('myVoteStatus').innerText = `✅ You voted for: ${target}`;
+      document.getElementById('myVoteStatus').innerText = `You picked: ${target}`;
+      document.querySelectorAll('.btn-vote').forEach(b => b.disabled = true);
       fetchVotes(); 
     } else {
       alert(res.message);
@@ -419,13 +569,23 @@
     if (!currentQuestionText) return;
     const votes = await apiCall('getRoundVotes', { pairCode: myPairCode, round: currentRound });
     const list = document.getElementById('liveVotesList');
+    
     if (!votes || votes.length === 0) { list.classList.add('hidden'); return; }
     
     list.classList.remove('hidden');
-    list.innerHTML = '<strong>Live Votes:</strong>';
+    list.innerHTML = '<strong>Votes cast:</strong>';
     votes.forEach(v => {
-      list.innerHTML += `<li>🗳️ <b>${v.voter}</b> voted for <b>${v.target}</b></li>`;
+      list.innerHTML += `<li><b>${v.voter}</b> picked ${v.target}</li>`;
     });
+
+    if (votes.length >= 2 && !isAdvancing) {
+      isAdvancing = true;
+      clearInterval(questionTimerInterval); 
+      
+      setTimeout(() => {
+        forceNextQuestion();
+      }, 2000);
+    }
   }
 
   async function showSummary() {
@@ -441,9 +601,9 @@
     summary.forEach(item => {
       html += `<div class="summary-item">`;
       html += `<div class="summary-q">Q${item.round}: ${item.question}</div>`;
-      html += `<div>`;
+      html += `<div class="summary-votes">`;
       item.votes.forEach(v => {
-         html += `🗳️ <b>${v.voter}</b> voted for <b>${v.target}</b><br>`;
+         html += `${v.voter} picked ${v.target}<br>`;
       });
       html += `</div></div>`;
     });
@@ -474,7 +634,7 @@
       const isScrolledToBottom = box.scrollHeight - box.clientHeight <= box.scrollTop + 50;
       if (box.dataset.count != messages.length) {
         box.dataset.count = messages.length;
-        box.innerHTML = messages.length === 0 ? '<div style="color:#888;text-align:center;">No messages yet.</div>' : '';
+        box.innerHTML = messages.length === 0 ? '<div style="color:#666;text-align:center;margin-top:50px;">No messages yet.</div>' : '';
         messages.forEach(m => {
           const div = document.createElement('div');
           div.className = 'msg ' + (m.player === currentUser ? 'msg-me' : 'msg-other');
@@ -515,4 +675,4 @@
   }
 </script>
 </body>
-</html>
+  </html>
