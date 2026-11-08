@@ -6,52 +6,26 @@
   <title>Shizu</title>
   <style>
     :root { 
-      --bg: #050505; 
-      --card: #111111; 
-      --text: #ffffff; 
-      --muted: #888888; 
-      --yellow: #FFD700; 
-      --border: #333333; 
+      --bg: #050505; --card: #111111; --text: #ffffff; --muted: #888888; --yellow: #FFD700; --border: #333333; --green: #4CAF50;
     }
-    
     * { box-sizing: border-box; }
-    
     body { 
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
-      text-align: center; 
-      padding: 20px; 
-      background: var(--bg); 
-      color: var(--text); 
-      margin: 0; 
+      text-align: center; padding: 20px; background: var(--bg); color: var(--text); margin: 0; 
       -webkit-tap-highlight-color: transparent;
     }
     
     /* Splash & Animation */
-    #splash-screen { 
-      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; 
-      background: var(--bg); display: flex; justify-content: center; align-items: center; 
-      z-index: 9999; transition: opacity 0.5s; 
-    }
-    .splash-logo { 
-      font-size: 3.5rem; font-weight: 800; color: var(--yellow); 
-      animation: fadeIn 1s forwards; opacity: 0; 
-    }
+    #splash-screen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: var(--bg); display: flex; justify-content: center; align-items: center; z-index: 9999; transition: opacity 0.5s; }
+    .splash-logo { font-size: 3.5rem; font-weight: 800; color: var(--yellow); animation: fadeIn 1s forwards; opacity: 0; }
     .fade-out { opacity: 0 !important; pointer-events: none; }
     @keyframes fadeIn { to { opacity: 1; } }
 
-    #transition-overlay { 
-      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; 
-      background: var(--bg); display: flex; justify-content: center; align-items: center; 
-      z-index: 9998; opacity: 0; pointer-events: none; transition: opacity 0.2s; 
-    }
+    #transition-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: var(--bg); display: flex; justify-content: center; align-items: center; z-index: 9998; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
     #transition-overlay.active { opacity: 1; pointer-events: all; }
     #transition-overlay img { width: 120px; height: 120px; object-fit: contain; }
     #transition-overlay.active img { animation: spinAndGrow 1.2s cubic-bezier(0.25, 1, 0.5, 1) forwards; }
-    @keyframes spinAndGrow { 
-      0% { transform: scale(0.6) rotate(0deg); opacity: 0; } 
-      20% { opacity: 1; } 
-      100% { transform: scale(1.5) rotate(360deg); opacity: 1; } 
-    }
+    @keyframes spinAndGrow { 0% { transform: scale(0.6) rotate(0deg); opacity: 0; } 20% { opacity: 1; } 100% { transform: scale(1.5) rotate(360deg); opacity: 1; } }
 
     /* Main UI */
     h1, h2, h3 { font-weight: 700; margin-top: 0; }
@@ -59,39 +33,26 @@
     .container { max-width: 500px; margin: 0 auto; }
     .card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 30px 20px; margin: 20px auto; }
     
-    .btn { 
-      background: transparent; color: var(--text); border: 1px solid var(--border); 
-      padding: 16px; margin: 8px 0; border-radius: 6px; font-size: 16px; font-weight: 600; 
-      cursor: pointer; width: 100%; transition: 0.15s; 
-    }
+    .btn { background: transparent; color: var(--text); border: 1px solid var(--border); padding: 16px; margin: 8px 0; border-radius: 6px; font-size: 16px; font-weight: 600; cursor: pointer; width: 100%; transition: 0.15s; }
     .btn:hover:not(:disabled) { border-color: var(--yellow); color: var(--yellow); }
     .btn:disabled { opacity: 0.3; cursor: not-allowed; }
     .btn-primary { background: var(--yellow); color: #000; border-color: var(--yellow); }
     .btn-primary:hover:not(:disabled) { background: #e6c200; }
     
-    .btn-vote { 
-      background: var(--card); border: 1px solid var(--border); margin: 6px; 
-      width: calc(50% - 12px); display: inline-block; padding: 16px 10px; 
-      font-size: 15px; font-weight: 600; color: var(--text); cursor: pointer; border-radius: 6px; 
-    }
+    .btn-vote { background: var(--card); border: 1px solid var(--border); margin: 6px; width: calc(50% - 12px); display: inline-block; padding: 16px 10px; font-size: 15px; font-weight: 600; color: var(--text); cursor: pointer; border-radius: 6px; }
     .btn-vote:hover { border-color: var(--yellow); }
     .btn-vote-full { width: 100%; display: block; margin: 6px 0; }
 
     .question { font-size: 1.4rem; margin: 20px 0; font-weight: 600; line-height: 1.4; }
-    .input { 
-      padding: 16px; border-radius: 6px; border: 1px solid var(--border); 
-      background: var(--bg); color: var(--text); width: 100%; font-size: 16px; 
-      margin-bottom: 15px; text-align: center; 
-    }
+    .input { padding: 16px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg); color: var(--text); width: 100%; font-size: 16px; margin-bottom: 15px; text-align: center; }
     .input:focus { outline: none; border-color: var(--yellow); }
     
     .hidden { display: none !important; }
     
-    .room-badge { 
-      display: inline-block; border: 1px solid var(--yellow); color: var(--yellow); 
-      padding: 12px 24px; border-radius: 6px; font-size: 24px; font-weight: 700; 
-      letter-spacing: 4px; margin: 15px 0; 
-    }
+    .status-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #555; margin-right: 8px; }
+    .status-dot.online { background: var(--green); box-shadow: 0 0 8px var(--green); }
+
+    .room-badge { display: inline-block; border: 1px solid var(--yellow); color: var(--yellow); padding: 12px 24px; border-radius: 6px; font-size: 24px; font-weight: 700; letter-spacing: 4px; margin: 15px 0; }
     
     .badge-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
     .round-badge { border: 1px solid var(--border); padding: 6px 12px; border-radius: 4px; font-size: 12px; font-weight: 600; color: var(--muted); }
@@ -105,11 +66,7 @@
     .summary-q { font-weight: 600; color: var(--text); margin-bottom: 8px; }
     .summary-votes { color: var(--muted); font-size: 14px; line-height: 1.5; }
     
-    .chat-box { 
-      height: 350px; overflow-y: auto; background: var(--bg); border-radius: 6px; 
-      padding: 15px; margin-bottom: 15px; text-align: left; display: flex; flex-direction: column; 
-      border: 1px solid var(--border); 
-    }
+    .chat-box { height: 350px; overflow-y: auto; background: var(--bg); border-radius: 6px; padding: 15px; margin-bottom: 15px; text-align: left; display: flex; flex-direction: column; border: 1px solid var(--border); }
     .msg { margin-bottom: 12px; padding: 10px 14px; border-radius: 6px; max-width: 85%; font-size: 14px; line-height: 1.4; position: relative; }
     .msg-me { background: var(--border); align-self: flex-end; border-bottom-right-radius: 2px; }
     .msg-other { background: #1a1a1a; border: 1px solid var(--border); align-self: flex-start; border-bottom-left-radius: 2px; }
@@ -131,28 +88,38 @@
 <div class="container">
   <h1>Shizu</h1>
 
-  <!-- PAGE 1: JOIN / CREATE -->
-  <div id="page-join" class="card hidden">
-    <h2>Play Shizu</h2>
-    <input type="text" id="usernameInput" class="input" placeholder="Your Username" style="text-transform:none;" />
-    <hr style="border-color: var(--border); margin: 20px 0;">
-    
-    <button class="btn btn-primary" onclick="createRoom()">Create New Game</button>
-    
-    <div style="margin-top: 20px;">
-      <input type="text" id="roomCodeInput" class="input" placeholder="ENTER 4-LETTER CODE" maxlength="4" style="text-transform:uppercase;" />
-      <button class="btn" onclick="joinRoom()">Join Game</button>
-    </div>
+  <!-- PAGE 1: AUTH -->
+  <div id="page-auth" class="card hidden">
+    <h2 id="authTitle">Login</h2>
+    <input type="text" id="username" class="input" placeholder="Username" style="text-transform:none;" />
+    <input type="password" id="password" class="input" placeholder="Password" style="text-transform:none;" />
+    <button class="btn btn-primary" onclick="handleAuth()" id="authBtn">Login</button>
+    <p style="margin-top: 20px; font-size: 14px; color: var(--muted);">
+      <span id="authSwitchText">New here?</span> 
+      <a href="#" onclick="toggleAuth(event)" style="color: var(--yellow); text-decoration: none; font-weight: 600;" id="authSwitchLink">Sign up</a>
+    </p>
   </div>
 
-  <!-- PAGE 2: LOBBY -->
+  <!-- PAGE 2: PAIRING -->
+  <div id="page-pairing" class="card hidden">
+    <h2>Pair</h2>
+    <p style="color: var(--muted);">Send this 6-digit code to your partner:</p>
+    <div id="myPairCode" class="room-badge">------</div>
+    <hr style="border-color: var(--border); margin: 30px 0;">
+    <p style="color: var(--muted);">Or enter their Username:</p>
+    <input type="text" id="partnerCodeInput" class="input" placeholder="USERNAME OR CODE" style="text-transform:none;" />
+    <button class="btn" onclick="linkPartner()">Link Accounts</button>
+    <p id="pairingStatus" style="color: var(--yellow); margin-top: 15px; font-size: 14px;"></p>
+  </div>
+
+  <!-- PAGE 3: LOBBY -->
   <div id="page-lobby" class="card hidden">
-    <h2>Game Lobby</h2>
-    <p style="color: var(--muted); margin-bottom: 5px;">Room Code:</p>
-    <div class="room-badge" id="displayRoomCode">----</div>
-    
+    <h2>Connected</h2>
     <p style="color: var(--muted); margin-bottom: 5px;">Playing with:</p>
-    <p style="font-size: 1.2rem; font-weight: 700; margin-top: 0; margin-bottom: 30px; color: var(--yellow);" id="partnerDisplay">Waiting...</p>
+    <p style="font-size: 1.5rem; font-weight: 700; margin-top: 0; margin-bottom: 30px; color: var(--yellow);">
+      <span id="partnerStatusDot" class="status-dot"></span>
+      <span id="partnerNameDisplay">...</span>
+    </p>
     
     <div id="hostControls">
       <div style="margin: 20px 0; font-size: 14px;">
@@ -171,9 +138,10 @@
     </div>
 
     <button class="btn" onclick="openChat()" style="margin-top: 20px;">Open Chat</button>
+    <a href="#" onclick="logout()" class="logout-link">Log out</a>
   </div>
 
-  <!-- PAGE 3: GAME -->
+  <!-- PAGE 4: GAME -->
   <div id="page-game" class="card hidden">
     <div class="badge-container">
       <div id="roundBadge" class="round-badge">ROUND 1 OF 10</div>
@@ -191,14 +159,14 @@
     <button class="btn" onclick="openChat()">Chat</button>
   </div>
 
-  <!-- PAGE 4: SUMMARY -->
+  <!-- PAGE 5: SUMMARY -->
   <div id="page-summary" class="card hidden">
     <h2>Results</h2>
     <div id="summaryContainer" style="max-height: 400px; overflow-y: auto; margin-top: 20px;"></div>
     <button class="btn" onclick="backToLobby()" style="margin-top: 20px;">Back to Lobby</button>
   </div>
 
-  <!-- PAGE 5: CHAT -->
+  <!-- PAGE 6: CHAT -->
   <div id="page-chat" class="card hidden">
     <h2>Chat</h2>
     <div id="chatBox" class="chat-box"></div>
@@ -215,9 +183,8 @@
 <!-- FIREBASE SDK -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-  import { getFirestore, doc, setDoc, getDoc, updateDoc, onSnapshot, collection, addDoc, query, orderBy, serverTimestamp, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+  import { getFirestore, doc, setDoc, getDoc, updateDoc, onSnapshot, collection, addDoc, query, orderBy, serverTimestamp, getDocs, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-  // 🛑 YOUR FIREBASE CONFIG 🛑
   const firebaseConfig = {
     apiKey: "AIzaSyAQg9F4Sn3GsZOghWxSJqwbLMsJetvo03w",
     authDomain: "shizu-c984a.firebaseapp.com",
@@ -230,18 +197,18 @@
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
-  // 🛑 YOUR GOOGLE APPS SCRIPT URL 🛑
   const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbx9DwCUGQtAfTHcPGj62BIyvUhIz-NH4jpx6_jZV8e_DlqRw4J0jdJsB9nQHPXIUgVN4g/exec";
 
   // --- STATE ---
-  let currentUser = '', roomCode = '', partnerName = '', isHost = false;
+  let currentUser = '', roomId = '', partnerName = '', isHost = false;
   let currentMode = 'moreLikely', currentQuestionText = '', currentRound = 1;
   let currentQuestions = [];
   let localVotes = [];
   let questionTimerInterval, timeLeft = 20;
   let lastPageBeforeChat = 'page-lobby';
   let typingTimeout;
-  let chatUnsubscribe, roomUnsubscribe, votesUnsubscribe;
+  let chatUnsubscribe, roomUnsubscribe;
+  let isSignupMode = false;
 
   // --- INIT ---
   window.onload = () => {
@@ -249,71 +216,172 @@
       document.getElementById('splash-screen').classList.add('fade-out');
       setTimeout(() => {
         document.getElementById('splash-screen').style.display = 'none';
-        showPage('page-join');
+        const savedUser = localStorage.getItem('shizu_user');
+        const savedPass = localStorage.getItem('shizu_pass');
+        if (savedUser && savedPass) {
+          checkLogin(savedUser, savedPass);
+        } else {
+          showPage('page-auth');
+        }
       }, 500);
     }, 1500);
   };
 
   function showPage(pageId) {
-    ['page-join', 'page-lobby', 'page-game', 'page-summary', 'page-chat'].forEach(id => {
+    ['page-auth', 'page-pairing', 'page-lobby', 'page-game', 'page-summary', 'page-chat'].forEach(id => {
       document.getElementById(id).classList.add('hidden');
     });
     document.getElementById(pageId).classList.remove('hidden');
   }
 
-  // --- ROOM LOGIC ---
-  async function createRoom() {
-    const user = document.getElementById('usernameInput').value.trim();
-    if (!user) return alert('Enter a username.');
-    currentUser = user;
-    isHost = true;
+  // --- AUTH LOGIC ---
+  function toggleAuth(e) {
+    if(e) e.preventDefault(); 
+    isSignupMode = !isSignupMode;
+    document.getElementById('authTitle').innerText = isSignupMode ? 'Create Account' : 'Login';
+    document.getElementById('authBtn').innerText = isSignupMode ? 'Sign Up' : 'Login';
+    document.getElementById('authSwitchText').innerText = isSignupMode ? 'Already have an account?' : "New here?";
+    document.getElementById('authSwitchLink').innerText = isSignupMode ? 'Login' : 'Sign up';
+  }
+
+  async function handleAuth() {
+    const user = document.getElementById('username').value.trim();
+    const pass = document.getElementById('password').value.trim();
+    if (!user || !pass) return alert('Please fill both fields.');
+
+    if (isSignupMode) {
+      const userRef = doc(db, "users", user.toLowerCase());
+      const userSnap = await getDoc(userRef);
+      if (userSnap.exists()) return alert('Username taken.');
+      
+      const pairCode = Math.floor(100000 + Math.random() * 900000).toString();
+      await setDoc(userRef, { displayName: user, password: pass, pairCode: pairCode, partner: '', roomId: '', online: true, lastSeen: Date.now() });
+      
+      localStorage.setItem('shizu_user', user);
+      localStorage.setItem('shizu_pass', pass);
+      
+      currentUser = user;
+      document.getElementById('myPairCode').innerText = pairCode;
+      showPage('page-pairing');
+    } else {
+      checkLogin(user, pass);
+    }
+  }
+
+  async function checkLogin(user, pass) {
+    const userRef = doc(db, "users", user.toLowerCase());
+    const userSnap = await getDoc(userRef);
     
-    // Generate 4 letter code
-    roomCode = Math.random().toString(36).substring(2, 6).toUpperCase();
-    await setDoc(doc(db, "rooms", roomCode), { host: currentUser, guest: null, status: "waiting" });
+    if (userSnap.exists() && userSnap.data().password === pass) {
+      localStorage.setItem('shizu_user', user);
+      localStorage.setItem('shizu_pass', pass);
+      
+      currentUser = user;
+      const data = userSnap.data();
+      
+      await updateDoc(userRef, { online: true, lastSeen: Date.now() });
+      window.addEventListener('beforeunload', () => { updateDoc(userRef, { online: false }); });
+
+      if (!data.roomId) {
+        document.getElementById('myPairCode').innerText = data.pairCode;
+        showPage('page-pairing');
+      } else {
+        roomId = data.roomId;
+        partnerName = data.partner;
+        enterLobby();
+      }
+    } else {
+      alert('Invalid credentials.'); showPage('page-auth');
+    }
+  }
+
+  // --- PAIRING LOGIC ---
+  async function linkPartner() {
+    const input = document.getElementById('partnerCodeInput').value.trim();
+    if (!input) return alert('Enter username or code.');
     
+    document.getElementById('pairingStatus').innerText = "Linking...";
+    
+    // Check if input is a username or a pair code
+    let partnerRef = doc(db, "users", input.toLowerCase());
+    let partnerSnap = await getDoc(partnerRef);
+    
+    if (!partnerSnap.exists()) {
+      // Maybe it's a pair code? Query the users collection.
+      const q = query(collection(db, "users"), where("pairCode", "==", input));
+      const qSnap = await getDocs(q);
+      if (!qSnap.empty) {
+        partnerSnap = qSnap.docs[0];
+        partnerRef = partnerSnap.ref;
+      }
+    }
+
+    if (!partnerSnap.exists()) {
+      document.getElementById('pairingStatus').innerText = "";
+      return alert('Partner not found.');
+    }
+
+    const pData = partnerSnap.data();
+    if (pData.displayName.toLowerCase() === currentUser.toLowerCase()) return alert('Cannot pair with yourself.');
+    if (pData.roomId) return alert('That person is already paired with someone.');
+
+    // Generate a consistent Room ID based on both usernames
+    const names = [currentUser.toLowerCase(), pData.displayName.toLowerCase()].sort();
+    const newRoomId = names[0] + "_" + names[1];
+
+    const myRef = doc(db, "users", currentUser.toLowerCase());
+    
+    // Link both users
+    await updateDoc(myRef, { partner: pData.displayName, roomId: newRoomId });
+    await updateDoc(partnerRef, { partner: currentUser, roomId: newRoomId });
+
+    roomId = newRoomId;
+    partnerName = pData.displayName;
     enterLobby();
   }
 
-  async function joinRoom() {
-    const user = document.getElementById('usernameInput').value.trim();
-    const code = document.getElementById('roomCodeInput').value.trim().toUpperCase();
-    if (!user || code.length !== 4) return alert('Enter username and 4-letter code.');
-
-    const roomRef = doc(db, "rooms", code);
-    const roomSnap = await getDoc(roomRef);
-    
-    if (!roomSnap.exists()) return alert('Room not found.');
-    
-    const roomData = roomSnap.data();
-    if (roomData.host === user) return alert('You are the host. Share the code with your partner.');
-    if (roomData.guest && roomData.guest !== user) return alert('Room is full.');
-
-    currentUser = user;
-    roomCode = code;
-    isHost = false;
-    
-    await updateDoc(roomRef, { guest: currentUser, status: "ready" });
-    enterLobby();
-  }
-
+  // --- LOBBY LOGIC ---
   function enterLobby() {
-    document.getElementById('displayRoomCode').innerText = roomCode;
+    document.getElementById('partnerNameDisplay').innerText = partnerName;
+    
+    // Determine host (alphabetical)
+    isHost = (currentUser.toLowerCase() < partnerName.toLowerCase());
     document.getElementById('hostControls').classList.toggle('hidden', !isHost);
     document.getElementById('guestControls').classList.toggle('hidden', isHost);
+    
     showPage('page-lobby');
 
-    // Listen for room changes
-    roomUnsubscribe = onSnapshot(doc(db, "rooms", roomCode), (docSnap) => {
+    // Listen to Partner's Online Status
+    onSnapshot(doc(db, "users", partnerName.toLowerCase()), (docSnap) => {
       if (docSnap.exists()) {
-        const data = docSnap.data();
-        if (isHost && data.guest) {
-          partnerName = data.guest;
-          document.getElementById('partnerDisplay').innerText = partnerName;
-        }
-        if (!isHost && data.host) {
-          partnerName = data.host;
-          document.getElementById('partnerDisplay').innerText = partnerName;
+        const dot = document.getElementById('partnerStatusDot');
+        if (docSnap.data().online) dot.classList.add('online');
+        else dot.classList.remove('online');
+      }
+    });
+
+    // Listen to Room State
+    if (roomUnsubscribe) roomUnsubscribe();
+    roomUnsubscribe = onSnapshot(doc(db, "rooms", roomId), (docSnap) => {
+      if (docSnap.exists() && docSnap.data().gameState) {
+        const gs = docSnap.data().gameState;
+        
+        if (gs.status === 'playing') {
+          if (document.getElementById('page-lobby').classList.contains('hidden') === false) {
+             currentMode = gs.mode;
+             document.getElementById('gameTitle').innerText = gs.mode === 'moreLikely' ? 'Who is more likely to...' : (gs.mode === 'neverHaveIEver' ? 'Never Have I Ever' : 'This or That');
+             showPage('page-game');
+          }
+
+          if (gs.round > currentRound) {
+            currentRound = gs.round;
+            currentQuestionText = gs.question;
+            loadQuestionUI();
+          }
+        } else if (gs.status === 'finished') {
+          if (document.getElementById('page-summary').classList.contains('hidden') && document.getElementById('page-lobby').classList.contains('hidden') === false) {
+            showSummary();
+          }
         }
       }
     });
@@ -321,17 +389,12 @@
 
   // --- GAME LOGIC ---
   async function startGame(mode) {
-    if (WEB_APP_URL === "YOUR_GOOGLE_APPS_SCRIPT_URL_HERE") {
-      return alert("Please paste your Google Apps Script URL in the code first.");
-    }
-
     const spice = document.getElementById('spicyToggle').checked ? 'spicy' : 'normal';
     currentMode = mode;
     document.getElementById('gameTitle').innerText = mode === 'moreLikely' ? 'Who is more likely to...' : (mode === 'neverHaveIEver' ? 'Never Have I Ever' : 'This or That');
     document.getElementById('questionDisplay').innerText = "Generating questions...";
     showPage('page-game');
 
-    // Ask Google Apps Script for 10 questions
     try {
       const res = await fetch(WEB_APP_URL, {
         method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -340,10 +403,9 @@
       const data = await res.json();
       currentQuestions = data.questions;
       
-      // Save game state to Firebase so guest sees it instantly
-      await updateDoc(doc(db, "rooms", roomCode), {
-        gameState: { mode: mode, round: 1, question: currentQuestions[0], status: 'playing' }
-      });
+      await setDoc(doc(db, "rooms", roomId), {
+        gameState: { mode: mode, round: 1, question: currentQuestions[0], status: 'playing', host: currentUser }
+      }, { merge: true });
       
       currentRound = 1;
       currentQuestionText = currentQuestions[0];
@@ -352,31 +414,6 @@
       alert("Failed to load questions.");
     }
   }
-
-  // Listen to Room Game State
-  onSnapshot(doc(db, "rooms", roomCode), (docSnap) => {
-    if (docSnap.exists() && docSnap.data().gameState) {
-      const gs = docSnap.data().gameState;
-      
-      if (gs.status === 'playing') {
-        if (document.getElementById('page-lobby').classList.contains('hidden') === false) {
-           currentMode = gs.mode;
-           document.getElementById('gameTitle').innerText = gs.mode === 'moreLikely' ? 'Who is more likely to...' : (gs.mode === 'neverHaveIEver' ? 'Never Have I Ever' : 'This or That');
-           showPage('page-game');
-        }
-
-        if (gs.round > currentRound) {
-          currentRound = gs.round;
-          currentQuestionText = gs.question;
-          loadQuestionUI();
-        }
-      } else if (gs.status === 'finished') {
-        if (document.getElementById('page-summary').classList.contains('hidden') && document.getElementById('page-lobby').classList.contains('hidden') === false) {
-          showSummary();
-        }
-      }
-    }
-  });
 
   function loadQuestionUI() {
     const overlay = document.getElementById('transition-overlay');
@@ -446,18 +483,15 @@
     document.getElementById('myVoteStatus').innerText = `You picked: ${target}`;
     document.querySelectorAll('.btn-vote').forEach(b => b.disabled = true);
     
-    // Save vote to Firebase
-    await setDoc(doc(db, "rooms", roomCode, "votes", `round_${currentRound}_${currentUser}`), {
+    await setDoc(doc(db, "rooms", roomId, "votes", `round_${currentRound}_${currentUser}`), {
       round: currentRound, voter: currentUser, target: target
     });
   }
 
-  // Listen to votes in real-time
-  onSnapshot(collection(db, "rooms", roomCode, "votes"), (snapshot) => {
+  onSnapshot(collection(db, "rooms", roomId, "votes"), (snapshot) => {
     localVotes = [];
     snapshot.forEach(doc => { if(doc.data().round === currentRound) localVotes.push(doc.data()); });
     
-    // Show live votes
     if (localVotes.length > 0) {
       const list = document.getElementById('liveVotesList');
       list.classList.remove('hidden');
@@ -470,17 +504,15 @@
   async function checkIfNextQuestionReady() {
     if (localVotes.length >= 2) {
       clearInterval(questionTimerInterval);
-      
-      // Prevent double-triggering
       if (window.isAdvancing) return;
       window.isAdvancing = true;
 
       setTimeout(async () => {
         if (currentRound >= 10) {
-          await updateDoc(doc(db, "rooms", roomCode), { "gameState.status": "finished" });
+          await updateDoc(doc(db, "rooms", roomId), { "gameState.status": "finished" });
         } else {
           const nextQ = currentQuestions[currentRound];
-          await updateDoc(doc(db, "rooms", roomCode), { "gameState.round": currentRound + 1, "gameState.question": nextQ });
+          await updateDoc(doc(db, "rooms", roomId), { "gameState.round": currentRound + 1, "gameState.question": nextQ });
         }
         window.isAdvancing = false;
       }, 2000);
@@ -493,7 +525,7 @@
     const summaryContainer = document.getElementById('summaryContainer');
     summaryContainer.innerHTML = 'Loading answers...';
     
-    const snapshot = await getDocs(collection(db, "rooms", roomCode, "votes"));
+    const snapshot = await getDocs(collection(db, "rooms", roomId, "votes"));
     let summary = {};
     snapshot.forEach(doc => {
       const v = doc.data();
@@ -510,18 +542,15 @@
     summaryContainer.innerHTML = html || '<p>No votes recorded.</p>';
   }
 
-  function backToLobby() {
-    showPage('page-lobby');
-  }
+  function backToLobby() { showPage('page-lobby'); }
 
   // --- CHAT & TYPING ---
   function openChat() {
     lastPageBeforeChat = document.getElementById('page-game').classList.contains('hidden') ? 'page-lobby' : 'page-game';
     showPage('page-chat');
     
-    // Listen for messages in real-time
     if (chatUnsubscribe) chatUnsubscribe();
-    chatUnsubscribe = onSnapshot(query(collection(db, "rooms", roomCode, "messages"), orderBy("time")), (snapshot) => {
+    chatUnsubscribe = onSnapshot(query(collection(db, "rooms", roomId, "messages"), orderBy("time")), (snapshot) => {
       const box = document.getElementById('chatBox');
       box.innerHTML = '';
       snapshot.forEach(doc => {
@@ -541,7 +570,7 @@
     const input = document.getElementById('chatInput');
     if (!input.value.trim()) return;
     
-    await addDoc(collection(db, "rooms", roomCode, "messages"), {
+    await addDoc(collection(db, "rooms", roomId, "messages"), {
       user: currentUser, text: input.value.trim(), time: serverTimestamp()
     });
     input.value = '';
@@ -549,17 +578,15 @@
 
   function handleChatEnter(e) { if (e.key === 'Enter') sendChat(); }
 
-  // Simple typing indicator
   function handleTyping() {
-    updateDoc(doc(db, "rooms", roomCode), { typing: currentUser });
+    updateDoc(doc(db, "rooms", roomId), { typing: currentUser });
     if (typingTimeout) clearTimeout(typingTimeout);
     typingTimeout = setTimeout(() => {
-      updateDoc(doc(db, "rooms", roomCode), { typing: null });
+      updateDoc(doc(db, "rooms", roomId), { typing: null });
     }, 2000);
   }
 
-  // Listen for partner typing status
-  onSnapshot(doc(db, "rooms", roomCode), (docSnap) => {
+  onSnapshot(doc(db, "rooms", roomId), (docSnap) => {
     if (docSnap.exists() && docSnap.data().typing) {
       const typer = docSnap.data().typing;
       if (typer !== currentUser) {
@@ -571,6 +598,13 @@
       document.getElementById('typingIndicator').classList.add('hidden');
     }
   });
+
+  function logout() {
+    updateDoc(doc(db, "users", currentUser.toLowerCase()), { online: false });
+    localStorage.removeItem('shizu_user');
+    localStorage.removeItem('shizu_pass');
+    window.location.reload();
+  }
 </script>
 </body>
-</html>
+  </html>
