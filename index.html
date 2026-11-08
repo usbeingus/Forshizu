@@ -5,17 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Shizu</title>
   <style>
-    :root { 
-      --bg: #050505; --card: #111111; --text: #ffffff; --muted: #888888; --yellow: #FFD700; --border: #333333; --green: #4CAF50;
-    }
+    :root { --bg: #050505; --card: #111111; --text: #ffffff; --muted: #888888; --yellow: #FFD700; --border: #333333; --green: #4CAF50; }
     * { box-sizing: border-box; }
-    body { 
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
-      text-align: center; padding: 20px; background: var(--bg); color: var(--text); margin: 0; 
-      -webkit-tap-highlight-color: transparent;
-    }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; text-align: center; padding: 20px; background: var(--bg); color: var(--text); margin: 0; -webkit-tap-highlight-color: transparent; }
     
-    /* Splash & Animation */
     #splash-screen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: var(--bg); display: flex; justify-content: center; align-items: center; z-index: 9999; transition: opacity 0.5s; }
     .splash-logo { font-size: 3.5rem; font-weight: 800; color: var(--yellow); animation: fadeIn 1s forwards; opacity: 0; }
     .fade-out { opacity: 0 !important; pointer-events: none; }
@@ -27,7 +20,6 @@
     #transition-overlay.active img { animation: spinAndGrow 1.2s cubic-bezier(0.25, 1, 0.5, 1) forwards; }
     @keyframes spinAndGrow { 0% { transform: scale(0.6) rotate(0deg); opacity: 0; } 20% { opacity: 1; } 100% { transform: scale(1.5) rotate(360deg); opacity: 1; } }
 
-    /* Main UI */
     h1, h2, h3 { font-weight: 700; margin-top: 0; }
     h1 { color: var(--yellow); font-size: 2.2rem; margin-bottom: 20px; }
     .container { max-width: 500px; margin: 0 auto; }
@@ -88,7 +80,6 @@
 <div class="container">
   <h1>Shizu</h1>
 
-  <!-- PAGE 1: AUTH -->
   <div id="page-auth" class="card hidden">
     <h2 id="authTitle">Login</h2>
     <input type="text" id="username" class="input" placeholder="Username" style="text-transform:none;" />
@@ -100,7 +91,6 @@
     </p>
   </div>
 
-  <!-- PAGE 2: PAIRING -->
   <div id="page-pairing" class="card hidden">
     <h2>Pair</h2>
     <p style="color: var(--muted);">Send this 6-digit code to your partner:</p>
@@ -112,7 +102,6 @@
     <p id="pairingStatus" style="color: var(--yellow); margin-top: 15px; font-size: 14px;"></p>
   </div>
 
-  <!-- PAGE 3: LOBBY -->
   <div id="page-lobby" class="card hidden">
     <h2>Connected</h2>
     <p style="color: var(--muted); margin-bottom: 5px;">Playing with:</p>
@@ -141,7 +130,6 @@
     <a href="#" onclick="window.logout()" class="logout-link">Log out</a>
   </div>
 
-  <!-- PAGE 4: GAME -->
   <div id="page-game" class="card hidden">
     <div class="badge-container">
       <div id="roundBadge" class="round-badge">ROUND 1 OF 10</div>
@@ -159,14 +147,12 @@
     <button class="btn" onclick="window.openChat()">Chat</button>
   </div>
 
-  <!-- PAGE 5: SUMMARY -->
   <div id="page-summary" class="card hidden">
     <h2>Results</h2>
     <div id="summaryContainer" style="max-height: 400px; overflow-y: auto; margin-top: 20px;"></div>
     <button class="btn" onclick="window.backToLobby()" style="margin-top: 20px;">Back to Lobby</button>
   </div>
 
-  <!-- PAGE 6: CHAT -->
   <div id="page-chat" class="card hidden">
     <h2>Chat</h2>
     <div id="chatBox" class="chat-box"></div>
@@ -180,7 +166,6 @@
   </div>
 </div>
 
-<!-- FIREBASE SDK -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
   import { getFirestore, doc, setDoc, getDoc, updateDoc, onSnapshot, collection, addDoc, query, orderBy, serverTimestamp, getDocs, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
@@ -199,7 +184,6 @@
 
   const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbx9DwCUGQtAfTHcPGj62BIyvUhIz-NH4jpx6_jZV8e_DlqRw4J0jdJsB9nQHPXIUgVN4g/exec";
 
-  // --- STATE ---
   let currentUser = '', roomId = '', partnerName = '', isHost = false;
   let currentMode = 'moreLikely', currentQuestionText = '', currentRound = 1;
   let currentQuestions = [];
@@ -207,10 +191,9 @@
   let questionTimerInterval, timeLeft = 20;
   let lastPageBeforeChat = 'page-lobby';
   let typingTimeout;
-  let chatUnsubscribe, roomUnsubscribe;
   let isSignupMode = false;
+  let unsubRoom, unsubVotes, unsubChat, unsubTyping, unsubPartner;
 
-  // --- INIT ---
   window.onload = () => {
     setTimeout(() => {
       document.getElementById('splash-screen').classList.add('fade-out');
@@ -234,7 +217,6 @@
     document.getElementById(pageId).classList.remove('hidden');
   }
 
-  // --- AUTH LOGIC ---
   function toggleAuth(e) {
     if(e) e.preventDefault(); 
     isSignupMode = !isSignupMode;
@@ -295,14 +277,12 @@
     }
   }
 
-  // --- PAIRING LOGIC ---
   async function linkPartner() {
     const input = document.getElementById('partnerCodeInput').value.trim();
     if (!input) return alert('Enter username or code.');
     
     document.getElementById('pairingStatus').innerText = "Linking...";
     
-    // Check if input is a username or a pair code
     let partnerRef = doc(db, "users", input.toLowerCase());
     let partnerSnap = await getDoc(partnerRef);
     
@@ -337,7 +317,6 @@
     enterLobby();
   }
 
-  // --- LOBBY LOGIC ---
   function enterLobby() {
     document.getElementById('partnerNameDisplay').innerText = partnerName;
     
@@ -347,7 +326,8 @@
     
     showPage('page-lobby');
 
-    onSnapshot(doc(db, "users", partnerName.toLowerCase()), (docSnap) => {
+    if (unsubPartner) unsubPartner();
+    unsubPartner = onSnapshot(doc(db, "users", partnerName.toLowerCase()), (docSnap) => {
       if (docSnap.exists()) {
         const dot = document.getElementById('partnerStatusDot');
         if (docSnap.data().online) dot.classList.add('online');
@@ -355,8 +335,8 @@
       }
     });
 
-    if (roomUnsubscribe) roomUnsubscribe();
-    roomUnsubscribe = onSnapshot(doc(db, "rooms", roomId), (docSnap) => {
+    if (unsubRoom) unsubRoom();
+    unsubRoom = onSnapshot(doc(db, "rooms", roomId), (docSnap) => {
       if (docSnap.exists() && docSnap.data().gameState) {
         const gs = docSnap.data().gameState;
         
@@ -365,8 +345,8 @@
              currentMode = gs.mode;
              document.getElementById('gameTitle').innerText = gs.mode === 'moreLikely' ? 'Who is more likely to...' : (gs.mode === 'neverHaveIEver' ? 'Never Have I Ever' : 'This or That');
              showPage('page-game');
+             setupVotesListener();
           }
-
           if (gs.round > currentRound) {
             currentRound = gs.round;
             currentQuestionText = gs.question;
@@ -379,9 +359,18 @@
         }
       }
     });
+    
+    if (unsubTyping) unsubTyping();
+    unsubTyping = onSnapshot(doc(db, "rooms", roomId), (docSnap) => {
+      if (docSnap.exists() && docSnap.data().typing) {
+        if (docSnap.data().typing !== currentUser) document.getElementById('typingIndicator').classList.remove('hidden');
+        else document.getElementById('typingIndicator').classList.add('hidden');
+      } else {
+        document.getElementById('typingIndicator').classList.add('hidden');
+      }
+    });
   }
 
-  // --- GAME LOGIC ---
   async function startGame(mode) {
     const spice = document.getElementById('spicyToggle').checked ? 'spicy' : 'normal';
     currentMode = mode;
@@ -403,10 +392,27 @@
       
       currentRound = 1;
       currentQuestionText = currentQuestions[0];
+      setupVotesListener();
       loadQuestionUI();
     } catch(e) {
-      alert("Failed to load questions.");
+      alert("Failed to load questions. Check internet or Apps Script URL.");
     }
+  }
+
+  function setupVotesListener() {
+    if (unsubVotes) unsubVotes();
+    unsubVotes = onSnapshot(collection(db, "rooms", roomId, "votes"), (snapshot) => {
+      localVotes = [];
+      snapshot.forEach(doc => { if(doc.data().round === currentRound) localVotes.push(doc.data()); });
+      
+      if (localVotes.length > 0) {
+        const list = document.getElementById('liveVotesList');
+        list.classList.remove('hidden');
+        list.innerHTML = '<strong>Live Votes:</strong>' + localVotes.map(v => `<li><b>${v.voter}</b> voted for <b>${v.target}</b></li>`).join('');
+      }
+      
+      if (isHost) checkIfNextQuestionReady();
+    });
   }
 
   function loadQuestionUI() {
@@ -482,19 +488,6 @@
     });
   }
 
-  onSnapshot(collection(db, "rooms", roomId, "votes"), (snapshot) => {
-    localVotes = [];
-    snapshot.forEach(doc => { if(doc.data().round === currentRound) localVotes.push(doc.data()); });
-    
-    if (localVotes.length > 0) {
-      const list = document.getElementById('liveVotesList');
-      list.classList.remove('hidden');
-      list.innerHTML = '<strong>Live Votes:</strong>' + localVotes.map(v => `<li><b>${v.voter}</b> voted for <b>${v.target}</b></li>`).join('');
-    }
-    
-    if (isHost) checkIfNextQuestionReady();
-  });
-
   async function checkIfNextQuestionReady() {
     if (localVotes.length >= 2) {
       clearInterval(questionTimerInterval);
@@ -538,13 +531,12 @@
 
   function backToLobby() { showPage('page-lobby'); }
 
-  // --- CHAT & TYPING ---
   function openChat() {
     lastPageBeforeChat = document.getElementById('page-game').classList.contains('hidden') ? 'page-lobby' : 'page-game';
     showPage('page-chat');
     
-    if (chatUnsubscribe) chatUnsubscribe();
-    chatUnsubscribe = onSnapshot(query(collection(db, "rooms", roomId, "messages"), orderBy("time")), (snapshot) => {
+    if (unsubChat) unsubChat();
+    unsubChat = onSnapshot(query(collection(db, "rooms", roomId, "messages"), orderBy("time")), (snapshot) => {
       const box = document.getElementById('chatBox');
       box.innerHTML = '';
       snapshot.forEach(doc => {
@@ -580,27 +572,14 @@
     }, 2000);
   }
 
-  onSnapshot(doc(db, "rooms", roomId), (docSnap) => {
-    if (docSnap.exists() && docSnap.data().typing) {
-      const typer = docSnap.data().typing;
-      if (typer !== currentUser) {
-        document.getElementById('typingIndicator').classList.remove('hidden');
-      } else {
-        document.getElementById('typingIndicator').classList.add('hidden');
-      }
-    } else {
-      document.getElementById('typingIndicator').classList.add('hidden');
-    }
-  });
-
   function logout() {
-    updateDoc(doc(db, "users", currentUser.toLowerCase()), { online: false });
+    if (currentUser) updateDoc(doc(db, "users", currentUser.toLowerCase()), { online: false });
     localStorage.removeItem('shizu_user');
     localStorage.removeItem('shizu_pass');
     window.location.reload();
   }
 
-  // 🛑 THIS IS THE FIX: Exposing functions so HTML buttons can click them
+  // 🛑 EXPOSE FUNCTIONS TO HTML BUTTONS 🛑
   window.toggleAuth = toggleAuth;
   window.handleAuth = handleAuth;
   window.linkPartner = linkPartner;
