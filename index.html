@@ -5,137 +5,50 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Shizu</title>
   <style>
-    :root {
-      --bg: #050505;
-      --card: #111111;
-      --text: #ffffff;
-      --muted: #888888;
-      --yellow: #FFD700;
-      --border: #333333;
-    }
-
+    :root { --bg: #050505; --card: #111111; --text: #ffffff; --muted: #888888; --yellow: #FFD700; --border: #333333; --green: #4CAF50; }
     * { box-sizing: border-box; }
-
-    body { 
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      text-align: center; 
-      padding: 20px; 
-      background: var(--bg); 
-      color: var(--text); 
-      margin: 0;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    /* --- SPLASH SCREEN --- */
-    #splash-screen {
-      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-      background: var(--bg);
-      display: flex; flex-direction: column; justify-content: center; align-items: center;
-      z-index: 9999;
-      transition: opacity 0.5s ease-out;
-    }
-    .splash-logo {
-      font-size: 3.5rem; font-weight: 800; letter-spacing: -2px;
-      color: var(--yellow); margin: 0;
-      animation: fadeIn 1s ease-in forwards;
-      opacity: 0;
-    }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; text-align: center; padding: 20px; background: var(--bg); color: var(--text); margin: 0; }
+    
+    #splash-screen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: var(--bg); display: flex; justify-content: center; align-items: center; z-index: 9999; transition: opacity 0.5s; }
+    .splash-logo { font-size: 3.5rem; font-weight: 800; color: var(--yellow); animation: fadeIn 1s forwards; opacity: 0; }
     .fade-out { opacity: 0 !important; pointer-events: none; }
-
     @keyframes fadeIn { to { opacity: 1; } }
 
-    /* --- IMAGE TRANSITION OVERLAY --- */
-    #transition-overlay {
-      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-      background: var(--bg);
-      display: flex; justify-content: center; align-items: center;
-      z-index: 9998; opacity: 0; pointer-events: none;
-      transition: opacity 0.2s ease;
-    }
-    
-    #transition-overlay.active { 
-      opacity: 1; 
-      pointer-events: all; 
-    }
+    #transition-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: var(--bg); display: flex; justify-content: center; align-items: center; z-index: 9998; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+    #transition-overlay.active { opacity: 1; pointer-events: all; }
+    #transition-overlay img { width: 120px; height: 120px; object-fit: contain; }
+    #transition-overlay.active img { animation: spinAndGrow 1.2s cubic-bezier(0.25, 1, 0.5, 1) forwards; }
+    @keyframes spinAndGrow { 0% { transform: scale(0.6) rotate(0deg); opacity: 0; } 20% { opacity: 1; } 100% { transform: scale(1.5) rotate(360deg); opacity: 1; } }
 
-    #transition-overlay img { 
-      width: 120px; 
-      height: 120px; 
-      object-fit: contain; 
-      transform-origin: center;
-    }
-
-    #transition-overlay.active img {
-      animation: spinAndGrow 1.2s cubic-bezier(0.25, 1, 0.5, 1) forwards;
-    }
-
-    @keyframes spinAndGrow {
-      0% { transform: scale(0.6) rotate(0deg); opacity: 0; }
-      20% { opacity: 1; }
-      100% { transform: scale(1.5) rotate(360deg); opacity: 1; }
-    }
-
-    /* --- MAIN UI --- */
-    h1, h2, h3 { font-weight: 700; margin-top: 0; letter-spacing: -0.5px; }
+    h1, h2, h3 { font-weight: 700; margin-top: 0; }
     h1 { color: var(--yellow); font-size: 2.2rem; margin-bottom: 20px; }
-    
     .container { max-width: 500px; margin: 0 auto; }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 30px 20px; margin: 20px auto; }
     
-    .card { 
-      background: var(--card); 
-      border: 1px solid var(--border);
-      border-radius: 8px; 
-      padding: 30px 20px; 
-      margin: 20px auto; 
-    }
-
-    .btn { 
-      background: transparent; 
-      color: var(--text); 
-      border: 1px solid var(--border); 
-      padding: 16px; 
-      margin: 8px 0; 
-      border-radius: 6px; 
-      font-size: 16px; 
-      font-weight: 600;
-      cursor: pointer; 
-      width: 100%; 
-      transition: all 0.15s ease;
-    }
-    .btn:hover { border-color: var(--yellow); color: var(--yellow); }
-    .btn:active { background: var(--yellow); color: #000; border-color: var(--yellow); }
-
+    .btn { background: transparent; color: var(--text); border: 1px solid var(--border); padding: 16px; margin: 8px 0; border-radius: 6px; font-size: 16px; font-weight: 600; cursor: pointer; width: 100%; transition: 0.15s; }
+    .btn:hover:not(:disabled) { border-color: var(--yellow); color: var(--yellow); }
+    .btn:disabled { opacity: 0.3; cursor: not-allowed; }
     .btn-primary { background: var(--yellow); color: #000; border-color: var(--yellow); }
-    .btn-primary:hover { background: #e6c200; color: #000; border-color: #e6c200; }
+    .btn-primary:hover:not(:disabled) { background: #e6c200; }
     
-    .btn-vote { 
-      background: var(--card); border: 1px solid var(--border); margin: 6px; width: calc(50% - 12px); 
-      display: inline-block; padding: 16px 10px; font-size: 15px; font-weight: 600;
-      color: var(--text); cursor: pointer; border-radius: 6px;
-    }
+    .btn-vote { background: var(--card); border: 1px solid var(--border); margin: 6px; width: calc(50% - 12px); display: inline-block; padding: 16px 10px; font-size: 15px; font-weight: 600; color: var(--text); cursor: pointer; border-radius: 6px; }
     .btn-vote:hover { border-color: var(--yellow); }
     .btn-vote-full { width: 100%; display: block; margin: 6px 0; }
 
-    .question { font-size: 1.4rem; margin: 20px 0; font-weight: 600; line-height: 1.4; color: var(--text); }
-
-    .input { 
-      padding: 16px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg); color: var(--text);
-      width: 100%; font-size: 16px; margin-bottom: 15px; text-align: center; font-family: inherit;
-    }
+    .question { font-size: 1.4rem; margin: 20px 0; font-weight: 600; line-height: 1.4; }
+    .input { padding: 16px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg); color: var(--text); width: 100%; font-size: 16px; margin-bottom: 15px; text-align: center; }
     .input:focus { outline: none; border-color: var(--yellow); }
-    .input-code { text-transform: uppercase; }
-    .input-normal { text-transform: none; }
     
     .hidden { display: none !important; }
     
-    .room-badge { 
-      display: inline-block; border: 1px solid var(--yellow); color: var(--yellow); 
-      padding: 12px 24px; border-radius: 6px; font-size: 24px; font-weight: 700; letter-spacing: 4px; margin: 15px 0;
-    }
+    .status-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #555; margin-right: 8px; }
+    .status-dot.online { background: var(--green); box-shadow: 0 0 8px var(--green); }
+
+    .room-badge { display: inline-block; border: 1px solid var(--yellow); color: var(--yellow); padding: 12px 24px; border-radius: 6px; font-size: 24px; font-weight: 700; letter-spacing: 4px; margin: 15px 0; }
     
-    .badge-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;}
-    .round-badge { border: 1px solid var(--border); padding: 6px 12px; border-radius: 4px; font-size: 12px; font-weight: 600; letter-spacing: 1px; color: var(--muted);}
-    .timer-badge { border: 1px solid var(--yellow); color: var(--yellow); padding: 6px 12px; border-radius: 4px; font-size: 12px; font-weight: 600;}
+    .badge-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .round-badge { border: 1px solid var(--border); padding: 6px 12px; border-radius: 4px; font-size: 12px; font-weight: 600; color: var(--muted); }
+    .timer-badge { border: 1px solid var(--yellow); color: var(--yellow); padding: 6px 12px; border-radius: 4px; font-size: 12px; font-weight: 600; }
 
     .votes-list { list-style: none; padding: 15px; text-align: left; margin-top: 20px; font-size: 14px; background: var(--bg); border-radius: 6px; border: 1px solid var(--border); }
     .votes-list li { margin-bottom: 8px; color: var(--muted); }
@@ -146,37 +59,32 @@
     .summary-votes { color: var(--muted); font-size: 14px; line-height: 1.5; }
     
     .chat-box { height: 350px; overflow-y: auto; background: var(--bg); border-radius: 6px; padding: 15px; margin-bottom: 15px; text-align: left; display: flex; flex-direction: column; border: 1px solid var(--border); }
-    .msg { margin-bottom: 12px; padding: 10px 14px; border-radius: 6px; max-width: 85%; font-size: 14px; line-height: 1.4; }
-    .msg-me { background: var(--border); color: var(--text); align-self: flex-end; }
-    .msg-other { background: var(--bg); border: 1px solid var(--border); color: var(--text); align-self: flex-start; }
-    .msg-meta { font-size: 11px; color: var(--muted); margin-bottom: 4px; display: block;}
+    .msg { margin-bottom: 12px; padding: 10px 14px; border-radius: 6px; max-width: 85%; font-size: 14px; line-height: 1.4; position: relative; }
+    .msg-me { background: var(--border); align-self: flex-end; border-bottom-right-radius: 2px; }
+    .msg-other { background: #1a1a1a; border: 1px solid var(--border); align-self: flex-start; border-bottom-left-radius: 2px; }
+    .msg-meta { font-size: 11px; color: var(--muted); margin-bottom: 4px; display: block; }
+    .msg-status { font-size: 11px; color: var(--muted); align-self: flex-end; margin-top: -5px; margin-bottom: 10px; margin-right: 5px; font-style: italic;}
     
     .chat-input-container { display: flex; gap: 10px; }
-    .chat-input-container input { margin-bottom: 0; text-align: left; text-transform: none;}
+    .chat-input-container input { margin-bottom: 0; text-align: left; }
     .chat-input-container button { width: auto; padding: 16px 20px; margin: 0; }
     
     .logout-link { color: var(--muted); text-decoration: none; font-size: 13px; margin-top: 30px; display: inline-block; }
-    .logout-link:hover { color: var(--text); }
   </style>
 </head>
 <body>
 
-<div id="splash-screen">
-  <h1 class="splash-logo">Shizu</h1>
-</div>
-
-<div id="transition-overlay">
-  <img src="animation.png" alt="Loading...">
-</div>
+<div id="splash-screen"><h1 class="splash-logo">Shizu</h1></div>
+<div id="transition-overlay"><img src="animation.png" alt="Loading..."></div>
 
 <div class="container">
   <h1>Shizu</h1>
 
-  <!-- PAGE 1: AUTH -->
+  <!-- AUTH -->
   <div id="page-auth" class="card hidden">
     <h2 id="authTitle">Login</h2>
-    <input type="text" id="username" class="input input-normal" placeholder="Username" />
-    <input type="password" id="password" class="input input-normal" placeholder="Password" />
+    <input type="text" id="username" class="input" placeholder="Username" style="text-transform:none;" />
+    <input type="password" id="password" class="input" placeholder="Password" style="text-transform:none;" />
     <button class="btn btn-primary" onclick="handleAuth()" id="authBtn">Login</button>
     <p style="margin-top: 20px; font-size: 14px; color: var(--muted);">
       <span id="authSwitchText">New here?</span> 
@@ -184,25 +92,26 @@
     </p>
   </div>
 
-  <!-- PAGE 2: PAIRING -->
+  <!-- PAIRING -->
   <div id="page-pairing" class="card hidden">
     <h2>Pair</h2>
     <p style="color: var(--muted);">Send this code to your partner:</p>
     <div id="myPairCode" class="room-badge">------</div>
-    
     <hr style="border-color: var(--border); margin: 30px 0;">
-    
-    <p style="color: var(--muted);">Or enter their Username or Code:</p>
-    <input type="text" id="partnerCodeInput" class="input input-code" placeholder="USERNAME OR CODE" />
+    <p style="color: var(--muted);">Or enter their Username:</p>
+    <input type="text" id="partnerCodeInput" class="input" placeholder="USERNAME" style="text-transform:none;" />
     <button class="btn" onclick="linkPartner()">Link Accounts</button>
     <p id="pairingStatus" style="color: var(--yellow); margin-top: 15px; font-size: 14px;"></p>
   </div>
 
-  <!-- PAGE 3: LOBBY -->
+  <!-- LOBBY -->
   <div id="page-lobby" class="card hidden">
     <h2>Connected</h2>
-    <p style="color: var(--muted);">You are playing with:</p>
-    <p id="partnerNameDisplay" style="color: var(--yellow); font-size: 1.5rem; font-weight: 700; margin-bottom: 30px;">...</p>
+    <p style="color: var(--muted); margin-bottom: 5px;">Playing with:</p>
+    <p style="font-size: 1.5rem; font-weight: 700; margin-top: 0; margin-bottom: 30px; color: var(--yellow);">
+      <span id="partnerStatusDot" class="status-dot"></span>
+      <span id="partnerNameDisplay">...</span>
+    </p>
     
     <div id="hostControls">
       <div style="margin: 20px 0; font-size: 14px;">
@@ -216,17 +125,24 @@
       <button class="btn" onclick="startGame('thisOrThat')">This or That</button>
     </div>
     
+    <div id="guestControls" class="hidden">
+      <p style="color: var(--muted); margin-top: 30px;">Waiting for your partner to start a game...</p>
+      <button class="btn" disabled style="opacity: 0.3;">Who is more likely to...</button>
+      <button class="btn" disabled style="opacity: 0.3;">Never Have I Ever</button>
+      <button class="btn" disabled style="opacity: 0.3;">This or That</button>
+    </div>
+
     <button class="btn" onclick="openChat()" style="margin-top: 20px;">Open Chat</button>
     <a href="#" onclick="logout()" class="logout-link">Log out</a>
   </div>
 
-  <!-- PAGE 4: GAME -->
+  <!-- GAME -->
   <div id="page-game" class="card hidden">
     <div class="badge-container">
       <div id="roundBadge" class="round-badge">ROUND 1 OF 10</div>
       <div id="timerDisplay" class="timer-badge">20s</div>
     </div>
-    
+    <div id="gameTitle" style="color: var(--muted); font-size: 14px; margin-bottom: 10px; text-transform: uppercase;">Game Mode</div>
     <div id="questionDisplay" class="question">Loading...</div>
     
     <div id="voteButtonsContainer" style="margin-top: 20px;"></div>
@@ -235,22 +151,23 @@
     <ul id="liveVotesList" class="votes-list hidden"></ul>
 
     <br>
-    <button class="btn" onclick="openChat()" style="background: transparent; border-color: var(--border);">Chat</button>
+    <button class="btn" onclick="openChat()">Chat</button>
   </div>
 
-  <!-- PAGE 5: SUMMARY -->
+  <!-- SUMMARY -->
   <div id="page-summary" class="card hidden">
     <h2>Results</h2>
     <div id="summaryContainer" style="max-height: 400px; overflow-y: auto; margin-top: 20px;"></div>
     <button class="btn" onclick="backToLobby()" style="margin-top: 20px;">Back to Lobby</button>
   </div>
 
-  <!-- PAGE 6: CHAT -->
+  <!-- CHAT -->
   <div id="page-chat" class="card hidden">
     <h2>Chat</h2>
     <div id="chatBox" class="chat-box"></div>
+    <div id="typingIndicator" class="msg-status hidden">Partner is typing...</div>
     <div class="chat-input-container">
-      <input type="text" id="chatInput" class="input" placeholder="Type a message..." onkeypress="handleChatEnter(event)">
+      <input type="text" id="chatInput" class="input" placeholder="Type a message..." oninput="handleTyping()" onkeypress="handleChatEnter(event)">
       <button class="btn btn-primary" onclick="sendChat()">Send</button>
     </div>
     <br>
@@ -259,28 +176,16 @@
 </div>
 
 <script>
-  // 🛑 PASTE YOUR LATEST GOOGLE APPS SCRIPT URL HERE 🛑
   const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbx9DwCUGQtAfTHcPGj62BIyvUhIz-NH4jpx6_jZV8e_DlqRw4J0jdJsB9nQHPXIUgVN4g/exec";
-  
   const QUESTION_TIME_SECONDS = 20; 
 
-  let currentUser = '';
-  let partnerName = '';
-  let myPairCode = '';
+  let currentUser = '', partnerName = '', myRoomCode = '', myPairCode = '';
+  let currentMode = 'moreLikely', currentQuestionText = '', currentRound = 1;
+  let isAdvancing = false, timeLeft = QUESTION_TIME_SECONDS, currentHost = '';
   
-  let currentMode = 'moreLikely';
-  let currentQuestionText = '';
-  let currentRound = 1;
-  
-  let pollInterval;
-  let pairingPollInterval; 
-  let questionTimerInterval; 
-  let timeLeft = QUESTION_TIME_SECONDS;
-  let isAdvancing = false;
-
-  let isFetchingChat = false;
-  let lastPageBeforeChat = 'page-lobby';
-  let isSignupMode = false;
+  let pollInterval, pairingPollInterval, questionTimerInterval, pingInterval;
+  let isFetchingChat = false, lastPageBeforeChat = 'page-lobby', isSignupMode = false;
+  let typingTimeout;
 
   window.onload = () => {
     setTimeout(() => {
@@ -288,17 +193,15 @@
       setTimeout(() => {
         document.getElementById('splash-screen').style.display = 'none';
         const savedUser = localStorage.getItem('pg_user');
-        const savedPair = localStorage.getItem('pg_pair');
-        const savedPartner = localStorage.getItem('pg_partner');
-        
-        if (savedUser && savedPair) {
+        if (savedUser) {
           currentUser = savedUser;
-          myPairCode = savedPair;
-          partnerName = savedPartner;
-          enterLobby();
-        } else {
-          showPage('page-auth');
-        }
+          apiCall('login', { username: savedUser, password: localStorage.getItem('pg_pass') }).then(res => {
+            if (res.success) {
+              myPairCode = String(res.pairCode); partnerName = res.partner || ''; myRoomCode = res.roomCode || '';
+              if (!myRoomCode) { showPairing(); } else { enterLobby(); }
+            } else { showPage('page-auth'); }
+          });
+        } else { showPage('page-auth'); }
       }, 500);
     }, 1500);
   };
@@ -306,14 +209,11 @@
   async function apiCall(action, payload) {
     try {
       const response = await fetch(WEB_APP_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: JSON.stringify({ action: action, ...payload })
       });
       return await response.json();
-    } catch (error) {
-      return { success: false, message: "Network error." };
-    }
+    } catch (error) { return { success: false, message: "Network error." }; }
   }
 
   function showPage(pageId) {
@@ -324,8 +224,7 @@
   }
 
   function toggleAuth(e) {
-    if(e) e.preventDefault();
-    isSignupMode = !isSignupMode;
+    if(e) e.preventDefault(); isSignupMode = !isSignupMode;
     document.getElementById('authTitle').innerText = isSignupMode ? 'Create Account' : 'Login';
     document.getElementById('authBtn').innerText = isSignupMode ? 'Sign Up' : 'Login';
     document.getElementById('authSwitchText').innerText = isSignupMode ? 'Already have an account?' : "New here?";
@@ -341,60 +240,59 @@
     const res = await apiCall(action, { username: user, password: pass });
 
     if (res.success) {
-      currentUser = res.username;
-      myPairCode = String(res.pairCode);
-      partnerName = res.partner || '';
+      currentUser = res.username; myPairCode = String(res.pairCode); partnerName = res.partner || ''; myRoomCode = res.roomCode || '';
+      localStorage.setItem('pg_user', currentUser); localStorage.setItem('pg_pass', pass);
       
-      localStorage.setItem('pg_user', currentUser);
-      localStorage.setItem('pg_pair', myPairCode);
-      localStorage.setItem('pg_partner', partnerName);
+      if (!myRoomCode) { showPairing(); } else { enterLobby(); }
+    } else { alert(res.message); }
+  }
 
-      if (!partnerName) {
-        document.getElementById('myPairCode').innerText = myPairCode;
-        showPage('page-pairing');
-        startPairingPoll(); 
-      } else {
-        enterLobby();
-      }
-    } else {
-      alert(res.message);
+  function showPairing() {
+    document.getElementById('myPairCode').innerText = myPairCode;
+    showPage('page-pairing');
+    if (pairingPollInterval) clearInterval(pairingPollInterval);
+    pairingPollInterval = setInterval(checkPairing, 2000);
+  }
+
+  async function checkPairing() {
+    const res = await apiCall('getUserStatus', { username: currentUser });
+    if (res.success && res.roomCode) {
+      partnerName = res.partner; myRoomCode = res.roomCode;
+      clearInterval(pairingPollInterval);
+      enterLobby();
     }
   }
 
   async function linkPartner() {
     const input = document.getElementById('partnerCodeInput').value.trim();
-    if (input.length < 2) return alert('Please enter a valid Username or Code.');
-
+    if (!input) return alert('Please enter a username or code.');
+    
     document.getElementById('pairingStatus').innerText = "Linking...";
     const res = await apiCall('linkPartner', { username: currentUser, partnerCode: input });
+    
     if (res.success) {
-      partnerName = res.partner;
-      localStorage.setItem('pg_partner', partnerName);
-      clearInterval(pairingPollInterval);
-      enterLobby();
+      partnerName = res.partner; myRoomCode = res.roomCode;
+      clearInterval(pairingPollInterval); enterLobby();
     } else {
-      document.getElementById('pairingStatus').innerText = "";
-      alert(res.message);
+      document.getElementById('pairingStatus').innerText = ""; alert(res.message);
     }
   }
 
-  function startPairingPoll() {
-    if (pairingPollInterval) clearInterval(pairingPollInterval);
-    pairingPollInterval = setInterval(async () => {
-      const res = await apiCall('getUserStatus', { username: currentUser });
-      if (res.success && res.partner) {
-        partnerName = res.partner;
-        localStorage.setItem('pg_partner', partnerName);
-        clearInterval(pairingPollInterval);
-        alert(`You are now paired with ${partnerName}.`);
-        enterLobby();
-      }
-    }, 3000); 
-  }
-
   function enterLobby() {
-    document.getElementById('partnerNameDisplay').innerText = partnerName || 'Waiting...';
+    document.getElementById('partnerNameDisplay').innerText = partnerName;
     showPage('page-lobby');
+    
+    if (pingInterval) clearInterval(pingInterval);
+    pingInterval = setInterval(async () => {
+      const res = await apiCall('ping', { username: currentUser });
+      const dot = document.getElementById('partnerStatusDot');
+      if (res.success && res.partnerOnline) {
+        dot.classList.add('online');
+      } else {
+        dot.classList.remove('online');
+      }
+    }, 5000);
+
     startPolling();
   }
 
@@ -404,16 +302,7 @@
   }
 
   async function checkState() {
-    const userStatus = await apiCall('getUserStatus', { username: currentUser });
-    if (userStatus && userStatus.success && userStatus.partner) {
-      if (partnerName !== userStatus.partner) {
-        partnerName = userStatus.partner;
-        localStorage.setItem('pg_partner', partnerName);
-        document.getElementById('partnerNameDisplay').innerText = partnerName;
-      }
-    }
-
-    const state = await apiCall('getRoomState', { pairCode: myPairCode });
+    const state = await apiCall('getRoomState', { roomCode: myRoomCode });
     if (!state) return;
 
     if (state.status === 'Playing') {
@@ -422,13 +311,12 @@
          
          if (document.getElementById('page-lobby').classList.contains('hidden') === false) {
              currentMode = state.mode;
+             currentHost = state.host;
+             document.getElementById('gameTitle').innerText = state.mode === 'moreLikely' ? 'Who is more likely to...' : (state.mode === 'neverHaveIEver' ? 'Never Have I Ever' : 'This or That');
              showPage('page-game');
          }
          
-         if (state.round > currentRound) {
-            isAdvancing = false; 
-            syncGameQuestion(state);
-         }
+         if (state.round > currentRound) { isAdvancing = false; syncGameQuestion(state); }
       }
     } else if (state.status === 'Finished') {
       if (document.getElementById('page-summary').classList.contains('hidden') && document.getElementById('page-lobby').classList.contains('hidden') === false) {
@@ -444,9 +332,7 @@
     overlay.classList.add('active');
 
     setTimeout(() => {
-      currentRound = state.round;
-      currentQuestionText = state.question;
-      
+      currentRound = state.round; currentQuestionText = state.question;
       document.getElementById('roundBadge').innerText = `ROUND ${currentRound} OF 10`;
       document.getElementById('questionDisplay').innerText = currentQuestionText;
       document.getElementById('myVoteStatus').innerText = "";
@@ -454,14 +340,9 @@
       document.getElementById('liveVotesList').innerHTML = "";
       document.getElementById('liveVotesList').classList.add('hidden');
       
-      buildVoteButtons();
-      startQuestionTimer();
-      isAdvancing = false; 
+      buildVoteButtons(); startQuestionTimer(); isAdvancing = false; 
 
-      setTimeout(() => {
-        overlay.classList.remove('active');
-      }, 200);
-
+      setTimeout(() => { overlay.classList.remove('active'); }, 200);
     }, 1500);
   }
 
@@ -473,46 +354,34 @@
     questionTimerInterval = setInterval(() => {
       timeLeft--;
       document.getElementById('timerDisplay').innerText = `${timeLeft}s`;
-      
       if (timeLeft <= 0 && !isAdvancing) {
-        clearInterval(questionTimerInterval);
-        document.getElementById('timerDisplay').innerText = `0s`;
-        forceNextQuestion(); 
+        clearInterval(questionTimerInterval); document.getElementById('timerDisplay').innerText = `0s`; forceNextQuestion(); 
       }
     }, 1000);
   }
 
   async function startGame(mode) {
     const spice = document.getElementById('spicyToggle').checked ? 'spicy' : 'normal';
-    const res = await apiCall('startGameSession', { pairCode: myPairCode, mode: mode, spice: spice });
+    const res = await apiCall('startGameSession', { roomCode: myRoomCode, mode: mode, spice: spice, host: currentUser });
     
     if (res.success) {
-      currentMode = mode;
-      currentRound = 1;
-      currentQuestionText = res.question;
-      isAdvancing = false;
+      currentMode = mode; currentRound = 1; currentQuestionText = res.question; isAdvancing = false; currentHost = currentUser;
       
+      document.getElementById('gameTitle').innerText = mode === 'moreLikely' ? 'Who is more likely to...' : (mode === 'neverHaveIEver' ? 'Never Have I Ever' : 'This or That');
       document.getElementById('roundBadge').innerText = `ROUND 1 OF 10`;
       document.getElementById('questionDisplay').innerText = currentQuestionText;
       document.getElementById('voteButtonsContainer').innerHTML = "";
       document.getElementById('liveVotesList').classList.add('hidden');
       
-      buildVoteButtons();
-      showPage('page-game');
-      startQuestionTimer(); 
+      buildVoteButtons(); showPage('page-game'); startQuestionTimer(); 
     }
   }
 
   async function forceNextQuestion() {
     if (isAdvancing) return;
     isAdvancing = true;
-    
-    const res = await apiCall('fetchNextQuestion', { pairCode: myPairCode });
-    if (res.finished) {
-      showSummary(); 
-    } else {
-      syncGameQuestion({ question: res.question, round: res.round });
-    }
+    const res = await apiCall('fetchNextQuestion', { roomCode: myRoomCode });
+    if (res.finished) { showSummary(); } else { syncGameQuestion({ question: res.question, round: res.round }); }
   }
 
   function buildVoteButtons() {
@@ -555,36 +424,30 @@
   }
 
   async function submitVote(target) {
-    const res = await apiCall('submitVote', { pairCode: myPairCode, voter: currentUser, target: target });
+    const res = await apiCall('submitVote', { roomCode: myRoomCode, voter: currentUser, target: target });
     if (res.success) {
       document.getElementById('myVoteStatus').innerText = `You picked: ${target}`;
       document.querySelectorAll('.btn-vote').forEach(b => b.disabled = true);
       fetchVotes(); 
-    } else {
-      alert(res.message);
-    }
+    } else { alert(res.message); }
   }
 
   async function fetchVotes() {
     if (!currentQuestionText) return;
-    const votes = await apiCall('getRoundVotes', { pairCode: myPairCode, round: currentRound });
+    const votes = await apiCall('getRoundVotes', { roomCode: myRoomCode, round: currentRound });
     const list = document.getElementById('liveVotesList');
     
     if (!votes || votes.length === 0) { list.classList.add('hidden'); return; }
     
     list.classList.remove('hidden');
-    list.innerHTML = '<strong>Votes cast:</strong>';
+    list.innerHTML = '<strong>Live Votes:</strong>';
     votes.forEach(v => {
-      list.innerHTML += `<li><b>${v.voter}</b> picked ${v.target}</li>`;
+      list.innerHTML += `<li><b>${v.voter}</b> voted for <b>${v.target}</b></li>`;
     });
 
     if (votes.length >= 2 && !isAdvancing) {
-      isAdvancing = true;
-      clearInterval(questionTimerInterval); 
-      
-      setTimeout(() => {
-        forceNextQuestion();
-      }, 2000);
+      isAdvancing = true; clearInterval(questionTimerInterval); 
+      setTimeout(() => { forceNextQuestion(); }, 2000);
     }
   }
 
@@ -593,28 +456,22 @@
     showPage('page-summary');
     document.getElementById('summaryContainer').innerHTML = '<p>Loading...</p>';
     
-    const summary = await apiCall('getGameSummary', { pairCode: myPairCode });
+    const summary = await apiCall('getGameSummary', { roomCode: myRoomCode });
     const container = document.getElementById('summaryContainer');
     if (!summary || summary.length === 0) { container.innerHTML = '<p>No votes recorded.</p>'; return; }
     
     let html = '';
     summary.forEach(item => {
-      html += `<div class="summary-item">`;
-      html += `<div class="summary-q">Q${item.round}: ${item.question}</div>`;
-      html += `<div class="summary-votes">`;
-      item.votes.forEach(v => {
-         html += `${v.voter} picked ${v.target}<br>`;
-      });
+      html += `<div class="summary-item"><div class="summary-q">Q${item.round}: ${item.question}</div><div class="summary-votes">`;
+      item.votes.forEach(v => { html += `${v.voter} voted for ${v.target}<br>`; });
       html += `</div></div>`;
     });
     container.innerHTML = html;
   }
 
-  function backToLobby() {
-    showPage('page-lobby');
-    startPolling();
-  }
+  function backToLobby() { showPage('page-lobby'); startPolling(); }
 
+  // --- CHAT LOGIC ---
   function openChat() {
     lastPageBeforeChat = document.getElementById('page-game').classList.contains('hidden') ? 'page-lobby' : 'page-game';
     showPage('page-chat');
@@ -627,15 +484,17 @@
   async function fetchChat() {
     if (isFetchingChat) return; 
     isFetchingChat = true;
-    const messages = await apiCall('getMessages', { pairCode: myPairCode });
     
-    if (Array.isArray(messages)) {
+    const res = await apiCall('getMessages', { roomCode: myRoomCode });
+    const userStatus = await apiCall('getUserStatus', { username: currentUser });
+    
+    if (Array.isArray(res)) {
       const box = document.getElementById('chatBox');
       const isScrolledToBottom = box.scrollHeight - box.clientHeight <= box.scrollTop + 50;
-      if (box.dataset.count != messages.length) {
-        box.dataset.count = messages.length;
-        box.innerHTML = messages.length === 0 ? '<div style="color:#666;text-align:center;margin-top:50px;">No messages yet.</div>' : '';
-        messages.forEach(m => {
+      if (box.dataset.count != res.length) {
+        box.dataset.count = res.length;
+        box.innerHTML = res.length === 0 ? '<div style="color:#666;text-align:center;margin-top:50px;">No messages yet.</div>' : '';
+        res.forEach(m => {
           const div = document.createElement('div');
           div.className = 'msg ' + (m.player === currentUser ? 'msg-me' : 'msg-other');
           div.innerHTML = `<span class="msg-meta">${m.player} • ${m.time}</span>${m.text}`;
@@ -644,7 +503,24 @@
         if (isScrolledToBottom) box.scrollTop = box.scrollHeight;
       }
     }
+
+    const typingEl = document.getElementById('typingIndicator');
+    if (userStatus.success && userStatus.partnerTyping) {
+      typingEl.classList.remove('hidden');
+      document.getElementById('chatBox').scrollTop = document.getElementById('chatBox').scrollHeight;
+    } else {
+      typingEl.classList.add('hidden');
+    }
+
     isFetchingChat = false;
+  }
+
+  function handleTyping() {
+    apiCall('setTyping', { username: currentUser, isTyping: true });
+    if (typingTimeout) clearTimeout(typingTimeout);
+    typingTimeout = setTimeout(() => {
+      apiCall('setTyping', { username: currentUser, isTyping: false });
+    }, 3000);
   }
 
   async function sendChat() {
@@ -661,18 +537,17 @@
     box.dataset.count = "";
     input.value = ''; 
     
-    await apiCall('sendMessage', { pairCode: myPairCode, player: currentUser, text: text });
+    apiCall('setTyping', { username: currentUser, isTyping: false });
+    await apiCall('sendMessage', { roomCode: myRoomCode, player: currentUser, text: text });
     fetchChat();
   }
 
   function handleChatEnter(e) { if (e.key === 'Enter') sendChat(); }
 
   function logout() {
-    localStorage.removeItem('pg_user');
-    localStorage.removeItem('pg_pair');
-    localStorage.removeItem('pg_partner');
+    localStorage.removeItem('pg_user'); localStorage.removeItem('pg_pass');
     window.location.reload();
   }
 </script>
 </body>
-  </html>
+</html>
