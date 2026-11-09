@@ -31,7 +31,6 @@
     .btn:disabled { opacity: 0.3; cursor: not-allowed; }
     .btn-primary { background: var(--yellow); color: #000; border-color: var(--yellow); }
     .btn-primary:hover:not(:disabled) { background: #e6c200; }
-    .btn-danger { border-color: var(--red); color: var(--red); }
     
     .btn-vote { background: var(--card); border: 1px solid var(--border); margin: 6px; width: calc(50% - 12px); display: inline-block; padding: 20px 10px; font-size: 16px; font-weight: 600; color: var(--text); cursor: pointer; border-radius: 6px; transition: 0.2s; touch-action: pan-y; }
     .btn-vote:active { background: var(--border); transform: scale(0.95); }
@@ -50,7 +49,6 @@
     .question { font-size: 1.4rem; margin: 20px 0; font-weight: 600; line-height: 1.4; min-height: 60px;}
     .input { padding: 16px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg); color: var(--text); width: 100%; font-size: 16px; margin-bottom: 15px; text-align: center; }
     .input:focus { outline: none; border-color: var(--yellow); }
-    select.input { -webkit-appearance: none; text-align: center; }
     .hidden { display: none !important; }
     
     .status-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #555; margin-right: 8px; transition: 0.3s; }
@@ -126,12 +124,11 @@
     </p>
     
     <div id="hostControls">
-      <div style="margin: 20px 0; font-size: 14px; display:flex; justify-content:center; gap:20px;">
-        <label style="cursor: pointer; display: flex; align-items: center; gap: 10px;">
+      <div style="margin: 20px 0; font-size: 14px;">
+        <label style="cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px;">
           <input type="checkbox" id="spicyToggle" style="transform: scale(1.2); accent-color: var(--yellow);"> 
           <span style="color: var(--yellow); font-weight: 600;">Spicy Mode</span>
         </label>
-        <button class="btn" style="width:auto; padding: 8px 15px; margin:0; font-size:12px;" onclick="window.openCustomQs()">+ Add Spicy Q</button>
       </div>
       <button class="btn" onclick="window.startGame('moreLikely')">Who is more likely to...</button>
       <button class="btn" onclick="window.startGame('neverHaveIEver')">Never Have I Ever</button>
@@ -153,23 +150,6 @@
     <a href="#" onclick="window.leavePartner()" class="settings-link">Change Partner</a>
     <br><br>
     <a href="#" onclick="window.logout()" class="logout-link" style="color: var(--muted); text-decoration: none; font-size: 13px;">Log out</a>
-  </div>
-
-  <!-- ADD SPICY QUESTION MODAL -->
-  <div id="page-customQs" class="card hidden">
-    <h2>Add Spicy Question</h2>
-    <p style="color:var(--muted); font-size:14px;">This will send directly to your Google Sheet.</p>
-    
-    <select id="spicyModeSelect" class="input">
-      <option value="moreLikely">Who is more likely to...</option>
-      <option value="neverHaveIEver">Never Have I Ever...</option>
-      <option value="thisOrThat">This or That...</option>
-    </select>
-    
-    <input type="text" id="customQInput" class="input" placeholder="Type your spicy question..." style="text-transform:none;" />
-    <button class="btn btn-primary" onclick="window.addSpicyToSheet()">Add to Google Sheet</button>
-    
-    <button class="btn" onclick="window.closeCustomQs()" style="margin-top:20px;">Back to Lobby</button>
   </div>
 
   <div id="page-game" class="card hidden">
@@ -194,14 +174,9 @@
     </div>
 
     <br>
-    <div style="display:flex; gap:10px;">
-      <button class="btn" onclick="window.openChat()" style="margin-bottom: 10px; flex:1;">
-        💬 Chat <span id="gameUnreadDot" class="unread-dot"></span>
-      </button>
-      <button class="btn btn-primary" id="skipBtn" onclick="window.skipQuestion()" style="margin-bottom: 10px; flex:1; background:transparent; border-color:var(--yellow); color:var(--yellow);">
-        Skip (3)
-      </button>
-    </div>
+    <button class="btn" onclick="window.openChat()" style="margin-bottom: 10px;">
+      💬 Chat <span id="gameUnreadDot" class="unread-dot"></span>
+    </button>
     <button class="btn" onclick="window.leaveGame()" style="background: transparent; border-color: #555; color: #aaa;">Leave Game</button>
   </div>
 
@@ -234,7 +209,7 @@
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-  import { getFirestore, doc, setDoc, getDoc, updateDoc, onSnapshot, collection, addDoc, query, orderBy, serverTimestamp, getDocs, where, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+  import { getFirestore, doc, setDoc, getDoc, updateDoc, onSnapshot, collection, addDoc, query, orderBy, serverTimestamp, getDocs, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyAQg9F4Sn3GsZOghWxSJqwbLMsJetvo03w",
@@ -248,7 +223,6 @@
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
   
-  // YOUR GOOGLE APPS SCRIPT URL
   const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbx9DwCUGQtAfTHcPGj62BIyvUhIz-NH4jpx6_jZV8e_DlqRw4J0jdJsB9nQHPXIUgVN4g/exec";
 
   let currentUser = '', roomId = '', partnerName = '', isHost = false;
@@ -256,7 +230,6 @@
   let currentQuestions = [];
   let localVotes = [];
   let matchStreak = 0;
-  let skipsLeft = 3;
   
   let questionTimerInterval, timeLeft = 20;
   let lastPageBeforeChat = 'page-lobby';
@@ -281,7 +254,7 @@
   };
 
   function showPage(pageId) {
-    ['page-auth', 'page-pairing', 'page-lobby', 'page-game', 'page-summary', 'page-chat', 'page-stats', 'page-customQs'].forEach(id => {
+    ['page-auth', 'page-pairing', 'page-lobby', 'page-game', 'page-summary', 'page-chat', 'page-stats'].forEach(id => {
       document.getElementById(id).classList.add('hidden');
     });
     document.getElementById(pageId).classList.remove('hidden');
@@ -355,35 +328,6 @@
     }, 10000);
   }
 
-  function openCustomQs() { vibrate(); showPage('page-customQs'); }
-  function closeCustomQs() { vibrate(); showPage('page-lobby'); }
-  
-  async function addSpicyToSheet() {
-    vibrate();
-    const mode = document.getElementById('spicyModeSelect').value;
-    const input = document.getElementById('customQInput');
-    if (!input.value.trim()) return alert('Please type a question first.');
-    
-    document.getElementById('customQInput').placeholder = "Adding...";
-    
-    try {
-      const res = await fetch(WEB_APP_URL, {
-        method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify({ action: 'addSpicyQuestion', mode: mode, question: input.value.trim() })
-      });
-      const data = await res.json();
-      if (data.success) {
-        alert("Successfully added to Google Sheets!");
-        input.value = '';
-      } else {
-        alert("Failed to add. Check your Apps Script deployment.");
-      }
-    } catch(e) {
-      alert("Network error. Check internet.");
-    }
-    document.getElementById('customQInput').placeholder = "Type your spicy question...";
-  }
-
   function openAvatarPicker() {
     vibrate();
     let currentAvatar = prompt("Type an emoji for your avatar (e.g. 🐱, 🦊):", "👤");
@@ -448,7 +392,6 @@
     document.getElementById('guestControls').classList.toggle('hidden', isHost);
     currentRound = 0; 
     matchStreak = 0;
-    skipsLeft = 3;
     showPage('page-lobby');
     
     if (wakeLock) { wakeLock.release(); wakeLock = null; }
@@ -568,16 +511,14 @@
       if (data && data.questions && data.questions.length > 0) questions = data.questions;
     } catch(e) { console.log("Fallback to built-in questions"); }
 
-    if (questions.length === 0) {
-      questions = ["Who is most likely to forget their own birthday?", "Never have I ever lied about my age.", "This or That: Coffee or Tea?"];
+    if (questions.length < 10) {
+        // If we failed to get enough, pad with fallbacks
+        const fallbacks = ["Who is most likely to forget their own birthday?", "Never have I ever lied about my age.", "This or That: Coffee or Tea?", "Who is most likely to cry at a sad movie?", "Never have I ever eaten food off the floor."];
+        while(questions.length < 10) questions = questions.concat(fallbacks);
     }
     
     questions = questions.sort(() => 0.5 - Math.random());
     currentQuestions = questions.slice(0, 10);
-    while(currentQuestions.length < 10) currentQuestions.push("This or That: Win or Lose?");
-    
-    skipsLeft = 3;
-    updateSkipBtn();
     
     await setDoc(doc(db, "rooms", roomId), {
       gameState: { mode: mode, round: 1, question: currentQuestions[0], status: 'playing', host: currentUser }
@@ -589,27 +530,13 @@
     loadQuestionUI();
   }
 
-  function skipQuestion() {
-    vibrate();
-    if (skipsLeft <= 0) return alert("No skips left!");
-    skipsLeft--;
-    updateSkipBtn();
-    
-    const nextQ = currentQuestions[currentRound] || "This or That: Skip or Stay?";
-    updateDoc(doc(db, "rooms", roomId), { "gameState.question": nextQ, "gameState.round": currentRound + 1 });
-  }
-
-  function updateSkipBtn() {
-    document.getElementById('skipBtn').innerText = `Skip (${skipsLeft})`;
-    if (skipsLeft <= 0) document.getElementById('skipBtn').style.opacity = '0.3';
-  }
-
   function setupVotesListener() {
     if (unsubVotes) unsubVotes();
     unsubVotes = onSnapshot(collection(db, "rooms", roomId, "votes"), (snapshot) => {
       localVotes = [];
       snapshot.forEach(doc => { if(doc.data().round === currentRound) localVotes.push(doc.data()); });
       
+      // Strictly wait for exactly 2 votes before advancing
       if (localVotes.length >= 2) {
         showRoundResult(localVotes);
         if (isHost) checkIfNextQuestionReady();
@@ -654,11 +581,12 @@
     if (window.isAdvancing) return;
     window.isAdvancing = true;
 
+    // Wait 4 seconds so they can read the result
     setTimeout(async () => {
       if (currentRound >= 10) {
         await updateDoc(doc(db, "rooms", roomId), { "gameState.status": "finished" });
       } else {
-        const nextQ = currentQuestions[currentRound] || "This or That: Fallback?";
+        const nextQ = currentQuestions[currentRound] || "This or That: Error loading question?";
         await updateDoc(doc(db, "rooms", roomId), { "gameState.round": currentRound + 1, "gameState.question": nextQ });
       }
       window.isAdvancing = false;
@@ -697,7 +625,7 @@
       timeLeft--;
       timerEl.innerText = `${timeLeft}s`;
       if (timeLeft <= 5) timerEl.classList.add('timer-warning');
-      if (timeLeft <= 0) clearInterval(questionTimerInterval);
+      if (timeLeft <= 0) clearInterval(questionTimerInterval); // Stops at 0 but doesn't auto-advance
     }, 1000);
   }
 
@@ -760,7 +688,7 @@
     if (direction === 'left') btns[0].classList.add('swipe-left');
     if (direction === 'right' && btns[1]) btns[1].classList.add('swipe-right');
     
-    document.getElementById('myVoteStatus').innerText = `You picked: ${target}`;
+    document.getElementById('myVoteStatus').innerText = `You picked: ${target}. Waiting for partner...`;
     document.getElementById('swipeHint').innerText = "Waiting for partner...";
     
     btns.forEach(b => b.disabled = true);
@@ -894,10 +822,9 @@
   window.toggleAuth = toggleAuth; window.handleAuth = handleAuth; window.linkPartner = linkPartner; window.leavePartner = leavePartner;
   window.startGame = startGame; window.openChat = openChat; window.closeChat = closeChat; window.sendChat = sendChat;
   window.handleTyping = handleTyping; window.handleChatEnter = handleChatEnter; window.backToLobby = backToLobby;
-  window.leaveGame = leaveGame; window.logout = logout; window.skipQuestion = skipQuestion; window.sendReaction = sendReaction;
+  window.leaveGame = leaveGame; window.logout = logout; window.sendReaction = sendReaction;
   window.openAvatarPicker = openAvatarPicker; window.showStats = showStats; window.closeStats = closeStats;
-  window.openCustomQs = openCustomQs; window.closeCustomQs = closeCustomQs; window.addSpicyToSheet = addSpicyToSheet;
 
 </script>
 </body>
-</html>
+        </html>
