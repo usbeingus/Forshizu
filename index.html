@@ -2,14 +2,13 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Shizu</title>
   <style>
-    :root { --bg: #050505; --card: #111111; --text: #ffffff; --muted: #888888; --yellow: #FFD700; --border: #333333; --green: #4CAF50; --red: #f44336; }
-    * { box-sizing: border-box; }
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; text-align: center; padding: 20px; background: var(--bg); color: var(--text); margin: 0; -webkit-tap-highlight-color: transparent; }
+    :root { --bg: #050505; --card: #111111; --text: #ffffff; --muted: #888888; --yellow: #FFD700; --border: #333333; --green: #4CAF50; --red: #f44336; --blue: #2196F3; }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; text-align: center; padding: 20px; background: var(--bg); color: var(--text); margin: 0; overflow-x: hidden; }
     
-    /* Splash & Animation */
     #splash-screen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: var(--bg); display: flex; justify-content: center; align-items: center; z-index: 9999; transition: opacity 0.5s; }
     .splash-logo { font-size: 3.5rem; font-weight: 800; color: var(--yellow); animation: fadeIn 1s forwards; opacity: 0; }
     .fade-out { opacity: 0 !important; pointer-events: none; }
@@ -21,62 +20,70 @@
     #transition-overlay.active img { animation: spinAndGrow 1.2s cubic-bezier(0.25, 1, 0.5, 1) forwards; }
     @keyframes spinAndGrow { 0% { transform: scale(0.6) rotate(0deg); opacity: 0; } 20% { opacity: 1; } 100% { transform: scale(1.5) rotate(360deg); opacity: 1; } }
 
-    /* Main UI */
     h1, h2, h3 { font-weight: 700; margin-top: 0; }
     h1 { color: var(--yellow); font-size: 2.2rem; margin-bottom: 20px; }
     .container { max-width: 500px; margin: 0 auto; }
     .card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 30px 20px; margin: 20px auto; position: relative; }
     
-    .btn { background: transparent; color: var(--text); border: 1px solid var(--border); padding: 16px; margin: 8px 0; border-radius: 6px; font-size: 16px; font-weight: 600; cursor: pointer; width: 100%; transition: 0.15s; position: relative; }
+    .btn { background: transparent; color: var(--text); border: 1px solid var(--border); padding: 16px; margin: 8px 0; border-radius: 6px; font-size: 16px; font-weight: 600; cursor: pointer; width: 100%; transition: 0.15s; position: relative; display: flex; justify-content: center; align-items: center; gap: 10px;}
+    .btn:active { transform: scale(0.97); }
     .btn:hover:not(:disabled) { border-color: var(--yellow); color: var(--yellow); }
     .btn:disabled { opacity: 0.3; cursor: not-allowed; }
     .btn-primary { background: var(--yellow); color: #000; border-color: var(--yellow); }
     .btn-primary:hover:not(:disabled) { background: #e6c200; }
+    .btn-danger { border-color: var(--red); color: var(--red); }
     
-    .btn-vote { background: var(--card); border: 1px solid var(--border); margin: 6px; width: calc(50% - 12px); display: inline-block; padding: 16px 10px; font-size: 15px; font-weight: 600; color: var(--text); cursor: pointer; border-radius: 6px; }
-    .btn-vote:hover { border-color: var(--yellow); }
-    .btn-vote-full { width: 100%; display: block; margin: 6px 0; }
+    .btn-vote { background: var(--card); border: 1px solid var(--border); margin: 6px; width: calc(50% - 12px); display: inline-block; padding: 20px 10px; font-size: 16px; font-weight: 600; color: var(--text); cursor: pointer; border-radius: 6px; transition: 0.2s; touch-action: pan-y; }
+    .btn-vote:active { background: var(--border); transform: scale(0.95); }
+    .btn-vote-full { width: 100%; display: flex; justify-content: center; }
 
-    .question { font-size: 1.4rem; margin: 20px 0; font-weight: 600; line-height: 1.4; }
+    .swipe-left { transform: translateX(-100px) rotate(-10deg); opacity: 0; transition: 0.3s; }
+    .swipe-right { transform: translateX(100px) rotate(10deg); opacity: 0; transition: 0.3s; }
+
+    .timer-badge { border: 1px solid var(--yellow); color: var(--yellow); padding: 6px 12px; border-radius: 4px; font-size: 14px; font-weight: 800; transition: 0.3s; }
+    .timer-warning { background: var(--red); border-color: var(--red); color: white; animation: pulseRed 1s infinite; }
+    @keyframes pulseRed { 0% { transform: scale(1); } 50% { transform: scale(1.1); box-shadow: 0 0 15px var(--red); } 100% { transform: scale(1); } }
+
+    .badge-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .round-badge { border: 1px solid var(--border); padding: 6px 12px; border-radius: 4px; font-size: 12px; font-weight: 600; color: var(--muted); }
+
+    .question { font-size: 1.4rem; margin: 20px 0; font-weight: 600; line-height: 1.4; min-height: 60px;}
     .input { padding: 16px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg); color: var(--text); width: 100%; font-size: 16px; margin-bottom: 15px; text-align: center; }
     .input:focus { outline: none; border-color: var(--yellow); }
-    
+    select.input { -webkit-appearance: none; text-align: center; }
     .hidden { display: none !important; }
     
-    /* Status & Dots */
     .status-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #555; margin-right: 8px; transition: 0.3s; }
     .status-dot.online { background: var(--green); box-shadow: 0 0 8px var(--green); }
     .unread-dot { position: absolute; top: -5px; right: -5px; width: 12px; height: 12px; background: var(--red); border-radius: 50%; display: none; border: 2px solid var(--bg); }
+    .avatar { font-size: 2rem; margin-bottom: 10px; display: inline-block; }
 
-    .room-badge { display: inline-block; border: 1px solid var(--yellow); color: var(--yellow); padding: 12px 24px; border-radius: 6px; font-size: 24px; font-weight: 700; letter-spacing: 4px; margin: 15px 0; }
-    
-    .badge-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-    .round-badge { border: 1px solid var(--border); padding: 6px 12px; border-radius: 4px; font-size: 12px; font-weight: 600; color: var(--muted); }
-    .timer-badge { border: 1px solid var(--yellow); color: var(--yellow); padding: 6px 12px; border-radius: 4px; font-size: 12px; font-weight: 600; }
-
-    /* Result Card (Shows after both vote) */
     .result-card { background: var(--bg); border: 2px solid var(--yellow); border-radius: 8px; padding: 20px; margin-top: 20px; text-align: left; animation: fadeIn 0.3s ease-in; }
-    .result-row { margin-bottom: 10px; font-size: 16px; }
-    .result-match { font-size: 20px; font-weight: 800; color: var(--yellow); text-align: center; margin-top: 15px; border-top: 1px solid var(--border); padding-top: 15px; }
-    
+    .result-match { font-size: 22px; font-weight: 800; color: var(--yellow); text-align: center; margin-top: 15px; border-top: 1px solid var(--border); padding-top: 15px; }
+    .streak-glow { box-shadow: 0 0 20px rgba(255, 215, 0, 0.6); border-color: #FFF; }
+    .broken-heart { color: var(--muted); border-color: var(--muted); box-shadow: none;}
+
     .summary-item { background: var(--bg); margin-bottom: 12px; padding: 15px; border-radius: 6px; text-align: left; border-left: 2px solid var(--yellow); }
     .summary-q { font-weight: 600; color: var(--text); margin-bottom: 8px; font-size: 14px;}
     .summary-votes { color: var(--muted); font-size: 14px; line-height: 1.5; }
     .summary-match { color: var(--yellow); font-weight: bold; margin-top: 5px; }
     
-    /* Chat */
     .chat-box { height: 350px; overflow-y: auto; background: var(--bg); border-radius: 6px; padding: 15px; margin-bottom: 15px; text-align: left; display: flex; flex-direction: column; border: 1px solid var(--border); }
     .msg { margin-bottom: 12px; padding: 10px 14px; border-radius: 6px; max-width: 85%; font-size: 14px; line-height: 1.4; position: relative; }
     .msg-me { background: var(--border); align-self: flex-end; border-bottom-right-radius: 2px; }
     .msg-other { background: #1a1a1a; border: 1px solid var(--border); align-self: flex-start; border-bottom-left-radius: 2px; }
     .msg-meta { font-size: 11px; color: var(--muted); margin-bottom: 4px; display: block; }
-    .msg-status { font-size: 11px; color: var(--muted); align-self: flex-end; margin-top: -5px; margin-bottom: 10px; margin-right: 5px; font-style: italic;}
     .chat-input-container { display: flex; gap: 10px; }
     .chat-input-container input { margin-bottom: 0; text-align: left; }
     .chat-input-container button { width: auto; padding: 16px 20px; margin: 0; }
-    
+
+    .reaction-bar { display: flex; justify-content: center; gap: 15px; margin-top: 15px; }
+    .reaction-btn { background: var(--bg); border: 1px solid var(--border); border-radius: 50%; width: 50px; height: 50px; font-size: 24px; display: flex; justify-content: center; align-items: center; cursor: pointer; transition: 0.2s; }
+    .reaction-btn:active { transform: scale(1.2); }
+    .floating-emoji { position: fixed; font-size: 3rem; pointer-events: none; animation: floatUp 2s forwards; z-index: 1000; }
+    @keyframes floatUp { 0% { transform: translateY(0) scale(0.5); opacity: 0; } 20% { opacity: 1; transform: translateY(-50px) scale(1.2); } 100% { transform: translateY(-200px) scale(1); opacity: 0; } }
+
     .settings-link { color: var(--muted); text-decoration: none; font-size: 13px; margin-top: 20px; display: inline-block; border-bottom: 1px dashed var(--muted); padding-bottom: 2px; }
-    .settings-link:hover { color: var(--text); border-color: var(--text); }
   </style>
 </head>
 <body>
@@ -87,7 +94,6 @@
 <div class="container">
   <h1>Shizu</h1>
 
-  <!-- AUTH PAGE -->
   <div id="page-auth" class="card hidden">
     <h2 id="authTitle">Login</h2>
     <input type="text" id="username" class="input" placeholder="Username" style="text-transform:none;" />
@@ -99,11 +105,10 @@
     </p>
   </div>
 
-  <!-- PAIRING PAGE -->
   <div id="page-pairing" class="card hidden">
     <h2>Pair</h2>
     <p style="color: var(--muted);">Send this 6-digit code to your partner:</p>
-    <div id="myPairCode" class="room-badge">------</div>
+    <div id="myPairCode" class="room-badge" style="display:inline-block; border:1px solid var(--yellow); color:var(--yellow); padding:12px 24px; border-radius:6px; font-size:24px; font-weight:700; letter-spacing:4px; margin:15px 0;">------</div>
     <hr style="border-color: var(--border); margin: 30px 0;">
     <p style="color: var(--muted);">Or enter their Username:</p>
     <input type="text" id="partnerCodeInput" class="input" placeholder="USERNAME OR CODE" style="text-transform:none;" />
@@ -111,9 +116,9 @@
     <p id="pairingStatus" style="color: var(--yellow); margin-top: 15px; font-size: 14px;"></p>
   </div>
 
-  <!-- LOBBY PAGE -->
   <div id="page-lobby" class="card hidden">
     <h2>Connected</h2>
+    <div class="avatar" id="partnerAvatarDisplay">👤</div>
     <p style="color: var(--muted); margin-bottom: 5px;">Playing with:</p>
     <p style="font-size: 1.5rem; font-weight: 700; margin-top: 0; margin-bottom: 30px; color: var(--yellow);">
       <span id="partnerStatusDot" class="status-dot"></span>
@@ -121,11 +126,12 @@
     </p>
     
     <div id="hostControls">
-      <div style="margin: 20px 0; font-size: 14px;">
-        <label style="cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px;">
+      <div style="margin: 20px 0; font-size: 14px; display:flex; justify-content:center; gap:20px;">
+        <label style="cursor: pointer; display: flex; align-items: center; gap: 10px;">
           <input type="checkbox" id="spicyToggle" style="transform: scale(1.2); accent-color: var(--yellow);"> 
           <span style="color: var(--yellow); font-weight: 600;">Spicy Mode</span>
         </label>
+        <button class="btn" style="width:auto; padding: 8px 15px; margin:0; font-size:12px;" onclick="window.openCustomQs()">+ Add Spicy Q</button>
       </div>
       <button class="btn" onclick="window.startGame('moreLikely')">Who is more likely to...</button>
       <button class="btn" onclick="window.startGame('neverHaveIEver')">Never Have I Ever</button>
@@ -137,16 +143,35 @@
     </div>
 
     <button class="btn" onclick="window.openChat()" style="margin-top: 20px;">
-      Open Chat <span id="lobbyUnreadDot" class="unread-dot"></span>
+      💬 Open Chat <span id="lobbyUnreadDot" class="unread-dot"></span>
     </button>
+    <button class="btn" onclick="window.showStats()" style="background: var(--bg); border-color: var(--border); color: var(--text);">📊 Our Stats</button>
     
     <br>
-    <a href="#" onclick="window.leavePartner()" class="settings-link">Settings / Change Partner</a>
+    <a href="#" onclick="window.openAvatarPicker()" class="settings-link">Change Avatar</a>
+    <span style="color: var(--border); margin: 0 10px;">|</span>
+    <a href="#" onclick="window.leavePartner()" class="settings-link">Change Partner</a>
     <br><br>
     <a href="#" onclick="window.logout()" class="logout-link" style="color: var(--muted); text-decoration: none; font-size: 13px;">Log out</a>
   </div>
 
-  <!-- GAME PAGE -->
+  <!-- ADD SPICY QUESTION MODAL -->
+  <div id="page-customQs" class="card hidden">
+    <h2>Add Spicy Question</h2>
+    <p style="color:var(--muted); font-size:14px;">This will send directly to your Google Sheet.</p>
+    
+    <select id="spicyModeSelect" class="input">
+      <option value="moreLikely">Who is more likely to...</option>
+      <option value="neverHaveIEver">Never Have I Ever...</option>
+      <option value="thisOrThat">This or That...</option>
+    </select>
+    
+    <input type="text" id="customQInput" class="input" placeholder="Type your spicy question..." style="text-transform:none;" />
+    <button class="btn btn-primary" onclick="window.addSpicyToSheet()">Add to Google Sheet</button>
+    
+    <button class="btn" onclick="window.closeCustomQs()" style="margin-top:20px;">Back to Lobby</button>
+  </div>
+
   <div id="page-game" class="card hidden">
     <div class="badge-container">
       <div id="roundBadge" class="round-badge">ROUND 1 OF 10</div>
@@ -155,32 +180,49 @@
     <div id="gameTitle" style="color: var(--muted); font-size: 14px; margin-bottom: 10px; text-transform: uppercase;">Game Mode</div>
     <div id="questionDisplay" class="question">Loading...</div>
     
-    <div id="voteButtonsContainer" style="margin-top: 20px;"></div>
-    
-    <!-- Container for showing the result (who picked what) -->
+    <div id="voteButtonsContainer" style="margin-top: 20px; position:relative;">
+      <div style="font-size:12px; color:var(--muted); margin-bottom:10px;" id="swipeHint">Tap or Swipe to vote</div>
+    </div>
+
     <div id="resultContainer" class="hidden"></div>
-    
     <div id="myVoteStatus" style="margin-top: 20px; font-size: 14px; color: var(--yellow); font-weight: 600;"></div>
 
+    <div class="reaction-bar">
+      <div class="reaction-btn" onclick="window.sendReaction('❤️')">❤️</div>
+      <div class="reaction-btn" onclick="window.sendReaction('😂')">😂</div>
+      <div class="reaction-btn" onclick="window.sendReaction('😡')">😡</div>
+    </div>
+
     <br>
-    <button class="btn" onclick="window.openChat()" style="margin-bottom: 10px;">
-      Chat <span id="gameUnreadDot" class="unread-dot"></span>
-    </button>
+    <div style="display:flex; gap:10px;">
+      <button class="btn" onclick="window.openChat()" style="margin-bottom: 10px; flex:1;">
+        💬 Chat <span id="gameUnreadDot" class="unread-dot"></span>
+      </button>
+      <button class="btn btn-primary" id="skipBtn" onclick="window.skipQuestion()" style="margin-bottom: 10px; flex:1; background:transparent; border-color:var(--yellow); color:var(--yellow);">
+        Skip (3)
+      </button>
+    </div>
     <button class="btn" onclick="window.leaveGame()" style="background: transparent; border-color: #555; color: #aaa;">Leave Game</button>
   </div>
 
-  <!-- SUMMARY PAGE -->
   <div id="page-summary" class="card hidden">
     <h2>Results</h2>
     <div id="summaryContainer" style="max-height: 400px; overflow-y: auto; margin-top: 20px;"></div>
     <button class="btn" onclick="window.backToLobby()" style="margin-top: 20px;">Back to Lobby</button>
   </div>
 
-  <!-- CHAT PAGE -->
+  <div id="page-stats" class="card hidden">
+    <h2>Our Stats</h2>
+    <div id="statsContainer" style="text-align:left; font-size:16px; line-height:2;">
+      Loading...
+    </div>
+    <button class="btn" onclick="window.closeStats()" style="margin-top:20px;">Back to Lobby</button>
+  </div>
+
   <div id="page-chat" class="card hidden">
     <h2>Chat</h2>
     <div id="chatBox" class="chat-box"></div>
-    <div id="typingIndicator" class="msg-status hidden">Partner is typing...</div>
+    <div id="typingIndicator" class="msg-status hidden" style="font-size:11px; color:var(--muted); text-align:left; margin-bottom:5px; font-style:italic;">Partner is typing...</div>
     <div class="chat-input-container">
       <input type="text" id="chatInput" class="input" placeholder="Type a message..." oninput="window.handleTyping()" onkeypress="window.handleChatEnter(event)">
       <button class="btn btn-primary" onclick="window.sendChat()">Send</button>
@@ -190,10 +232,9 @@
   </div>
 </div>
 
-<!-- FIREBASE SDK & APP LOGIC -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-  import { getFirestore, doc, setDoc, getDoc, updateDoc, onSnapshot, collection, addDoc, query, orderBy, serverTimestamp, getDocs, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+  import { getFirestore, doc, setDoc, getDoc, updateDoc, onSnapshot, collection, addDoc, query, orderBy, serverTimestamp, getDocs, where, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyAQg9F4Sn3GsZOghWxSJqwbLMsJetvo03w",
@@ -206,21 +247,26 @@
 
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
-
+  
+  // YOUR GOOGLE APPS SCRIPT URL
   const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbx9DwCUGQtAfTHcPGj62BIyvUhIz-NH4jpx6_jZV8e_DlqRw4J0jdJsB9nQHPXIUgVN4g/exec";
 
-  // --- STATE VARIABLES ---
   let currentUser = '', roomId = '', partnerName = '', isHost = false;
   let currentMode = 'moreLikely', currentQuestionText = '', currentRound = 0;
   let currentQuestions = [];
   let localVotes = [];
+  let matchStreak = 0;
+  let skipsLeft = 3;
+  
   let questionTimerInterval, timeLeft = 20;
   let lastPageBeforeChat = 'page-lobby';
   let typingTimeout, heartbeatInterval;
   let isSignupMode = false;
-  let unsubRoom, unsubVotes, unsubChat, unsubTyping, unsubPartner, unsubMyStatus;
+  let unsubRoom, unsubVotes, unsubChat, unsubTyping, unsubPartner, unsubMyStatus, unsubReaction;
 
-  // --- INIT ---
+  let touchStartX = 0, touchEndX = 0;
+  let wakeLock = null;
+
   window.onload = () => {
     setTimeout(() => {
       document.getElementById('splash-screen').classList.add('fade-out');
@@ -228,23 +274,21 @@
         document.getElementById('splash-screen').style.display = 'none';
         const savedUser = localStorage.getItem('shizu_user');
         const savedPass = localStorage.getItem('shizu_pass');
-        if (savedUser && savedPass) {
-          checkLogin(savedUser, savedPass);
-        } else {
-          showPage('page-auth');
-        }
+        if (savedUser && savedPass) checkLogin(savedUser, savedPass);
+        else showPage('page-auth');
       }, 500);
     }, 1500);
   };
 
   function showPage(pageId) {
-    ['page-auth', 'page-pairing', 'page-lobby', 'page-game', 'page-summary', 'page-chat'].forEach(id => {
+    ['page-auth', 'page-pairing', 'page-lobby', 'page-game', 'page-summary', 'page-chat', 'page-stats', 'page-customQs'].forEach(id => {
       document.getElementById(id).classList.add('hidden');
     });
     document.getElementById(pageId).classList.remove('hidden');
   }
 
-  // --- AUTH LOGIC ---
+  function vibrate() { if (navigator.vibrate) navigator.vibrate(50); }
+
   function toggleAuth(e) {
     if(e) e.preventDefault(); 
     isSignupMode = !isSignupMode;
@@ -255,6 +299,7 @@
   }
 
   async function handleAuth() {
+    vibrate();
     const user = document.getElementById('username').value.trim();
     const pass = document.getElementById('password').value.trim();
     if (!user || !pass) return alert('Please fill both fields.');
@@ -265,11 +310,10 @@
       if (userSnap.exists()) return alert('Username taken.');
       
       const pairCode = Math.floor(100000 + Math.random() * 900000).toString();
-      await setDoc(userRef, { displayName: user, password: pass, pairCode: pairCode, partner: '', roomId: '', lastSeen: Date.now(), unread: false });
+      await setDoc(userRef, { displayName: user, password: pass, pairCode: pairCode, partner: '', roomId: '', lastSeen: Date.now(), unread: false, avatar: '👤' });
       
       localStorage.setItem('shizu_user', user);
       localStorage.setItem('shizu_pass', pass);
-      
       currentUser = user;
       document.getElementById('myPairCode').innerText = pairCode;
       showPage('page-pairing');
@@ -286,10 +330,8 @@
     if (userSnap.exists() && userSnap.data().password === pass) {
       localStorage.setItem('shizu_user', user);
       localStorage.setItem('shizu_pass', pass);
-      
       currentUser = user;
       const data = userSnap.data();
-      
       await updateDoc(userRef, { lastSeen: Date.now() });
       startHeartbeat();
 
@@ -306,21 +348,55 @@
     }
   }
 
-  // --- HEARTBEAT (Presence) ---
   function startHeartbeat() {
     if (heartbeatInterval) clearInterval(heartbeatInterval);
     heartbeatInterval = setInterval(() => {
-      if (currentUser) {
-        updateDoc(doc(db, "users", currentUser.toLowerCase()), { lastSeen: Date.now() });
-      }
-    }, 10000); // Update every 10s
+      if (currentUser) updateDoc(doc(db, "users", currentUser.toLowerCase()), { lastSeen: Date.now() });
+    }, 10000);
   }
 
-  // --- PAIRING LOGIC ---
+  function openCustomQs() { vibrate(); showPage('page-customQs'); }
+  function closeCustomQs() { vibrate(); showPage('page-lobby'); }
+  
+  async function addSpicyToSheet() {
+    vibrate();
+    const mode = document.getElementById('spicyModeSelect').value;
+    const input = document.getElementById('customQInput');
+    if (!input.value.trim()) return alert('Please type a question first.');
+    
+    document.getElementById('customQInput').placeholder = "Adding...";
+    
+    try {
+      const res = await fetch(WEB_APP_URL, {
+        method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action: 'addSpicyQuestion', mode: mode, question: input.value.trim() })
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert("Successfully added to Google Sheets!");
+        input.value = '';
+      } else {
+        alert("Failed to add. Check your Apps Script deployment.");
+      }
+    } catch(e) {
+      alert("Network error. Check internet.");
+    }
+    document.getElementById('customQInput').placeholder = "Type your spicy question...";
+  }
+
+  function openAvatarPicker() {
+    vibrate();
+    let currentAvatar = prompt("Type an emoji for your avatar (e.g. 🐱, 🦊):", "👤");
+    if (currentAvatar) {
+      updateDoc(doc(db, "users", currentUser.toLowerCase()), { avatar: currentAvatar });
+      alert("Avatar updated!");
+    }
+  }
+
   async function linkPartner() {
+    vibrate();
     const input = document.getElementById('partnerCodeInput').value.trim();
     if (!input) return alert('Enter username or code.');
-    
     document.getElementById('pairingStatus').innerText = "Linking...";
     
     let partnerRef = doc(db, "users", input.toLowerCase());
@@ -329,10 +405,7 @@
     if (!partnerSnap.exists()) {
       const q = query(collection(db, "users"), where("pairCode", "==", input));
       const qSnap = await getDocs(q);
-      if (!qSnap.empty) {
-        partnerSnap = qSnap.docs[0];
-        partnerRef = partnerSnap.ref;
-      }
+      if (!qSnap.empty) { partnerSnap = qSnap.docs[0]; partnerRef = partnerSnap.ref; }
     }
 
     if (!partnerSnap.exists()) {
@@ -346,7 +419,6 @@
 
     const names = [currentUser.toLowerCase(), pData.displayName.toLowerCase()].sort();
     const newRoomId = names[0] + "_" + names[1];
-
     const myRef = doc(db, "users", currentUser.toLowerCase());
     
     await updateDoc(myRef, { partner: pData.displayName, roomId: newRoomId });
@@ -358,75 +430,60 @@
   }
 
   async function leavePartner() {
-    if(!confirm("Are you sure you want to unlink from " + partnerName + "?")) return;
-    
+    vibrate();
+    if(!confirm("Unlink from " + partnerName + "?")) return;
     await updateDoc(doc(db, "users", currentUser.toLowerCase()), { partner: '', roomId: '' });
     await updateDoc(doc(db, "users", partnerName.toLowerCase()), { partner: '', roomId: '' });
-    
     if (unsubRoom) unsubRoom();
     if (unsubPartner) unsubPartner();
-    
     document.getElementById('partnerCodeInput').value = '';
     document.getElementById('myPairCode').innerText = (await getDoc(doc(db, "users", currentUser.toLowerCase()))).data().pairCode;
     showPage('page-pairing');
   }
 
-  // --- LOBBY & GAME LOGIC ---
   function enterLobby() {
     document.getElementById('partnerNameDisplay').innerText = partnerName;
-    
-    // Host is determined alphabetically
     isHost = (currentUser.toLowerCase() < partnerName.toLowerCase());
     document.getElementById('hostControls').classList.toggle('hidden', !isHost);
     document.getElementById('guestControls').classList.toggle('hidden', isHost);
-    
     currentRound = 0; 
+    matchStreak = 0;
+    skipsLeft = 3;
     showPage('page-lobby');
+    
+    if (wakeLock) { wakeLock.release(); wakeLock = null; }
 
-    // Listen for Partner Online Status
     if (unsubPartner) unsubPartner();
     unsubPartner = onSnapshot(doc(db, "users", partnerName.toLowerCase()), (docSnap) => {
       if (docSnap.exists()) {
+        const data = docSnap.data();
         const dot = document.getElementById('partnerStatusDot');
-        const lastSeen = docSnap.data().lastSeen;
-        const isOnline = lastSeen && (Date.now() - lastSeen < 30000); 
-        
-        if (isOnline) dot.classList.add('online');
-        else dot.classList.remove('online');
+        const isOnline = data.lastSeen && (Date.now() - data.lastSeen < 30000); 
+        if (isOnline) dot.classList.add('online'); else dot.classList.remove('online');
+        document.getElementById('partnerAvatarDisplay').innerText = data.avatar || '👤';
       }
     });
 
-    // Listen for Unread Chat Messages
     if (unsubMyStatus) unsubMyStatus();
     unsubMyStatus = onSnapshot(doc(db, "users", currentUser.toLowerCase()), (docSnap) => {
       if (docSnap.exists()) {
         const hasUnread = docSnap.data().unread;
-        const lobbyDot = document.getElementById('lobbyUnreadDot');
-        const gameDot = document.getElementById('gameUnreadDot');
-        
-        if (hasUnread) {
-          lobbyDot.style.display = 'block';
-          gameDot.style.display = 'block';
-        } else {
-          lobbyDot.style.display = 'none';
-          gameDot.style.display = 'none';
-        }
+        document.getElementById('lobbyUnreadDot').style.display = hasUnread ? 'block' : 'none';
+        document.getElementById('gameUnreadDot').style.display = hasUnread ? 'block' : 'none';
       }
     });
 
-    // Listen for Game State Changes
     if (unsubRoom) unsubRoom();
     unsubRoom = onSnapshot(doc(db, "rooms", roomId), (docSnap) => {
       if (docSnap.exists() && docSnap.data().gameState) {
         const gs = docSnap.data().gameState;
-        
         if (gs.status === 'playing') {
-          if (document.getElementById('page-lobby').classList.contains('hidden') === false) {
+          if (!document.getElementById('page-lobby').classList.contains('hidden')) {
              currentMode = gs.mode;
              document.getElementById('gameTitle').innerText = gs.mode === 'moreLikely' ? 'Who is more likely to...' : (gs.mode === 'neverHaveIEver' ? 'Never Have I Ever' : 'This or That');
              showPage('page-game');
+             requestWakeLock();
           }
-
           if (gs.question && gs.question !== currentQuestionText) {
             currentRound = gs.round;
             currentQuestionText = gs.question;
@@ -436,56 +493,91 @@
         } else if (gs.status === 'waiting') {
            showPage('page-lobby');
            clearInterval(questionTimerInterval);
+           if (wakeLock) { wakeLock.release(); wakeLock = null; }
         } else if (gs.status === 'finished') {
-          if (document.getElementById('page-summary').classList.contains('hidden') && document.getElementById('page-lobby').classList.contains('hidden') === false) {
+          if (document.getElementById('page-summary').classList.contains('hidden') && !document.getElementById('page-lobby').classList.contains('hidden')) {
             showSummary();
           }
         }
       }
     });
     
-    // Listen for Typing Status
     if (unsubTyping) unsubTyping();
     unsubTyping = onSnapshot(doc(db, "rooms", roomId), (docSnap) => {
       if (docSnap.exists() && docSnap.data().typing) {
-        if (docSnap.data().typing !== currentUser) document.getElementById('typingIndicator').classList.remove('hidden');
-        else document.getElementById('typingIndicator').classList.add('hidden');
-      } else {
-        document.getElementById('typingIndicator').classList.add('hidden');
-      }
+        document.getElementById('typingIndicator').classList.toggle('hidden', docSnap.data().typing === currentUser);
+      } else document.getElementById('typingIndicator').classList.add('hidden');
     });
   }
 
+  async function showStats() {
+    vibrate();
+    showPage('page-stats');
+    const statsContainer = document.getElementById('statsContainer');
+    statsContainer.innerHTML = 'Calculating...';
+
+    const snapshot = await getDocs(collection(db, "rooms", roomId, "votes"));
+    let summary = {};
+    snapshot.forEach(doc => {
+      const v = doc.data();
+      if (!summary[v.round]) summary[v.round] = { round: v.round, votes: [] };
+      summary[v.round].votes.push(v);
+    });
+    
+    let matchCount = 0, totalRounds = 0;
+    Object.values(summary).forEach(item => {
+      const myV = item.votes.find(v => v.voter === currentUser);
+      const partV = item.votes.find(v => v.voter === partnerName);
+      if (myV && partV) {
+        totalRounds++;
+        if (myV.target === partV.target) matchCount++;
+      }
+    });
+
+    const percent = totalRounds === 0 ? 0 : Math.round((matchCount / totalRounds) * 100);
+
+    statsContainer.innerHTML = `
+      <p><b>Total Rounds Played:</b> ${totalRounds}</p>
+      <p><b>Times You Matched:</b> ${matchCount}</p>
+      <p><b>Match Rate:</b> <span style="color:var(--yellow); font-weight:800; font-size:24px;">${percent}%</span></p>
+      <p style="font-size:14px; color:var(--muted); margin-top:20px;">${percent > 70 ? 'You two are basically the same person! 🧠' : percent > 40 ? 'A healthy mix of agreement and chaos. ⚖️' : 'You two are complete opposites! 🧨'}</p>
+    `;
+  }
+  function closeStats() { vibrate(); showPage('page-lobby'); }
+
+  async function requestWakeLock() {
+    try { if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); } catch (err) {}
+  }
+
   async function startGame(mode) {
-    const spice = document.getElementById('spicyToggle').checked ? 'spicy' : 'normal';
+    vibrate();
+    const isSpicy = document.getElementById('spicyToggle').checked;
     currentMode = mode;
     document.getElementById('gameTitle').innerText = mode === 'moreLikely' ? 'Who is more likely to...' : (mode === 'neverHaveIEver' ? 'Never Have I Ever' : 'This or That');
-    document.getElementById('questionDisplay').innerText = "Generating questions...";
+    document.getElementById('questionDisplay').innerText = "Fetching unique questions...";
     showPage('page-game');
+    requestWakeLock();
 
     let questions = [];
     try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 8000);
-
       const res = await fetch(WEB_APP_URL, {
         method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify({ action: 'fetchQuestions', mode: mode, spice: spice }),
-        signal: controller.signal
+        body: JSON.stringify({ action: 'fetchQuestions', mode: mode, spice: isSpicy ? 'spicy' : 'normal' })
       });
-      clearTimeout(timeoutId);
-      
       const data = await res.json();
-      if (data && data.questions && data.questions.length > 0) {
-        questions = data.questions;
-      } else {
-        throw new Error("Invalid data");
-      }
-    } catch(e) {
-      questions = getLocalFallback(mode);
-    }
+      if (data && data.questions && data.questions.length > 0) questions = data.questions;
+    } catch(e) { console.log("Fallback to built-in questions"); }
 
-    currentQuestions = questions;
+    if (questions.length === 0) {
+      questions = ["Who is most likely to forget their own birthday?", "Never have I ever lied about my age.", "This or That: Coffee or Tea?"];
+    }
+    
+    questions = questions.sort(() => 0.5 - Math.random());
+    currentQuestions = questions.slice(0, 10);
+    while(currentQuestions.length < 10) currentQuestions.push("This or That: Win or Lose?");
+    
+    skipsLeft = 3;
+    updateSkipBtn();
     
     await setDoc(doc(db, "rooms", roomId), {
       gameState: { mode: mode, round: 1, question: currentQuestions[0], status: 'playing', host: currentUser }
@@ -497,10 +589,19 @@
     loadQuestionUI();
   }
 
-  function getLocalFallback(mode) {
-    if (mode === 'moreLikely') return ["Who is most likely to forget their own birthday?", "Who is most likely to secretly be a superhero?", "Who is most likely to eat food that fell on the floor?", "Who is most likely to cry at a sad commercial?", "Who is most likely to become famous on TikTok?", "Who is most likely to trip up the stairs?", "Who is most likely to spend all their money on a weird hobby?", "Who is most likely to fall asleep during a movie?", "Who is most likely to win an argument with a toddler?", "Who is most likely to accidentally send a text to the wrong person?"];
-    if (mode === 'neverHaveIEver') return ["Never have I ever pretended to be sick to get out of work.", "Never have I ever stalked an ex on social media.", "Never have I ever lied about my age.", "Never have I ever eaten an entire pizza by myself.", "Never have I ever fallen asleep in the shower.", "Never have I ever laughed so hard I cried.", "Never have I ever broken a bone.", "Never have I ever forgotten someone's name right after meeting them.", "Never have I ever sung loudly in the car thinking no one could hear.", "Never have I ever stayed awake for 24 hours straight."];
-    return ["This or That: Coffee or Tea?", "This or That: Morning shower or night shower?", "This or That: Call or Text?", "This or That: Sweet or Salty?", "This or That: Netflix or YouTube?", "This or That: Cats or Dogs?", "This or That: Mountains or Beach?", "This or That: Early bird or Night owl?", "This or That: Cook at home or Eat out?", "This or That: Fly or Drive?"];
+  function skipQuestion() {
+    vibrate();
+    if (skipsLeft <= 0) return alert("No skips left!");
+    skipsLeft--;
+    updateSkipBtn();
+    
+    const nextQ = currentQuestions[currentRound] || "This or That: Skip or Stay?";
+    updateDoc(doc(db, "rooms", roomId), { "gameState.question": nextQ, "gameState.round": currentRound + 1 });
+  }
+
+  function updateSkipBtn() {
+    document.getElementById('skipBtn').innerText = `Skip (${skipsLeft})`;
+    if (skipsLeft <= 0) document.getElementById('skipBtn').style.opacity = '0.3';
   }
 
   function setupVotesListener() {
@@ -509,7 +610,6 @@
       localVotes = [];
       snapshot.forEach(doc => { if(doc.data().round === currentRound) localVotes.push(doc.data()); });
       
-      // If both voted, show the result card
       if (localVotes.length >= 2) {
         showRoundResult(localVotes);
         if (isHost) checkIfNextQuestionReady();
@@ -518,7 +618,8 @@
   }
 
   function showRoundResult(votes) {
-    document.getElementById('voteButtonsContainer').classList.add('hidden'); // Hide buttons
+    document.getElementById('voteButtonsContainer').classList.add('hidden');
+    document.getElementById('swipeHint').classList.add('hidden');
     
     const myVoteObj = votes.find(v => v.voter === currentUser);
     const partnerVoteObj = votes.find(v => v.voter === partnerName);
@@ -527,14 +628,23 @@
     const partnerChoice = partnerVoteObj ? partnerVoteObj.target : "?";
     const isMatch = myChoice === partnerChoice;
 
+    if (isMatch) { matchStreak++; vibrate(); } else { matchStreak = 0; }
+
     const resContainer = document.getElementById('resultContainer');
     resContainer.classList.remove('hidden');
     
+    let streakText = '';
+    if (matchStreak > 1) streakText = `<div style="color:var(--yellow); font-size:24px; text-align:center; margin-top:10px;">🔥 ${matchStreak} Match Streak!</div>`;
+    else if (!isMatch) streakText = `<div style="color:var(--muted); font-size:24px; text-align:center; margin-top:10px;">💔 Streak Broken</div>`;
+
+    let cardClass = isMatch ? 'result-card streak-glow' : 'result-card broken-heart';
+
     resContainer.innerHTML = `
-      <div class="result-card">
+      <div class="${cardClass}">
         <div class="result-row">You picked: <b>${myChoice}</b></div>
         <div class="result-row">${partnerName} picked: <b>${partnerChoice}</b></div>
-        <div class="result-match">${isMatch ? 'MATCH! You both agree.' : 'Different choices!'}</div>
+        <div class="result-match">${isMatch ? 'MATCH!' : 'Different choices!'}</div>
+        ${streakText}
       </div>
     `;
   }
@@ -544,12 +654,11 @@
     if (window.isAdvancing) return;
     window.isAdvancing = true;
 
-    // Wait 4 seconds to read the result before moving on
     setTimeout(async () => {
       if (currentRound >= 10) {
         await updateDoc(doc(db, "rooms", roomId), { "gameState.status": "finished" });
       } else {
-        const nextQ = currentQuestions[currentRound];
+        const nextQ = currentQuestions[currentRound] || "This or That: Fallback?";
         await updateDoc(doc(db, "rooms", roomId), { "gameState.round": currentRound + 1, "gameState.question": nextQ });
       }
       window.isAdvancing = false;
@@ -565,11 +674,10 @@
       document.getElementById('questionDisplay').innerText = currentQuestionText;
       document.getElementById('myVoteStatus').innerText = "";
       
-      // Reset UI for the new question
       document.getElementById('voteButtonsContainer').classList.remove('hidden');
-      document.getElementById('voteButtonsContainer').innerHTML = "";
+      document.getElementById('swipeHint').classList.remove('hidden');
+      document.getElementById('voteButtonsContainer').innerHTML = '<div style="font-size:12px; color:var(--muted); margin-bottom:10px;" id="swipeHint">Tap or Swipe to vote</div>';
       document.getElementById('resultContainer').classList.add('hidden');
-      document.getElementById('resultContainer').innerHTML = "";
       
       buildVoteButtons();
       startTimer();
@@ -581,17 +689,20 @@
   function startTimer() {
     clearInterval(questionTimerInterval);
     timeLeft = 20;
-    document.getElementById('timerDisplay').innerText = `${timeLeft}s`;
+    const timerEl = document.getElementById('timerDisplay');
+    timerEl.innerText = `${timeLeft}s`;
+    timerEl.classList.remove('timer-warning');
+    
     questionTimerInterval = setInterval(() => {
       timeLeft--;
-      document.getElementById('timerDisplay').innerText = `${timeLeft}s`;
+      timerEl.innerText = `${timeLeft}s`;
+      if (timeLeft <= 5) timerEl.classList.add('timer-warning');
       if (timeLeft <= 0) clearInterval(questionTimerInterval);
     }, 1000);
   }
 
   function buildVoteButtons() {
     const container = document.getElementById('voteButtonsContainer');
-    container.innerHTML = '';
     
     if (currentMode === 'moreLikely') {
       [currentUser, partnerName].forEach(p => {
@@ -599,14 +710,14 @@
         const btn = document.createElement('button');
         btn.className = 'btn btn-vote btn-vote-full';
         btn.innerText = p + (p === currentUser ? ' (You)' : '');
-        btn.onclick = () => submitVote(p);
+        btn.onclick = () => submitVote(p, 'full');
         container.appendChild(btn);
       });
     } else if (currentMode === 'neverHaveIEver') {
       const btn1 = document.createElement('button');
-      btn1.className = 'btn btn-vote'; btn1.innerText = 'I have'; btn1.onclick = () => submitVote('True');
+      btn1.className = 'btn btn-vote'; btn1.innerText = 'I have'; btn1.onclick = () => submitVote('True', 'left');
       const btn2 = document.createElement('button');
-      btn2.className = 'btn btn-vote'; btn2.innerText = 'I haven\'t'; btn2.onclick = () => submitVote('False');
+      btn2.className = 'btn btn-vote'; btn2.innerText = 'I haven\'t'; btn2.onclick = () => submitVote('False', 'right');
       container.appendChild(btn1); container.appendChild(btn2);
     } else if (currentMode === 'thisOrThat') {
       let opt1 = 'Option A', opt2 = 'Option B';
@@ -616,28 +727,82 @@
         if (parts.length >= 2) { opt1 = parts[0].trim(); opt2 = parts[1].trim(); }
       }
       const btn1 = document.createElement('button');
-      btn1.className = 'btn btn-vote'; btn1.innerText = opt1; btn1.onclick = () => submitVote(opt1);
+      btn1.className = 'btn btn-vote'; btn1.innerText = opt1; btn1.onclick = () => submitVote(opt1, 'left');
       const btn2 = document.createElement('button');
-      btn2.className = 'btn btn-vote'; btn2.innerText = opt2; btn2.onclick = () => submitVote(opt2);
+      btn2.className = 'btn btn-vote'; btn2.innerText = opt2; btn2.onclick = () => submitVote(opt2, 'right');
       container.appendChild(btn1); container.appendChild(btn2);
     }
   }
 
-  async function submitVote(target) {
+  document.getElementById('page-game').addEventListener('touchstart', e => {
+    touchStartX = e.changedTouches[0].screenX;
+  }, {passive: true});
+
+  document.getElementById('page-game').addEventListener('touchend', e => {
+    if (document.getElementById('voteButtonsContainer').classList.contains('hidden')) return;
+    touchEndX = e.changedTouches[0].screenX;
+    handleSwipe();
+  }, {passive: true});
+
+  function handleSwipe() {
+    const deltaX = touchEndX - touchStartX;
+    if (Math.abs(deltaX) > 60) {
+      const buttons = document.querySelectorAll('.btn-vote');
+      if (currentMode === 'moreLikely') return;
+      if (deltaX > 0 && buttons.length >= 2) submitVote(buttons[1].innerText, 'right');
+      else if (deltaX < 0 && buttons.length >= 2) submitVote(buttons[0].innerText, 'left');
+    }
+  }
+
+  async function submitVote(target, direction) {
+    vibrate();
+    const btns = document.querySelectorAll('.btn-vote');
+    if (direction === 'left') btns[0].classList.add('swipe-left');
+    if (direction === 'right' && btns[1]) btns[1].classList.add('swipe-right');
+    
     document.getElementById('myVoteStatus').innerText = `You picked: ${target}`;
-    document.querySelectorAll('.btn-vote').forEach(b => b.disabled = true);
+    document.getElementById('swipeHint').innerText = "Waiting for partner...";
+    
+    btns.forEach(b => b.disabled = true);
     
     await setDoc(doc(db, "rooms", roomId, "votes", `round_${currentRound}_${currentUser}`), {
       round: currentRound, voter: currentUser, target: target
     });
   }
 
-  async function leaveGame() {
-    if(confirm("Leave the game?")) {
-      if (isHost) {
-        await updateDoc(doc(db, "rooms", roomId), { "gameState.status": "waiting" });
+  async function sendReaction(emoji) {
+    vibrate();
+    await setDoc(doc(db, "rooms", roomId, "reaction"), {
+      sender: currentUser, emoji: emoji, time: Date.now()
+    });
+  }
+
+  onSnapshot(doc(db, "rooms", roomId, "reaction"), (docSnap) => {
+    if (docSnap.exists()) {
+      const data = docSnap.data();
+      if (data.sender !== currentUser && (Date.now() - data.time < 3000)) {
+        showFloatingEmoji(data.emoji);
+        vibrate();
       }
+    }
+  });
+
+  function showFloatingEmoji(emoji) {
+    const el = document.createElement('div');
+    el.className = 'floating-emoji';
+    el.innerText = emoji;
+    el.style.left = Math.random() * 80 + 10 + 'vw';
+    el.style.bottom = '100px';
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 2000);
+  }
+
+  async function leaveGame() {
+    vibrate();
+    if(confirm("Leave the game?")) {
+      if (isHost) await updateDoc(doc(db, "rooms", roomId), { "gameState.status": "waiting" });
       showPage('page-lobby');
+      if (wakeLock) { wakeLock.release(); wakeLock = null; }
     }
   }
 
@@ -665,30 +830,24 @@
       if (myV && partV) {
         const isMatch = myV.target === partV.target;
         if (isMatch) matchCount++;
-        
-        html += `<div class="summary-item">`;
-        html += `<div class="summary-q">Round ${item.round}</div>`;
-        html += `<div class="summary-votes">You: <b>${myV.target}</b><br>${partnerName}: <b>${partV.target}</b></div>`;
-        html += `<div class="summary-match">${isMatch ? 'Matched!' : 'Different'}</div>`;
-        html += `</div>`;
+        html += `<div class="summary-item"><div class="summary-q">Round ${item.round}</div><div class="summary-votes">You: <b>${myV.target}</b><br>${partnerName}: <b>${partV.target}</b></div><div class="summary-match">${isMatch ? 'Matched!' : 'Different'}</div></div>`;
       }
     });
     
-    // Add total matches at the top
-    let finalHtml = `<h3 style="color:var(--yellow); margin-bottom: 20px;">You matched on ${matchCount} out of 10 rounds!</h3>` + html;
-    summaryContainer.innerHTML = finalHtml || '<p>No votes recorded.</p>';
+    summaryContainer.innerHTML = `<h3 style="color:var(--yellow); margin-bottom: 20px;">You matched on ${matchCount} out of 10 rounds!</h3>` + html;
   }
 
   function backToLobby() { 
+    vibrate();
     showPage('page-lobby'); 
     currentRound = 0;
+    if (wakeLock) { wakeLock.release(); wakeLock = null; }
   }
 
-  // --- CHAT LOGIC ---
   async function openChat() {
+    vibrate();
     lastPageBeforeChat = document.getElementById('page-game').classList.contains('hidden') ? 'page-lobby' : 'page-game';
     showPage('page-chat');
-    
     await updateDoc(doc(db, "users", currentUser.toLowerCase()), { unread: false });
     document.getElementById('lobbyUnreadDot').style.display = 'none';
     document.getElementById('gameUnreadDot').style.display = 'none';
@@ -708,55 +867,37 @@
     });
   }
 
-  function closeChat() { showPage(lastPageBeforeChat); }
+  function closeChat() { vibrate(); showPage(lastPageBeforeChat); }
 
   async function sendChat() {
     const input = document.getElementById('chatInput');
     if (!input.value.trim()) return;
-    
-    await addDoc(collection(db, "rooms", roomId, "messages"), {
-      user: currentUser, text: input.value.trim(), time: serverTimestamp()
-    });
-    
+    await addDoc(collection(db, "rooms", roomId, "messages"), { user: currentUser, text: input.value.trim(), time: serverTimestamp() });
     await updateDoc(doc(db, "users", partnerName.toLowerCase()), { unread: true });
-    
     input.value = '';
   }
 
   function handleChatEnter(e) { if (e.key === 'Enter') sendChat(); }
-
   function handleTyping() {
     updateDoc(doc(db, "rooms", roomId), { typing: currentUser });
     if (typingTimeout) clearTimeout(typingTimeout);
-    typingTimeout = setTimeout(() => {
-      updateDoc(doc(db, "rooms", roomId), { typing: null });
-    }, 2000);
+    typingTimeout = setTimeout(() => { updateDoc(doc(db, "rooms", roomId), { typing: null }); }, 2000);
   }
 
   function logout() {
-    if (currentUser) {
-        updateDoc(doc(db, "users", currentUser.toLowerCase()), { lastSeen: 0 });
-    }
-    localStorage.removeItem('shizu_user');
-    localStorage.removeItem('shizu_pass');
+    vibrate();
+    if (currentUser) updateDoc(doc(db, "users", currentUser.toLowerCase()), { lastSeen: 0 });
+    localStorage.removeItem('shizu_user'); localStorage.removeItem('shizu_pass');
     window.location.reload();
   }
 
-  // 🛑 EXPOSE FUNCTIONS TO HTML BUTTONS 🛑
-  window.toggleAuth = toggleAuth;
-  window.handleAuth = handleAuth;
-  window.linkPartner = linkPartner;
-  window.leavePartner = leavePartner;
-  window.startGame = startGame;
-  window.openChat = openChat;
-  window.closeChat = closeChat;
-  window.sendChat = sendChat;
-  window.handleTyping = handleTyping;
-  window.handleChatEnter = handleChatEnter;
-  window.backToLobby = backToLobby;
-  window.leaveGame = leaveGame;
-  window.logout = logout;
+  window.toggleAuth = toggleAuth; window.handleAuth = handleAuth; window.linkPartner = linkPartner; window.leavePartner = leavePartner;
+  window.startGame = startGame; window.openChat = openChat; window.closeChat = closeChat; window.sendChat = sendChat;
+  window.handleTyping = handleTyping; window.handleChatEnter = handleChatEnter; window.backToLobby = backToLobby;
+  window.leaveGame = leaveGame; window.logout = logout; window.skipQuestion = skipQuestion; window.sendReaction = sendReaction;
+  window.openAvatarPicker = openAvatarPicker; window.showStats = showStats; window.closeStats = closeStats;
+  window.openCustomQs = openCustomQs; window.closeCustomQs = closeCustomQs; window.addSpicyToSheet = addSpicyToSheet;
 
 </script>
 </body>
-  </html>
+</html>
