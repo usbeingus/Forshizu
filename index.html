@@ -4,71 +4,49 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>SHIZU — A Little Game for Two Hearts</title>
-  
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-
   <style>
     :root { 
       --bg: #100B12; --bg-sec: #19111C; --card: #211722; 
       --primary: #E879A5; --secondary: #B96A91; --text: #F8EAF0; 
       --muted: #A99AA5; --border: rgba(232, 121, 165, 0.16); --green: #4CAF50; --red: #ff4d4d;
     }
-    
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
-    
-    body { 
-      font-family: 'Inter', sans-serif; text-align: center; padding: 20px; 
-      padding-bottom: 20px; /* Fixed padding override */
-      background: var(--bg); color: var(--text); margin: 0; overflow-x: hidden; min-height: 100dvh;
-    }
-
+    body { font-family: 'Inter', sans-serif; text-align: center; padding: 20px; background: var(--bg); color: var(--text); margin: 0; overflow-x: hidden; min-height: 100dvh; }
     h1, h2, h3 { font-family: 'Playfair Display', serif; font-weight: 600; margin-top: 0; }
-    
     .heart-bg { position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh; z-index: -1; overflow: hidden; }
     .heart-particle { position: absolute; bottom: -20px; color: var(--primary); opacity: 0.15; animation: floatUp 8s linear infinite; }
     @keyframes floatUp { 0% { transform: translateY(0) scale(0.8); opacity: 0; } 10% { opacity: 0.15; } 90% { opacity: 0.15; } 100% { transform: translateY(-100dvh) scale(1.2); opacity: 0; } }
-
     #splash-screen { position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh; background: var(--bg); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; transition: opacity 0.5s; }
     .splash-logo { font-family: 'Playfair Display', serif; font-size: 3.5rem; font-weight: 700; color: var(--primary); margin: 0; animation: fadeIn 1.5s forwards; opacity: 0; }
     .splash-sub { color: var(--muted); font-size: 14px; margin-top: 10px; animation: fadeIn 2s forwards; opacity: 0; }
     .fade-out { opacity: 0 !important; pointer-events: none; }
     @keyframes fadeIn { to { opacity: 1; } }
-
-    /* Timer Progress Bar */
     #timerBarContainer { width: 100%; height: 4px; background: var(--bg-sec); border-radius: 2px; overflow: hidden; margin-bottom: 20px; }
     #timerBar { height: 100%; background: var(--primary); width: 100%; transition: width 1s linear, background-color 0.3s; }
-
     .container { max-width: 500px; margin: 0 auto; position: relative; z-index: 10; }
     .header { margin-bottom: 30px; }
     .header h1 { color: var(--primary); font-size: 2.8rem; margin-bottom: 5px; letter-spacing: 1px; display: flex; justify-content: center; align-items: center; gap: 10px; }
     .header p { color: var(--muted); font-size: 14px; margin: 0; }
-    
     .card { background: linear-gradient(145deg, var(--card), var(--bg-sec)); border: 1px solid var(--border); border-radius: 16px; padding: 24px 20px; margin: 20px auto; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.3); animation: slideUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; opacity: 0; transform: translateY(20px); }
     @keyframes slideUp { to { opacity: 1; transform: translateY(0); } }
-    
-    .btn { background: transparent; color: var(--text); border: 1px solid var(--border); padding: 16px; margin: 8px 0; border-radius: 12px; font-family: 'Inter', sans-serif; font-size: 16px; font-weight: 500; cursor: pointer; width: 100%; transition: all 0.2s ease; position: relative; display: flex; justify-content: center; align-items: center; gap: 10px; min-height: 44px; }
+    .btn { background: transparent; color: var(--text); border: 1px solid var(--border); padding: 16px; margin: 8px 0; border-radius: 12px; font-family: 'Inter', sans-serif; font-size: 16px; font-weight: 500; cursor: pointer; width: 100%; transition: all 0.2s ease; display: flex; justify-content: center; align-items: center; gap: 10px; min-height: 44px; }
     .btn:active { transform: scale(0.97); }
     .btn-primary { background: linear-gradient(135deg, var(--primary), var(--secondary)); color: #fff; border: none; font-weight: 600; box-shadow: 0 4px 15px rgba(232, 121, 165, 0.3); }
-    .btn-secondary { background: transparent; border-color: var(--border); color: var(--text); }
-    .btn-primary:hover:not(:disabled) { filter: brightness(1.1); box-shadow: 0 6px 20px rgba(232, 121, 165, 0.4); }
-    
+    .btn-primary:hover:not(:disabled) { filter: brightness(1.1); }
     .input { padding: 16px; border-radius: 12px; border: 1px solid var(--border); background: var(--bg); color: var(--text); width: 100%; font-size: 16px; margin-bottom: 15px; text-align: center; font-family: 'Inter', sans-serif; transition: border-color 0.3s; }
     .input:focus { outline: none; border-color: var(--primary); }
     .hidden { display: none !important; }
-    
     .connection-status { display: inline-flex; align-items: center; gap: 8px; background: rgba(76, 175, 80, 0.1); color: var(--green); padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; letter-spacing: 1px; margin-bottom: 20px; }
     .status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green); animation: pulseGreen 2s infinite; }
     @keyframes pulseGreen { 0% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.4); } 70% { box-shadow: 0 0 0 6px rgba(76, 175, 80, 0); } 100% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0); } }
-
     .players-row { display: flex; justify-content: center; align-items: center; gap: 15px; font-family: 'Playfair Display', serif; font-size: 1.2rem; color: var(--text); }
     .heart-connect { color: var(--primary); animation: heartbeat 1.5s infinite; }
-    @keyframes heartbeat { 0% { transform: scale(1); } 14% { transform: scale(1.2); } 28% { transform: scale(1); } 42% { transform: scale(1.2); } 70% { transform: scale(1); } }
-
+    @keyframes heartbeat { 0%,100% { transform: scale(1); } 14%,42% { transform: scale(1.2); } 28% { transform: scale(1); } }
     .section-title { font-family: 'Playfair Display', serif; color: var(--text); font-size: 1.6rem; margin-top: 30px; margin-bottom: 5px; }
     .section-subtitle { color: var(--muted); font-size: 14px; margin-bottom: 20px; }
-    
     .game-card { display: flex; flex-direction: column; align-items: flex-start; text-align: left; background: var(--bg-sec); border: 1px solid var(--border); padding: 20px; border-radius: 16px; margin-bottom: 15px; cursor: pointer; transition: all 0.2s; position: relative; overflow: hidden; }
     .game-card:active { transform: scale(0.98); }
     .game-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: var(--primary); opacity: 0; transition: opacity 0.2s; }
@@ -76,37 +54,26 @@
     .game-card h3 { margin: 0 0 5px 0; color: var(--text); font-size: 1.2rem; font-family: 'Inter', sans-serif; font-weight: 600; }
     .game-card p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.4; }
     .game-icon { font-size: 24px; margin-bottom: 10px; }
-
     .chat-card { text-align: center; background: linear-gradient(145deg, var(--bg-sec), var(--card)); }
-    .chat-card h3 { font-family: 'Playfair Display', serif; font-size: 1.5rem; color: var(--text); margin-bottom: 5px; }
+    .chat-card h3 { font-family: 'Playfair Display', serif; font-size: 1.5rem; margin-bottom: 5px; }
     .chat-card p { color: var(--muted); font-size: 14px; margin-bottom: 20px; }
-
     .chat-box { height: 350px; overflow-y: auto; background: var(--bg); border-radius: 12px; padding: 15px; margin-bottom: 15px; text-align: left; display: flex; flex-direction: column; border: 1px solid var(--border); }
-    .msg { margin-bottom: 12px; padding: 10px 14px; border-radius: 12px; max-width: 85%; font-size: 14px; line-height: 1.4; position: relative; word-wrap: break-word; }
+    .msg { margin-bottom: 12px; padding: 10px 14px; border-radius: 12px; max-width: 85%; font-size: 14px; line-height: 1.4; word-wrap: break-word; }
     .msg-me { background: var(--primary); color: #fff; align-self: flex-end; border-bottom-right-radius: 4px; }
     .msg-other { background: var(--card); border: 1px solid var(--border); color: var(--text); align-self: flex-start; border-bottom-left-radius: 4px; }
     .msg-meta { font-size: 11px; color: rgba(255,255,255,0.7); margin-bottom: 4px; display: block; }
     .chat-input-container { display: flex; gap: 10px; }
     .chat-input-container input { margin-bottom: 0; text-align: left; }
     .chat-input-container button { width: auto; padding: 16px 24px; margin: 0; }
-    
     .settings-link { color: var(--muted); text-decoration: none; font-size: 13px; margin-top: 20px; display: inline-block; transition: color 0.2s; }
     .settings-link:hover { color: var(--primary); }
-
-    .question { font-size: 1.3rem; margin: 20px 0; font-weight: 500; line-height: 1.4; min-height: 60px;}
+    .question { font-size: 1.3rem; margin: 20px 0; font-weight: 500; line-height: 1.4; min-height: 60px; }
     .result-card { background: var(--bg); border: 2px solid var(--primary); border-radius: 12px; padding: 20px; margin-top: 20px; text-align: left; }
-    .result-match { font-size: 20px; font-weight: 700; color: var(--primary); text-align: center; margin-top: 15px; border-top: 1px solid var(--border); padding-top: 15px; font-family: 'Playfair Display', serif;}
-
-    .btn-vote { background: var(--bg-sec); border: 1px solid var(--border); margin: 6px; width: calc(50% - 12px); display: inline-block; padding: 16px 10px; font-size: 15px; font-weight: 500; color: var(--text); cursor: pointer; border-radius: 12px; transition: 0.2s;}
+    .result-match { font-size: 20px; font-weight: 700; color: var(--primary); text-align: center; margin-top: 15px; border-top: 1px solid var(--border); padding-top: 15px; font-family: 'Playfair Display', serif; }
+    .btn-vote { background: var(--bg-sec); border: 1px solid var(--border); margin: 6px; width: calc(50% - 12px); display: inline-block; padding: 16px 10px; font-size: 15px; font-weight: 500; color: var(--text); cursor: pointer; border-radius: 12px; transition: 0.2s; }
     .btn-vote:active { background: var(--border); transform: scale(0.95); }
-    .btn-vote-full { width: 100%; display: flex; justify-content: center; }
-
     .join-prompt { background: rgba(232, 121, 165, 0.1); border: 2px solid var(--primary); margin-top: 20px; padding: 20px; border-radius: 16px; animation: slideUp 0.4s ease; }
-
-    @media (prefers-reduced-motion: reduce) { 
-        * { animation: none !important; transition: none !important; } 
-        .card { opacity: 1; transform: none; } /* Bug Fix: Ensure cards are visible */
-    }
+    @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } .card { opacity: 1 !important; transform: none !important; } }
   </style>
 </head>
 <body>
@@ -120,20 +87,18 @@
 </div>
 
 <div class="container">
-  
   <div class="header">
     <h1>SHIZU 🤍</h1>
     <p>Your little world, together.</p>
   </div>
 
-  <!-- PAGE 1: AUTH -->
   <div id="page-auth" class="card hidden">
     <h2 id="authTitle" style="font-family: 'Playfair Display';">Welcome Back</h2>
     <p style="color: var(--muted); font-size: 14px; margin-bottom: 20px;">Sign in to your private world.</p>
     <form onsubmit="window.handleAuth(event); return false;">
-        <input type="text" id="username" class="input" placeholder="Username" style="text-transform:none;" autocomplete="username" />
-        <input type="password" id="password" class="input" placeholder="Password" style="text-transform:none;" autocomplete="current-password" />
-        <button type="submit" class="btn btn-primary" id="authBtn">Login</button>
+      <input type="text" id="username" class="input" placeholder="Username" autocomplete="username" />
+      <input type="password" id="password" class="input" placeholder="Password" autocomplete="current-password" />
+      <button type="submit" class="btn btn-primary" id="authBtn">Login</button>
     </form>
     <p style="margin-top: 20px; font-size: 14px; color: var(--muted);">
       <span id="authSwitchText">New here?</span> 
@@ -141,78 +106,65 @@
     </p>
   </div>
 
-  <!-- PAGE 2: PAIRING -->
   <div id="page-pairing" class="card hidden">
     <h2 style="font-family: 'Playfair Display';">Connect</h2>
     <p style="color: var(--muted); font-size: 14px; margin-bottom: 15px;">Send this 6-digit code to your partner:</p>
     <div id="myPairCode" style="display:inline-block; border:1px solid var(--primary); color:var(--primary); padding:12px 24px; border-radius:12px; font-size:24px; font-weight:600; letter-spacing:4px; margin:15px 0;">------</div>
     <hr style="border-color: var(--border); margin: 20px 0;">
     <p style="color: var(--muted); font-size: 14px; margin-bottom: 15px;">Or enter their Username:</p>
-    <input type="text" id="partnerCodeInput" class="input" placeholder="USERNAME OR CODE" style="text-transform:none;" />
+    <input type="text" id="partnerCodeInput" class="input" placeholder="USERNAME OR CODE" />
     <button class="btn btn-primary" onclick="window.linkPartner()">Link Accounts</button>
     <p id="pairingStatus" style="color: var(--primary); margin-top: 15px; font-size: 14px;"></p>
   </div>
 
-  <!-- PAGE 3: LOBBY -->
   <div id="page-lobby" class="card hidden" style="padding: 30px 20px;">
-    
-    <div class="connection-status">
-      <span class="status-dot"></span> CONNECTED
-    </div>
-    
+    <div class="connection-status"><span class="status-dot"></span> CONNECTED</div>
     <div class="players-row">
       <span id="player1Name">...</span>
-      <svg class="heart-connect" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-      </svg>
+      <svg class="heart-connect" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
       <span id="player2Name">...</span>
     </div>
 
     <div id="guestJoinPrompt" class="join-prompt hidden">
-        <h3 id="joinPromptTitle" style="color: var(--primary); margin-bottom: 5px;">Game in Progress</h3>
-        <p id="guestGameName" style="font-weight: 600; font-size: 1.1rem; margin-bottom: 15px;">...</p>
-        <button class="btn btn-primary" onclick="window.joinPartnerGame()">Join Now</button>
+      <h3 id="joinPromptTitle" style="color: var(--primary); margin-bottom: 5px;">Game in Progress</h3>
+      <p id="guestGameName" style="font-weight: 600; font-size: 1.1rem; margin-bottom: 15px;">...</p>
+      <button class="btn btn-primary" onclick="window.joinPartnerGame()">Join Now</button>
+      <button class="btn" onclick="window.dismissJoinPrompt()" style="border-color: transparent; color: var(--muted); font-size: 13px; margin-top: 5px;">Dismiss</button>
     </div>
-    
+
     <div style="margin-top: 40px;">
       <h2 class="section-title">Choose Your Moment</h2>
       <p class="section-subtitle">Pick a game and make some memories.</p>
-      
+
       <div id="hostControls">
-        
         <div class="game-card" onclick="window.startGame('moreLikely')">
           <div class="game-icon">✨</div>
           <h3>Who is more likely to...</h3>
           <p>Discover what you really think about each other.</p>
         </div>
-        
         <div class="game-card" onclick="window.startGame('neverHaveIEver')">
           <div class="game-icon">🤫</div>
           <h3>Never Have I Ever</h3>
           <p>Reveal the unexpected things you have done.</p>
         </div>
-        
         <div class="game-card" onclick="window.startGame('thisOrThat')">
           <div class="game-icon">🎭</div>
           <h3>This or That</h3>
           <p>Pick a side and see if you match.</p>
         </div>
-
         <div class="game-card" onclick="window.goToLudo()">
           <div class="game-icon">🎲</div>
           <h3>Play Ludo</h3>
           <p>A little friendly competition.</p>
         </div>
-
         <div style="margin: 20px 0; font-size: 14px; display: flex; justify-content: center;">
           <label style="cursor: pointer; display: flex; align-items: center; gap: 10px;">
             <input type="checkbox" id="spicyToggle" style="transform: scale(1.2); accent-color: var(--primary);"> 
             <span style="color: var(--primary); font-weight: 600;">Enable Spicy Mode</span>
           </label>
         </div>
-
       </div>
-      
+
       <div id="guestControls" class="hidden">
         <p style="color: var(--muted); margin-top: 30px; font-style: italic;">Waiting for host to choose a moment...</p>
       </div>
@@ -232,7 +184,6 @@
     </div>
   </div>
 
-  <!-- PAGE 4: GAME -->
   <div id="page-game" class="card hidden">
     <div id="timerBarContainer"><div id="timerBar"></div></div>
     <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
@@ -243,25 +194,21 @@
     <div id="voteButtonsContainer"></div>
     <div id="resultContainer" class="hidden"></div>
     <div id="myVoteStatus" style="margin-top: 20px; font-size: 14px; color: var(--primary); font-weight: 500;"></div>
-    
-    <button class="btn btn-secondary" onclick="window.openChat()" style="margin-top: 20px; background: transparent; border-color: var(--border);">💬 Open Chat</button>
-    
+    <button class="btn" onclick="window.openChat()" style="margin-top: 20px; background: transparent; border-color: var(--border);">💬 Open Chat</button>
     <button class="btn" onclick="window.leaveGame()" style="margin-top: 10px; border-color: transparent; color: var(--muted);">Leave Game</button>
   </div>
 
-  <!-- PAGE 5: SUMMARY -->
   <div id="page-summary" class="card hidden">
     <h2 style="font-family: 'Playfair Display';">Game Over</h2>
     <p style="color: var(--muted); margin-bottom: 20px;">You matched on <span id="finalMatchCount" style="color:var(--primary); font-weight:bold; font-size:1.2rem;">0</span> out of 10 rounds!</p>
     <div id="summaryContainer" style="max-height: 300px; overflow-y: auto; text-align: left; margin-bottom: 20px;"></div>
     <button class="btn btn-primary" onclick="window.backToLobby()">Back to Lobby</button>
+    <button class="btn" onclick="window.openChat()" style="border-color: var(--border); margin-top: 10px;">💬 Open Chat</button>
   </div>
 
-  <!-- PAGE 6: CHAT -->
   <div id="page-chat" class="card hidden">
     <h2 style="font-family: 'Playfair Display';">Your Private Space</h2>
     <div id="chatBox" class="chat-box"></div>
-    <div id="typingIndicator" style="font-size:11px; color:var(--muted); text-align:left; margin-bottom:5px; font-style:italic;" class="hidden">Partner is typing...</div>
     <div class="chat-input-container">
       <input type="text" id="chatInput" class="input" placeholder="Type a message..." onkeydown="window.handleChatEnter(event)">
       <button class="btn btn-primary" onclick="window.sendChat()">Send</button>
@@ -287,7 +234,7 @@
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
   const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbx9DwCUGQtAfTHcPGj62BIyvUhIz-NH4jpx6_jZV8e_DlqRw4J0jdJsB9nQHPXIUgVN4g/exec";
-  const SECRET_KEY = "shizu_secure_9918"; // Must match Code.gs
+  const SECRET_KEY = "shizu_secure_9918";
 
   let currentUser = '', roomId = '', partnerName = '', isHost = false;
   let currentMode = 'moreLikely', currentQuestionText = '', currentRound = 0;
@@ -297,50 +244,42 @@
   let isSignupMode = false;
   let unsubRoom, unsubVotes, unsubChat, unsubMyUser;
   let hasJoined = false;
-  let summaryRendered = false; 
+  let summaryRendered = false;
   let timerInterval, timeLeft = 20;
 
   function escapeHTML(str) {
     if (str === null || str === undefined) return '';
-    return String(str).replace(/[&<>'"]/g, 
-      tag => ({
-          '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
-        }[tag] || tag)
-    );
+    return String(str).replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag]));
   }
 
-  async function hashPassword(password) {
-      const msgBuffer = new TextEncoder().encode(password);
-      const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
-      const hashArray = Array.from(new Uint8Array(hashBuffer));
-      return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  async function hashPassword(p) {
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(p));
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
   }
 
   function createHearts() {
     const bg = document.getElementById('heartBg');
-    const heartSVG = `<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`;
+    const svg = `<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`;
     for (let i = 0; i < 15; i++) {
-      const heart = document.createElement('div');
-      heart.className = 'heart-particle';
-      heart.innerHTML = heartSVG;
-      heart.style.left = `${Math.random() * 100}vw`;
-      heart.style.animationDelay = `${Math.random() * 8}s`;
-      heart.style.animationDuration = `${6 + Math.random() * 6}s`;
-      bg.appendChild(heart);
+      const h = document.createElement('div');
+      h.className = 'heart-particle';
+      h.innerHTML = svg;
+      h.style.left = `${Math.random() * 100}vw`;
+      h.style.animationDelay = `${Math.random() * 8}s`;
+      h.style.animationDuration = `${6 + Math.random() * 6}s`;
+      bg.appendChild(h);
     }
   }
   createHearts();
 
-  window.addEventListener('load', async () => {
-    setTimeout(async () => {
+  window.addEventListener('load', () => {
+    setTimeout(() => {
       document.getElementById('splash-screen').classList.add('fade-out');
-      setTimeout(async () => {
+      setTimeout(() => {
         document.getElementById('splash-screen').style.display = 'none';
-        const savedUser = localStorage.getItem('shizu_user');
-        const savedPass = localStorage.getItem('shizu_pass');
-        if (savedUser && savedPass) {
-            checkLogin(savedUser, savedPass, true); 
-        }
+        const u = localStorage.getItem('shizu_user');
+        const p = localStorage.getItem('shizu_pass');
+        if (u && p) checkLogin(u, p, true);
         else showPage('page-auth');
       }, 500);
     }, 2000);
@@ -351,10 +290,16 @@
       document.getElementById(id).classList.add('hidden');
     });
     document.getElementById(pageId).classList.remove('hidden');
+    const card = document.getElementById(pageId);
+    if (card.classList.contains('card')) {
+      card.style.animation = 'none';
+      void card.offsetHeight;
+      card.style.animation = '';
+    }
   }
 
   function toggleAuth(e) {
-    if(e) e.preventDefault(); 
+    if (e) e.preventDefault();
     isSignupMode = !isSignupMode;
     document.getElementById('authTitle').innerText = isSignupMode ? 'Create Account' : 'Welcome Back';
     document.getElementById('authBtn').innerText = isSignupMode ? 'Sign Up' : 'Login';
@@ -367,10 +312,10 @@
     const pass = document.getElementById('password').value.trim();
     if (!user || !pass) return alert('Please fill both fields.');
 
-    // Bug Fix: Username validation
-    const usernameRegex = /^[a-zA-Z0-9]{3,20}$/;
-    if (!usernameRegex.test(user)) {
+    if (isSignupMode) {
+      if (!/^[a-zA-Z0-9]{3,20}$/.test(user)) {
         return alert('Username must be 3-20 characters, letters/numbers only.');
+      }
     }
 
     const hashedPass = await hashPassword(pass);
@@ -379,38 +324,38 @@
       const userRef = doc(db, "users", user.toLowerCase());
       const userSnap = await getDoc(userRef);
       if (userSnap.exists()) return alert('Username taken.');
-      
       const pairCode = Math.floor(100000 + Math.random() * 900000).toString();
-      await setDoc(userRef, { displayName: user, password: hashedPass, pairCode: pairCode, partner: '', roomId: '', avatar: '' });
-      
+      await setDoc(userRef, { displayName: user, password: hashedPass, pairCode, partner: '', roomId: '', avatar: '' });
       localStorage.setItem('shizu_user', user);
-      localStorage.setItem('shizu_pass', hashedPass); 
+      localStorage.setItem('shizu_pass', hashedPass);
       currentUser = user;
       document.getElementById('myPairCode').innerText = pairCode;
       showPage('page-pairing');
       listenToSelf();
     } else {
-      checkLogin(user, hashedPass, false);
+      // Pass plaintext too, so migration can compare old plaintext hashes
+      checkLogin(user, hashedPass, false, pass);
     }
   }
 
-  async function checkLogin(user, passAttempt, isHashedFromStorage) {
+  async function checkLogin(user, passAttempt, isFromStorage, plainPass = null) {
     const userRef = doc(db, "users", user.toLowerCase());
     const userSnap = await getDoc(userRef);
-    
+
     if (userSnap.exists()) {
       const data = userSnap.data();
       let finalPass = passAttempt;
-      
-      // Bug Fix: Proper migration logic
-      if (!isHashedFromStorage && data.password === passAttempt && passAttempt.length < 64) {
-         finalPass = await hashPassword(passAttempt);
-         await updateDoc(userRef, { password: finalPass });
+
+      // Legacy migration: stored plaintext matches what they typed → hash it now
+      if (!isFromStorage && plainPass !== null && data.password === plainPass && plainPass.length < 64) {
+        finalPass = await hashPassword(plainPass);
+        await updateDoc(userRef, { password: finalPass });
+        data.password = finalPass;
       }
-      
+
       if (data.password === finalPass) {
         localStorage.setItem('shizu_user', user);
-        localStorage.setItem('shizu_pass', finalPass); 
+        localStorage.setItem('shizu_pass', finalPass);
         currentUser = user;
 
         if (!data.roomId) {
@@ -425,77 +370,58 @@
         return;
       }
     }
-    
-    alert('Invalid credentials.'); showPage('page-auth');
+
+    alert('Invalid credentials.');
+    showPage('page-auth');
   }
 
-  // Bug Fix: Listen to own user doc for pairing/disconnect updates
   function listenToSelf() {
-      if (unsubMyUser) unsubMyUser();
-      unsubMyUser = onSnapshot(doc(db, "users", currentUser.toLowerCase()), (snap) => {
-          if (!snap.exists()) return;
-          const data = snap.data();
-          if (data.roomId && !roomId) {
-              roomId = data.roomId;
-              partnerName = data.partner;
-              enterLobby();
-          } else if (!data.roomId && roomId) {
-              // Partner disconnected us
-              roomId = '';
-              partnerName = '';
-              if (unsubRoom) unsubRoom();
-              if (unsubVotes) unsubVotes();
-              showPage('page-pairing');
-          }
-      });
+    if (unsubMyUser) unsubMyUser();
+    unsubMyUser = onSnapshot(doc(db, "users", currentUser.toLowerCase()), (snap) => {
+      if (!snap.exists()) return;
+      const data = snap.data();
+      if (data.roomId && !roomId) {
+        roomId = data.roomId;
+        partnerName = data.partner;
+        enterLobby();
+      } else if (!data.roomId && roomId) {
+        roomId = '';
+        partnerName = '';
+        if (unsubRoom) unsubRoom();
+        if (unsubVotes) unsubVotes();
+        document.getElementById('myPairCode').innerText = data.pairCode || '------';
+        showPage('page-pairing');
+      }
+    });
   }
 
   function handleLudoImageUpload(event) {
     const file = event.target.files[0];
     if (!file) return;
-    
     if (file.size > 5_000_000) {
-        event.target.value = ''; // Bug Fix: Reset input
-        return alert('Image is too large. Please choose one under 5MB.');
+      event.target.value = '';
+      return alert('Image too large. Please choose under 5MB.');
     }
-    
-    const uploadLink = document.querySelector('a[onclick*="ludoImageUpload"]');
-    const originalText = uploadLink.innerText;
-    uploadLink.innerText = "Uploading...";
+
+    const link = document.querySelector('a[onclick*="ludoImageUpload"]');
+    const original = link.innerText;
+    link.innerText = "Uploading...";
 
     const reader = new FileReader();
     reader.onload = function(e) {
       const img = new Image();
       img.onload = function() {
         const canvas = document.createElement('canvas');
-        const MAX_SIZE = 150;
-        let width = img.width;
-        let height = img.height;
-
-        if (width > height) {
-          if (width > MAX_SIZE) { height *= MAX_SIZE / width; width = MAX_SIZE; }
-        } else {
-          if (height > MAX_SIZE) { width *= MAX_SIZE / height; height = MAX_SIZE; }
-        }
-        
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, width, height);
-        
+        const MAX = 150;
+        let w = img.width, h = img.height;
+        if (w > h) { if (w > MAX) { h *= MAX / w; w = MAX; } }
+        else { if (h > MAX) { w *= MAX / h; h = MAX; } }
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
         const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
-        
         updateDoc(doc(db, "users", currentUser.toLowerCase()), { avatar: dataUrl })
-          .then(() => {
-              uploadLink.innerText = "Photo Saved!";
-              setTimeout(() => uploadLink.innerText = originalText, 2000);
-              event.target.value = ''; // Bug Fix: Reset input
-          })
-          .catch(err => {
-              alert("Error uploading: " + err.message);
-              uploadLink.innerText = originalText;
-              event.target.value = ''; // Bug Fix: Reset input
-          });
+          .then(() => { link.innerText = "Photo Saved!"; setTimeout(() => link.innerText = original, 2000); event.target.value = ''; })
+          .catch(err => { alert("Upload error: " + err.message); link.innerText = original; event.target.value = ''; });
       };
       img.src = e.target.result;
     };
@@ -506,10 +432,10 @@
     const input = document.getElementById('partnerCodeInput').value.trim();
     if (!input) return alert('Enter username or code.');
     document.getElementById('pairingStatus').innerText = "Linking...";
-    
+
     let partnerRef = doc(db, "users", input.toLowerCase());
     let partnerSnap = await getDoc(partnerRef);
-    
+
     if (!partnerSnap.exists()) {
       const q = query(collection(db, "users"), where("pairCode", "==", input));
       const qSnap = await getDocs(q);
@@ -523,20 +449,18 @@
 
     const pData = partnerSnap.data();
     if (pData.displayName.toLowerCase() === currentUser.toLowerCase()) return alert('Cannot pair with yourself.');
-    if (pData.roomId) return alert('That person is already paired with someone.');
+    if (pData.roomId) return alert('That person is already paired.');
 
-    const reCheckSnap = await getDoc(partnerRef);
-    if (reCheckSnap.data().roomId) {
-        document.getElementById('pairingStatus').innerText = "";
-        return alert('Partner just paired with someone else.');
+    const reCheck = await getDoc(partnerRef);
+    if (reCheck.data().roomId) {
+      document.getElementById('pairingStatus').innerText = "";
+      return alert('Partner just paired with someone else.');
     }
 
-    // Bug Fix: Use double underscore for room IDs
     const names = [currentUser.toLowerCase(), pData.displayName.toLowerCase()].sort();
     const newRoomId = names[0] + "__" + names[1];
-    const myRef = doc(db, "users", currentUser.toLowerCase());
-    
-    await updateDoc(myRef, { partner: pData.displayName, roomId: newRoomId });
+
+    await updateDoc(doc(db, "users", currentUser.toLowerCase()), { partner: pData.displayName, roomId: newRoomId });
     await updateDoc(partnerRef, { partner: currentUser, roomId: newRoomId });
 
     roomId = newRoomId;
@@ -545,14 +469,24 @@
   }
 
   async function leavePartner() {
-    if(!confirm("Disconnect from " + partnerName + "?")) return;
+    if (!confirm("Disconnect from " + partnerName + "?")) return;
     await updateDoc(doc(db, "users", currentUser.toLowerCase()), { partner: '', roomId: '' });
     await updateDoc(doc(db, "users", partnerName.toLowerCase()), { partner: '', roomId: '' });
-    
+
     if (unsubRoom) unsubRoom();
     if (unsubVotes) unsubVotes();
     if (unsubChat) unsubChat();
-    
+
+    hasJoined = false;
+    summaryRendered = false;
+    currentRound = 0;
+    currentQuestions = [];
+    currentQuestionText = '';
+    window.lastResultRound = null;
+    window.isAdvancing = false;
+    window.guestDismissedPrompt = false;
+    clearInterval(timerInterval);
+
     document.getElementById('partnerCodeInput').value = '';
     document.getElementById('myPairCode').innerText = (await getDoc(doc(db, "users", currentUser.toLowerCase()))).data().pairCode;
     showPage('page-pairing');
@@ -561,153 +495,185 @@
   function enterLobby() {
     localStorage.setItem('shizu_room', roomId);
     localStorage.setItem('shizu_partner', partnerName);
-    
+
     document.getElementById('player1Name').innerText = currentUser;
     document.getElementById('player2Name').innerText = partnerName;
-    
+
     isHost = (currentUser.toLowerCase() < partnerName.toLowerCase());
     document.getElementById('hostControls').classList.toggle('hidden', !isHost);
     document.getElementById('guestControls').classList.toggle('hidden', isHost);
+    document.getElementById('guestJoinPrompt').classList.add('hidden');
     showPage('page-lobby');
 
     if (unsubRoom) unsubRoom();
     unsubRoom = onSnapshot(doc(db, "rooms", roomId), (docSnap) => {
-      if (docSnap.exists() && docSnap.data().gameState) {
-        const gs = docSnap.data().gameState;
-        
-        if (gs.status === 'playing' && !hasJoined) {
-            let modeName = gs.mode === 'moreLikely' ? 'Who is more likely to...' : (gs.mode === 'neverHaveIEver' ? 'Never Have I Ever' : 'This or That');
-            document.getElementById('guestGameName').innerText = modeName;
-            document.getElementById('joinPromptTitle').innerText = "Game in Progress";
-            document.getElementById('guestJoinPrompt').classList.remove('hidden');
-        } else {
-            document.getElementById('guestJoinPrompt').classList.add('hidden');
-        }
-        
-        if (!isHost && gs.status === 'ludo') {
-            window.location.href = "ludo.html";
-            return; // Bug Fix: Added return
-        }
+      if (!docSnap.exists() || !docSnap.data().gameState) return;
+      const gs = docSnap.data().gameState;
 
-        if (gs.status === 'playing' && hasJoined) {
-            if (gs.question && gs.question !== currentQuestionText) {
-                currentRound = gs.round;
-                currentQuestionText = gs.question;
-                setupVotesListener();
-                loadQuestionUI();
-            }
-        }
-        
-        if (gs.status === 'finished' && hasJoined) {
-            showSummary();
+      // Host auto-rejoin on fresh page load
+      // (currentRound === 0 guarantees this only fires after a reload, not after "Leave Game",
+      //  because leaveGame writes status='abandoned' which fails the status check below)
+      if (isHost && gs.status === 'playing' && !hasJoined && currentRound === 0) {
+        hasJoined = true;
+        currentMode = gs.mode;
+        currentRound = gs.round;
+        currentQuestionText = gs.question;
+        if (gs.questions) currentQuestions = gs.questions;
+        showPage('page-game');
+        setupVotesListener();
+        loadQuestionUI();
+        return;
+      }
+
+      // Host abandoned the game — kick guest back to lobby
+      if (gs.status === 'abandoned' && hasJoined) {
+        hasJoined = false;
+        clearInterval(timerInterval);
+        if (unsubVotes) unsubVotes();
+        alert('Your partner left the game.');
+        showPage('page-lobby');
+        return;
+      }
+
+      // Guest join prompt
+      if (!isHost && gs.status === 'playing' && !hasJoined && !window.guestDismissedPrompt) {
+        const modeName = gs.mode === 'moreLikely' ? 'Who is more likely to...' : (gs.mode === 'neverHaveIEver' ? 'Never Have I Ever' : 'This or That');
+        document.getElementById('guestGameName').innerText = modeName;
+        document.getElementById('joinPromptTitle').innerText = "Game in Progress";
+        document.getElementById('guestJoinPrompt').classList.remove('hidden');
+      } else if (isHost || hasJoined) {
+        document.getElementById('guestJoinPrompt').classList.add('hidden');
+      }
+
+      if (!isHost && gs.status === 'ludo') {
+        window.location.href = "ludo.html";
+        return;
+      }
+
+      if (gs.status === 'playing' && hasJoined) {
+        if (gs.question && gs.question !== currentQuestionText) {
+          currentRound = gs.round;
+          currentQuestionText = gs.question;
+          if (gs.questions) currentQuestions = gs.questions;
+          setupVotesListener();
+          loadQuestionUI();
         }
       }
-    }, (error) => {
-        console.error("Room snapshot error:", error);
-    });
+
+      if (gs.status === 'finished' && hasJoined) showSummary();
+    }, (err) => console.error("Room error:", err));
+  }
+
+  function dismissJoinPrompt() {
+    window.guestDismissedPrompt = true;
+    document.getElementById('guestJoinPrompt').classList.add('hidden');
   }
 
   async function joinPartnerGame() {
     const roomSnap = await getDoc(doc(db, "rooms", roomId));
     if (!roomSnap.exists() || !roomSnap.data().gameState) return;
-    
     const gs = roomSnap.data().gameState;
     hasJoined = true;
+    window.guestDismissedPrompt = false;
     document.getElementById('guestJoinPrompt').classList.add('hidden');
 
     if (gs.status === 'ludo') {
-        window.location.href = "ludo.html";
-        return; // Bug Fix: Added return
+      window.location.href = "ludo.html";
+      return;
     } else if (gs.status === 'playing') {
-        currentMode = gs.mode;
-        currentRound = gs.round;
-        currentQuestionText = gs.question;
-        if (gs.questions) currentQuestions = gs.questions; 
-        showPage('page-game');
-        setupVotesListener();
-        loadQuestionUI();
+      currentMode = gs.mode;
+      currentRound = gs.round;
+      currentQuestionText = gs.question;
+      if (gs.questions) currentQuestions = gs.questions;
+      showPage('page-game');
+      setupVotesListener();
+      loadQuestionUI();
     }
   }
 
   async function goToLudo() {
-      await setDoc(doc(db, "rooms", roomId), { gameState: { status: 'ludo' } }, { merge: true });
-      window.location.href = "ludo.html";
+    await setDoc(doc(db, "rooms", roomId), { gameState: { status: 'ludo' } }, { merge: true });
+    window.location.href = "ludo.html";
+    return;
   }
 
   async function startGame(mode, isRetry = false) {
     const isSpicy = document.getElementById('spicyToggle').checked;
     currentMode = mode;
-    hasJoined = true; 
+    hasJoined = true;
     summaryRendered = false;
+    window.guestDismissedPrompt = false;
     document.getElementById('questionDisplay').innerText = "Fetching questions...";
     showPage('page-game');
 
     if (!isRetry) {
-        try {
-            const votesSnapshot = await getDocs(collection(db, "rooms", roomId, "votes"));
-            const deletePromises = votesSnapshot.docs.map(voteDoc => deleteDoc(doc(db, "rooms", roomId, "votes", voteDoc.id)));
-            await Promise.all(deletePromises);
-        } catch(e) { 
-            console.error("Error clearing old votes", e); 
-            alert("Network issue. Could not start game. Please try again.");
-            hasJoined = false; // Bug Fix: reset hasJoined
-            showPage('page-lobby');
-            return;
-        }
+      try {
+        const snap = await getDocs(collection(db, "rooms", roomId, "votes"));
+        await Promise.all(snap.docs.map(d => deleteDoc(doc(db, "rooms", roomId, "votes", d.id))));
+      } catch (e) {
+        console.error(e);
+        alert("Network issue. Could not start game.");
+        hasJoined = false;
+        showPage('page-lobby');
+        return;
+      }
     }
 
     let questions = [];
     try {
       const res = await fetch(WEB_APP_URL, {
-        method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify({ action: 'fetchQuestions', mode: mode, spice: isSpicy ? 'spicy' : 'normal', secret: SECRET_KEY })
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action: 'fetchQuestions', mode, spice: isSpicy ? 'spicy' : 'normal', secret: SECRET_KEY })
       });
       const data = await res.json();
-      
+
       if (data.error) {
-          alert(data.error);
-          hasJoined = false; // Bug Fix: reset hasJoined
-          showPage('page-lobby');
-          return;
-      }
-      
-      if (!data.questions || data.questions.length < 10) {
-          if (data.reason && data.reason.includes('Server busy') && !isRetry) {
-              setTimeout(() => startGame(mode, true), 1000);
-              return;
-          }
-          alert(data.reason || 'Not enough questions in the Google Sheet yet. Please wait a minute and try again.');
-          hasJoined = false; // Bug Fix: reset hasJoined
-          showPage('page-lobby');
-          return;
-      }
-      
-      questions = data.questions;
-      
-    } catch(e) { 
-        console.log(e); 
-        alert("Network error while fetching questions.");
-        hasJoined = false; // Bug Fix: reset hasJoined
+        alert(data.error);
+        hasJoined = false;
         showPage('page-lobby');
         return;
+      }
+
+      if (!data.questions || data.questions.length < 10) {
+        if (data.reason && data.reason.includes('Server busy') && !isRetry) {
+          setTimeout(() => startGame(mode, true), 1000);
+          return;
+        }
+        alert(data.reason || 'Not enough questions in the sheet yet. Wait a minute and try again.');
+        hasJoined = false;
+        showPage('page-lobby');
+        return;
+      }
+
+      if (data.fallback && isSpicy) {
+        alert("Spicy mode isn't available yet — playing Normal instead.");
+      }
+
+      questions = data.questions;
+    } catch (e) {
+      console.error(e);
+      alert("Network error while fetching questions.");
+      hasJoined = false;
+      showPage('page-lobby');
+      return;
     }
 
     questions = questions.sort(() => 0.5 - Math.random());
     currentQuestions = questions.slice(0, 10);
     currentRound = 1;
     currentQuestionText = currentQuestions[0];
-    
+
     await setDoc(doc(db, "rooms", roomId), {
-      gameState: { 
-          mode: mode, 
-          round: 1, 
-          question: currentQuestions[0], 
-          questions: currentQuestions, 
-          status: 'playing', 
-          host: currentUser 
+      gameState: {
+        mode, round: 1,
+        question: currentQuestions[0],
+        questions: currentQuestions,
+        status: 'playing',
+        host: currentUser
       }
     }, { merge: true });
-    
+
     setupVotesListener();
     loadQuestionUI();
   }
@@ -716,75 +682,68 @@
     if (unsubVotes) unsubVotes();
     unsubVotes = onSnapshot(collection(db, "rooms", roomId, "votes"), (snapshot) => {
       localVotes = [];
-      snapshot.forEach(voteDoc => { 
-          if(voteDoc.data().round === currentRound) localVotes.push(voteDoc.data()); 
-      });
-      
-      const uniqueVoters = new Set(localVotes.map(v => v.voter));
-      if (uniqueVoters.size >= 2) {
+      snapshot.forEach(v => { if (v.data().round === currentRound) localVotes.push(v.data()); });
+
+      const voters = new Set(localVotes.map(v => v.voter));
+      if (voters.size >= 2) {
         if (window.lastResultRound !== currentRound) {
-            showRoundResult(localVotes);
-            window.lastResultRound = currentRound;
+          showRoundResult(localVotes);
+          window.lastResultRound = currentRound;
         }
         if (isHost) checkIfNextQuestionReady();
       }
-    }, (error) => console.error("Votes error:", error));
+    }, (err) => console.error("Votes error:", err));
   }
 
   function showRoundResult(votes) {
     document.getElementById('voteButtonsContainer').classList.add('hidden');
-    const myVoteObj = votes.find(v => v.voter === currentUser);
-    const partnerVoteObj = votes.find(v => v.voter === partnerName);
-    let myChoice = myVoteObj ? myVoteObj.target : "?";
-    let partnerChoice = partnerVoteObj ? partnerVoteObj.target : "?";
-    
-    // Bug Fix: Better display for Never Have I Ever
+    const me = votes.find(v => v.voter === currentUser);
+    const them = votes.find(v => v.voter === partnerName);
+    let myChoice = me ? me.target : "?";
+    let theirChoice = them ? them.target : "?";
+
     if (currentMode === 'neverHaveIEver') {
-        myChoice = myChoice === 'True' ? 'I have' : (myChoice === 'False' ? 'I haven\'t' : myChoice);
-        partnerChoice = partnerChoice === 'True' ? 'I have' : (partnerChoice === 'False' ? 'I haven\'t' : partnerChoice);
+      myChoice = myChoice === 'True' ? 'I have' : (myChoice === 'False' ? "I haven't" : myChoice);
+      theirChoice = theirChoice === 'True' ? 'I have' : (theirChoice === 'False' ? "I haven't" : theirChoice);
     }
 
-    const isMatch = (myChoice === partnerChoice && myChoice !== 'Time out');
+    const isMatch = (myChoice === theirChoice && myChoice !== 'Time out');
 
     document.getElementById('resultContainer').classList.remove('hidden');
     document.getElementById('resultContainer').innerHTML = `
       <div class="result-card">
-        <div class="result-row" style="margin-bottom:10px;">You: <b>${escapeHTML(myChoice)}</b> | ${escapeHTML(partnerName)}: <b>${escapeHTML(partnerChoice)}</b></div>
+        <div style="margin-bottom:10px;">You: <b>${escapeHTML(myChoice)}</b> | ${escapeHTML(partnerName)}: <b>${escapeHTML(theirChoice)}</b></div>
         <div class="result-match">${isMatch ? 'MATCH!' : 'Different choices!'}</div>
-      </div>
-    `;
+      </div>`;
   }
 
   async function checkIfNextQuestionReady() {
     if (window.isAdvancing) return;
     window.isAdvancing = true;
-
     setTimeout(async () => {
       try {
-          if (currentRound >= 10) {
-            await updateDoc(doc(db, "rooms", roomId), { "gameState.status": "finished" });
-          } else {
-            const nextQ = currentQuestions[currentRound];
-            if (!nextQ) throw new Error("Missing question data");
-            await updateDoc(doc(db, "rooms", roomId), { "gameState.round": currentRound + 1, "gameState.question": nextQ });
-          }
-      } catch(e) {
-          console.error(e);
+        if (currentRound >= 10) {
+          await updateDoc(doc(db, "rooms", roomId), { "gameState.status": "finished" });
+        } else {
+          const nextQ = currentQuestions[currentRound];
+          if (!nextQ) throw new Error("Missing next question");
+          await updateDoc(doc(db, "rooms", roomId), { "gameState.round": currentRound + 1, "gameState.question": nextQ });
+        }
+      } catch (e) {
+        console.error(e);
       } finally {
-          window.isAdvancing = false;
+        window.isAdvancing = false;
       }
-    }, 4000); 
+    }, 4000);
   }
 
   function loadQuestionUI() {
-    document.getElementById('myVoteStatus').innerText = ""; 
-    
+    document.getElementById('myVoteStatus').innerText = "";
     clearInterval(timerInterval);
     timeLeft = 20;
     document.getElementById('timerDisplay').innerText = `${timeLeft}s`;
     document.getElementById('timerDisplay').style.color = 'var(--primary)';
-    
-    // Bug Fix: Progress bar timer
+
     const bar = document.getElementById('timerBar');
     bar.style.transition = 'none';
     bar.style.width = '100%';
@@ -796,133 +755,127 @@
     document.getElementById('voteButtonsContainer').classList.remove('hidden');
     document.getElementById('resultContainer').classList.add('hidden');
     buildVoteButtons();
-    window.lastResultRound = null; 
-    
-    // Bug Fix: Simple fade overlay instead of full-screen spin
+    window.lastResultRound = null;
+
     const card = document.getElementById('page-game');
     card.style.animation = 'none';
-    card.offsetHeight; 
-    card.style.animation = 'slideUp 0.3s ease-out';
+    void card.offsetHeight;
+    card.style.animation = 'slideUp 0.3s ease-out forwards';
 
     timerInterval = setInterval(() => {
-        timeLeft--;
-        document.getElementById('timerDisplay').innerText = `${timeLeft}s`;
-        
-        // Bug Fix: Update progress bar
-        bar.style.width = `${(timeLeft / 20) * 100}%`;
-        if (timeLeft <= 5) {
-            document.getElementById('timerDisplay').style.color = 'var(--red)';
-            bar.style.backgroundColor = 'var(--red)';
+      timeLeft--;
+      document.getElementById('timerDisplay').innerText = `${timeLeft}s`;
+      bar.style.width = `${(timeLeft / 20) * 100}%`;
+      if (timeLeft <= 5) {
+        document.getElementById('timerDisplay').style.color = 'var(--red)';
+        bar.style.backgroundColor = 'var(--red)';
+      }
+      if (timeLeft <= 0) {
+        clearInterval(timerInterval);
+        if (!document.getElementById('voteButtonsContainer').classList.contains('hidden')) {
+          submitVote('Time out');
         }
-        
-        if (timeLeft <= 0) {
-            clearInterval(timerInterval);
-            if (!document.getElementById('voteButtonsContainer').classList.contains('hidden')) {
-                submitVote('Time out');
-            }
-        }
+      }
     }, 1000);
   }
 
   function buildVoteButtons() {
-    const container = document.getElementById('voteButtonsContainer');
-    container.innerHTML = '';
-    
-    const sortedPlayers = [currentUser, partnerName].sort((a, b) => a.localeCompare(b));
-    
+    const c = document.getElementById('voteButtonsContainer');
+    c.innerHTML = '';
+    const sorted = [currentUser, partnerName].sort((a, b) => a.localeCompare(b));
+
     if (currentMode === 'moreLikely') {
-      sortedPlayers.forEach(p => {
-        const btn = document.createElement('button');
-        btn.className = 'btn btn-vote'; btn.innerText = p;
-        btn.onclick = () => submitVote(p);
-        container.appendChild(btn);
+      sorted.forEach(p => {
+        const b = document.createElement('button');
+        b.className = 'btn btn-vote';
+        b.innerText = p;
+        b.onclick = () => submitVote(p);
+        c.appendChild(b);
       });
     } else if (currentMode === 'neverHaveIEver') {
       const b1 = document.createElement('button'); b1.className = 'btn btn-vote'; b1.innerText = 'I have'; b1.onclick = () => submitVote('True');
-      const b2 = document.createElement('button'); b2.className = 'btn btn-vote'; b2.innerText = 'I haven\'t'; b2.onclick = () => submitVote('False');
-      container.appendChild(b1); container.appendChild(b2);
+      const b2 = document.createElement('button'); b2.className = 'btn btn-vote'; b2.innerText = "I haven't"; b2.onclick = () => submitVote('False');
+      c.appendChild(b1); c.appendChild(b2);
     } else if (currentMode === 'thisOrThat') {
       let opt1 = 'A', opt2 = 'B';
       if (currentQuestionText.includes(':')) {
-        let parts = currentQuestionText.split(':');
-        let text = parts.slice(1).join(':').trim().replace(/\?$/, '');
-        let options = text.split(' or ');
-        if (options.length >= 2) {
-            opt1 = options[0].trim();
-            opt2 = options.slice(1).join(' or ').trim();
+        const text = currentQuestionText.split(':').slice(1).join(':').trim().replace(/\?$/, '');
+        const opts = text.split(' or ');
+        if (opts.length >= 2) {
+          opt1 = opts[0].trim();
+          opt2 = opts.slice(1).join(' or ').trim();
         }
       }
       const b1 = document.createElement('button'); b1.className = 'btn btn-vote'; b1.innerText = opt1; b1.onclick = () => submitVote(opt1);
       const b2 = document.createElement('button'); b2.className = 'btn btn-vote'; b2.innerText = opt2; b2.onclick = () => submitVote(opt2);
-      container.appendChild(b1); container.appendChild(b2);
+      c.appendChild(b1); c.appendChild(b2);
     }
   }
 
   async function submitVote(target) {
-    clearInterval(timerInterval); // Bug Fix: Stop timer so it doesn't overwrite vote
+    clearInterval(timerInterval);
     document.getElementById('myVoteStatus').innerText = `You picked: ${target}`;
     document.querySelectorAll('.btn-vote').forEach(b => b.disabled = true);
     await setDoc(doc(db, "rooms", roomId, "votes", `round_${currentRound}_${currentUser}`), {
-      round: currentRound, voter: currentUser, target: target
+      round: currentRound, voter: currentUser, target
     });
   }
 
   async function showSummary() {
-      if (summaryRendered) return; 
-      summaryRendered = true;
-      clearInterval(timerInterval);
-      
-      document.getElementById('page-game').classList.add('hidden');
-      showPage('page-summary');
-      
-      const summaryContainer = document.getElementById('summaryContainer');
-      summaryContainer.innerHTML = 'Loading summary...';
-      
-      const snapshot = await getDocs(collection(db, "rooms", roomId, "votes"));
-      let summary = {};
-      snapshot.forEach(voteDoc => {
-        const v = voteDoc.data();
-        if (!summary[v.round]) summary[v.round] = { round: v.round, votes: [] };
-        summary[v.round].votes.push(v);
-      });
-      
-      let html = '';
-      let matchCount = 0;
-      
-      Object.values(summary).forEach(item => {
-        const myV = item.votes.find(v => v.voter === currentUser);
-        const partV = item.votes.find(v => v.voter === partnerName);
-        
-        if (myV && partV) {
-          const isMatch = (myV.target === partV.target && myV.target !== 'Time out'); 
-          if (isMatch) matchCount++;
-          
-          let myChoice = myV.target;
-          let partChoice = partV.target;
-          if (currentMode === 'neverHaveIEver') {
-              myChoice = myChoice === 'True' ? 'I have' : (myChoice === 'False' ? 'I haven\'t' : myChoice);
-              partChoice = partChoice === 'True' ? 'I have' : (partChoice === 'False' ? 'I haven\'t' : partChoice);
-          }
+    if (summaryRendered) return;
+    summaryRendered = true;
+    clearInterval(timerInterval);
+    document.getElementById('page-game').classList.add('hidden');
+    showPage('page-summary');
 
-          html += `<div class="summary-item" style="background:var(--bg); padding:10px; margin-bottom:8px; border-radius:8px; border-left:2px solid var(--primary);"><b>Round ${item.round}:</b> You: ${escapeHTML(myChoice)} | ${escapeHTML(partnerName)}: ${escapeHTML(partChoice)}<br><span style="color:${isMatch ? 'var(--green)' : 'var(--muted)'}; font-size:12px;">${isMatch ? 'Matched!' : 'Different'}</span></div>`;
-        }
-      });
-      
-      document.getElementById('finalMatchCount').innerText = matchCount;
-      summaryContainer.innerHTML = html || '<p>No votes recorded.</p>';
+    const container = document.getElementById('summaryContainer');
+    container.innerHTML = 'Loading summary...';
+
+    const snapshot = await getDocs(collection(db, "rooms", roomId, "votes"));
+    const summary = {};
+    snapshot.forEach(d => {
+      const v = d.data();
+      if (!summary[v.round]) summary[v.round] = { round: v.round, votes: [] };
+      summary[v.round].votes.push(v);
+    });
+
+    let html = '';
+    let matchCount = 0;
+    Object.values(summary).forEach(item => {
+      const myV = item.votes.find(v => v.voter === currentUser);
+      const partV = item.votes.find(v => v.voter === partnerName);
+      if (!myV || !partV) return;
+
+      const isMatch = (myV.target === partV.target && myV.target !== 'Time out');
+      if (isMatch) matchCount++;
+
+      let myChoice = myV.target, partChoice = partV.target;
+      if (currentMode === 'neverHaveIEver') {
+        myChoice = myChoice === 'True' ? 'I have' : (myChoice === 'False' ? "I haven't" : myChoice);
+        partChoice = partChoice === 'True' ? 'I have' : (partChoice === 'False' ? "I haven't" : partChoice);
+      }
+
+      html += `<div style="background:var(--bg); padding:10px; margin-bottom:8px; border-radius:8px; border-left:2px solid var(--primary);">
+        <b>Round ${item.round}:</b> You: ${escapeHTML(myChoice)} | ${escapeHTML(partnerName)}: ${escapeHTML(partChoice)}
+        <br><span style="color:${isMatch ? 'var(--green)' : 'var(--muted)'}; font-size:12px;">${isMatch ? 'Matched!' : 'Different'}</span>
+      </div>`;
+    });
+
+    document.getElementById('finalMatchCount').innerText = matchCount;
+    container.innerHTML = html || '<p>No votes recorded.</p>';
   }
 
   async function openChat() {
-    lastPageBeforeChat = document.getElementById('page-game').classList.contains('hidden') ? (document.getElementById('page-summary').classList.contains('hidden') ? 'page-lobby' : 'page-summary') : 'page-game';
+    lastPageBeforeChat = document.getElementById('page-game').classList.contains('hidden')
+      ? (document.getElementById('page-summary').classList.contains('hidden') ? 'page-lobby' : 'page-summary')
+      : 'page-game';
     showPage('page-chat');
     if (unsubChat) unsubChat();
-    
-    // Bug Fix: Estimate server timestamps
     unsubChat = onSnapshot(query(collection(db, "rooms", roomId, "messages"), orderBy("time")), (snapshot) => {
       const box = document.getElementById('chatBox');
       box.innerHTML = '';
-      snapshot.forEach(messageDoc => {
-        const m = messageDoc.data({serverTimestamps: 'estimate'}); 
+      snapshot.forEach(d => {
+        const m = d.data({ serverTimestamps: 'estimate' });
         if (!m.time) return;
         const div = document.createElement('div');
         div.className = 'msg ' + (m.user === currentUser ? 'msg-me' : 'msg-other');
@@ -930,64 +883,77 @@
         box.appendChild(div);
       });
       box.scrollTop = box.scrollHeight;
-    }, (error) => console.error(error));
+    }, (err) => console.error(err));
   }
 
-  function closeChat() { 
-      if (unsubChat) unsubChat();
-      showPage(lastPageBeforeChat); 
+  function closeChat() {
+    if (unsubChat) unsubChat();
+    showPage(lastPageBeforeChat);
   }
 
   async function sendChat() {
     const input = document.getElementById('chatInput');
     if (!input.value.trim()) return;
-    await addDoc(collection(db, "rooms", roomId, "messages"), { user: currentUser, text: input.value.trim(), time: serverTimestamp() });
+    await addDoc(collection(db, "rooms", roomId, "messages"), {
+      user: currentUser, text: input.value.trim(), time: serverTimestamp()
+    });
     input.value = '';
   }
 
   function handleChatEnter(e) { if (e.key === 'Enter') sendChat(); }
 
-  function leaveGame() {
-      hasJoined = false;
-      clearInterval(timerInterval);
-      window.isAdvancing = false;
-      // Bug Fix: Unsubscribe from listeners when leaving
-      if (unsubVotes) unsubVotes();
-      showPage('page-lobby');
-      
-      document.getElementById('guestGameName').innerText = currentMode === 'moreLikely' ? 'Who is more likely to...' : (currentMode === 'neverHaveIEver' ? 'Never Have I Ever' : 'This or That');
-      document.getElementById('joinPromptTitle').innerText = "Game in Progress";
-      document.getElementById('guestJoinPrompt').classList.remove('hidden');
+  async function leaveGame() {
+    hasJoined = false;
+    clearInterval(timerInterval);
+    window.isAdvancing = false;
+    window.guestDismissedPrompt = true;
+    if (unsubVotes) unsubVotes();
+
+    // Host abandons the room so a refresh can't pull them back into the old game
+    if (isHost) {
+      try {
+        await updateDoc(doc(db, "rooms", roomId), { "gameState.status": "abandoned" });
+      } catch (e) { console.error(e); }
+    }
+
+    showPage('page-lobby');
+    document.getElementById('guestJoinPrompt').classList.add('hidden');
   }
 
   function backToLobby() {
-      hasJoined = false;
-      summaryRendered = false;
-      showPage('page-lobby');
-      document.getElementById('guestJoinPrompt').classList.add('hidden');
+    hasJoined = false;
+    summaryRendered = false;
+    window.guestDismissedPrompt = true;
+    if (unsubVotes) unsubVotes();
+    showPage('page-lobby');
+    document.getElementById('guestJoinPrompt').classList.add('hidden');
   }
 
   function logout() {
-    if (unsubRoom) unsubRoom();
-    if (unsubVotes) unsubVotes();
-    if (unsubChat) unsubChat();
-    if (unsubMyUser) unsubMyUser();
-    
-    localStorage.removeItem('shizu_user'); localStorage.removeItem('shizu_pass'); localStorage.removeItem('shizu_room'); localStorage.removeItem('shizu_partner');
+    [unsubRoom, unsubVotes, unsubChat, unsubMyUser].forEach(fn => fn && fn());
+    localStorage.removeItem('shizu_user');
+    localStorage.removeItem('shizu_pass');
+    localStorage.removeItem('shizu_room');
+    localStorage.removeItem('shizu_partner');
     window.location.reload();
   }
 
-  // Bug Fix: Define the typing stub
-  window.handleTyping = () => {};
-
-  window.toggleAuth = toggleAuth; window.handleAuth = handleAuth; window.linkPartner = linkPartner; window.leavePartner = leavePartner;
-  window.startGame = startGame; window.openChat = openChat; window.closeChat = closeChat; window.sendChat = sendChat;
-  window.leaveGame = leaveGame; window.logout = logout; window.goToLudo = goToLudo; 
+  window.toggleAuth = toggleAuth;
+  window.handleAuth = handleAuth;
+  window.linkPartner = linkPartner;
+  window.leavePartner = leavePartner;
+  window.startGame = startGame;
+  window.openChat = openChat;
+  window.closeChat = closeChat;
+  window.sendChat = sendChat;
+  window.leaveGame = leaveGame;
+  window.logout = logout;
+  window.goToLudo = goToLudo;
   window.handleLudoImageUpload = handleLudoImageUpload;
   window.joinPartnerGame = joinPartnerGame;
   window.backToLobby = backToLobby;
   window.handleChatEnter = handleChatEnter;
-
+  window.dismissJoinPrompt = dismissJoinPrompt;
 </script>
 </body>
-</html>
+      </html>
