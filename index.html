@@ -3,14 +3,63 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Shizu</title>
+  <title>SHIZU — A Little Game for Two Hearts</title>
+  
+  <!-- Premium Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
   <style>
-    :root { --bg: #050505; --card: #111111; --text: #ffffff; --muted: #888888; --yellow: #FFD700; --border: #333333; --green: #4CAF50; --red: #f44336; }
-    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; text-align: center; padding: 20px; background: var(--bg); color: var(--text); margin: 0; overflow-x: hidden; }
+    :root { 
+      --bg: #100B12; 
+      --bg-sec: #19111C;
+      --card: #211722; 
+      --primary: #E879A5; 
+      --secondary: #B96A91;
+      --text: #F8EAF0; 
+      --muted: #A99AA5; 
+      --border: rgba(232, 121, 165, 0.16); 
+      --green: #4CAF50;
+    }
     
-    #splash-screen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: var(--bg); display: flex; justify-content: center; align-items: center; z-index: 9999; transition: opacity 0.5s; }
-    .splash-logo { font-size: 3.5rem; font-weight: 800; color: var(--yellow); animation: fadeIn 1s forwards; opacity: 0; }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    
+    body { 
+      font-family: 'Inter', sans-serif; 
+      text-align: center; 
+      padding: 20px; 
+      background: var(--bg); 
+      color: var(--text); 
+      margin: 0; 
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
+
+    h1, h2, h3 { 
+      font-family: 'Playfair Display', serif; 
+      font-weight: 600; 
+      margin-top: 0; 
+    }
+    
+    /* Floating Hearts Background */
+    .heart-bg {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1; overflow: hidden;
+    }
+    .heart-particle {
+      position: absolute; bottom: -20px; color: var(--primary); opacity: 0.15;
+      animation: floatUp 8s linear infinite;
+    }
+    @keyframes floatUp {
+      0% { transform: translateY(0) scale(0.8); opacity: 0; }
+      10% { opacity: 0.15; }
+      90% { opacity: 0.15; }
+      100% { transform: translateY(-100vh) scale(1.2); opacity: 0; }
+    }
+
+    #splash-screen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: var(--bg); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; transition: opacity 0.5s; }
+    .splash-logo { font-family: 'Playfair Display', serif; font-size: 3.5rem; font-weight: 700; color: var(--primary); margin: 0; animation: fadeIn 1.5s forwards; opacity: 0; }
+    .splash-sub { color: var(--muted); font-size: 14px; margin-top: 10px; animation: fadeIn 2s forwards; opacity: 0; }
     .fade-out { opacity: 0 !important; pointer-events: none; }
     @keyframes fadeIn { to { opacity: 1; } }
 
@@ -20,136 +69,309 @@
     #transition-overlay.active img { animation: spinAndGrow 1.2s cubic-bezier(0.25, 1, 0.5, 1) forwards; }
     @keyframes spinAndGrow { 0% { transform: scale(0.6) rotate(0deg); opacity: 0; } 20% { opacity: 1; } 100% { transform: scale(1.5) rotate(360deg); opacity: 1; } }
 
-    h1, h2, h3 { font-weight: 700; margin-top: 0; }
-    h1 { color: var(--yellow); font-size: 2.2rem; margin-bottom: 20px; }
-    .container { max-width: 500px; margin: 0 auto; }
-    .card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 30px 20px; margin: 20px auto; position: relative; }
+    .container { max-width: 500px; margin: 0 auto; position: relative; z-index: 10; }
     
-    .btn { background: transparent; color: var(--text); border: 1px solid var(--border); padding: 16px; margin: 8px 0; border-radius: 6px; font-size: 16px; font-weight: 600; cursor: pointer; width: 100%; transition: 0.15s; position: relative; display: flex; justify-content: center; align-items: center; gap: 10px;}
+    /* Header */
+    .header { margin-bottom: 30px; }
+    .header h1 { 
+      color: var(--primary); 
+      font-size: 2.8rem; 
+      margin-bottom: 5px; 
+      letter-spacing: 1px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+    }
+    .header p { color: var(--muted); font-size: 14px; margin: 0; }
+    
+    /* Cards */
+    .card { 
+      background: linear-gradient(145deg, var(--card), var(--bg-sec)); 
+      border: 1px solid var(--border); 
+      border-radius: 16px; 
+      padding: 24px 20px; 
+      margin: 20px auto; 
+      position: relative;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      animation: slideUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    @keyframes slideUp { to { opacity: 1; transform: translateY(0); } }
+    
+    .btn { 
+      background: transparent; 
+      color: var(--text); 
+      border: 1px solid var(--border); 
+      padding: 16px; 
+      margin: 8px 0; 
+      border-radius: 12px; 
+      font-family: 'Inter', sans-serif;
+      font-size: 16px; 
+      font-weight: 500; 
+      cursor: pointer; 
+      width: 100%; 
+      transition: all 0.2s ease; 
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      min-height: 44px;
+    }
     .btn:active { transform: scale(0.97); }
-    .btn:hover:not(:disabled) { border-color: var(--yellow); color: var(--yellow); }
-    .btn:disabled { opacity: 0.3; cursor: not-allowed; }
-    .btn-primary { background: var(--yellow); color: #000; border-color: var(--yellow); }
-    .btn-primary:hover:not(:disabled) { background: #e6c200; }
+    .btn-primary { 
+      background: linear-gradient(135deg, var(--primary), var(--secondary)); 
+      color: #fff; 
+      border: none; 
+      font-weight: 600;
+      box-shadow: 0 4px 15px rgba(232, 121, 165, 0.3);
+    }
+    .btn-primary:hover:not(:disabled) { filter: brightness(1.1); box-shadow: 0 6px 20px rgba(232, 121, 165, 0.4); }
     
-    .input { padding: 16px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg); color: var(--text); width: 100%; font-size: 16px; margin-bottom: 15px; text-align: center; }
-    .input:focus { outline: none; border-color: var(--yellow); }
+    .input { 
+      padding: 16px; 
+      border-radius: 12px; 
+      border: 1px solid var(--border); 
+      background: var(--bg); 
+      color: var(--text); 
+      width: 100%; 
+      font-size: 16px; 
+      margin-bottom: 15px; 
+      text-align: center; 
+      font-family: 'Inter', sans-serif;
+      transition: border-color 0.3s;
+    }
+    .input:focus { outline: none; border-color: var(--primary); }
     .hidden { display: none !important; }
     
-    .status-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #555; margin-right: 8px; transition: 0.3s; }
-    .status-dot.online { background: var(--green); box-shadow: 0 0 8px var(--green); }
-    .unread-dot { position: absolute; top: -5px; right: -5px; width: 12px; height: 12px; background: var(--red); border-radius: 50%; display: none; border: 2px solid var(--bg); }
-    
-    .avatar { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 2px solid var(--yellow); margin-bottom: 15px; display: inline-block; background: #333; }
+    /* Connection Card */
+    .connection-status {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(76, 175, 80, 0.1); color: var(--green);
+      padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; letter-spacing: 1px;
+      margin-bottom: 20px;
+    }
+    .status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green); animation: pulseGreen 2s infinite; }
+    @keyframes pulseGreen { 0% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.4); } 70% { box-shadow: 0 0 0 6px rgba(76, 175, 80, 0); } 100% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0); } }
 
-    .question { font-size: 1.4rem; margin: 20px 0; font-weight: 600; line-height: 1.4; min-height: 60px;}
+    .players-row {
+      display: flex; justify-content: center; align-items: center; gap: 15px;
+      font-family: 'Playfair Display', serif; font-size: 1.2rem; color: var(--text);
+    }
+    .heart-connect { color: var(--primary); animation: heartbeat 1.5s infinite; }
+    @keyframes heartbeat { 0% { transform: scale(1); } 14% { transform: scale(1.2); } 28% { transform: scale(1); } 42% { transform: scale(1.2); } 70% { transform: scale(1); } }
+
+    /* Game Selection */
+    .section-title { font-family: 'Playfair Display', serif; color: var(--text); font-size: 1.6rem; margin-top: 30px; margin-bottom: 5px; }
+    .section-subtitle { color: var(--muted); font-size: 14px; margin-bottom: 20px; }
     
-    .result-card { background: var(--bg); border: 2px solid var(--yellow); border-radius: 8px; padding: 20px; margin-top: 20px; text-align: left; }
-    .result-match { font-size: 22px; font-weight: 800; color: var(--yellow); text-align: center; margin-top: 15px; border-top: 1px solid var(--border); padding-top: 15px; }
+    .game-card {
+      display: flex; flex-direction: column; align-items: flex-start; text-align: left;
+      background: var(--bg-sec); border: 1px solid var(--border);
+      padding: 20px; border-radius: 16px; margin-bottom: 15px;
+      cursor: pointer; transition: all 0.2s;
+      position: relative; overflow: hidden;
+    }
+    .game-card:active { transform: scale(0.98); }
+    .game-card::before {
+      content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%;
+      background: var(--primary); opacity: 0; transition: opacity 0.2s;
+    }
+    .game-card:hover::before { opacity: 1; }
+    .game-card h3 { margin: 0 0 5px 0; color: var(--text); font-size: 1.2rem; font-family: 'Inter', sans-serif; font-weight: 600; }
+    .game-card p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.4; }
+    .game-icon { font-size: 24px; margin-bottom: 10px; }
+
+    /* Chat */
+    .chat-card { text-align: center; background: linear-gradient(145deg, var(--bg-sec), var(--card)); }
+    .chat-card h3 { font-family: 'Playfair Display', serif; font-size: 1.5rem; color: var(--text); margin-bottom: 5px; }
+    .chat-card p { color: var(--muted); font-size: 14px; margin-bottom: 20px; }
+
+    .summary-item { background: var(--bg); margin-bottom: 12px; padding: 15px; border-radius: 12px; text-align: left; border-left: 2px solid var(--primary); }
+    .summary-q { font-weight: 600; color: var(--text); margin-bottom: 8px; font-size: 14px;}
+    .summary-votes { color: var(--muted); font-size: 14px; line-height: 1.5; }
+    .summary-match { color: var(--primary); font-weight: bold; margin-top: 5px; }
     
-    .chat-box { height: 350px; overflow-y: auto; background: var(--bg); border-radius: 6px; padding: 15px; margin-bottom: 15px; text-align: left; display: flex; flex-direction: column; border: 1px solid var(--border); }
-    .msg { margin-bottom: 12px; padding: 10px 14px; border-radius: 6px; max-width: 85%; font-size: 14px; line-height: 1.4; position: relative; }
-    .msg-me { background: var(--border); align-self: flex-end; border-bottom-right-radius: 2px; }
-    .msg-other { background: #1a1a1a; border: 1px solid var(--border); align-self: flex-start; border-bottom-left-radius: 2px; }
-    .msg-meta { font-size: 11px; color: var(--muted); margin-bottom: 4px; display: block; }
+    .chat-box { height: 350px; overflow-y: auto; background: var(--bg); border-radius: 12px; padding: 15px; margin-bottom: 15px; text-align: left; display: flex; flex-direction: column; border: 1px solid var(--border); }
+    .msg { margin-bottom: 12px; padding: 10px 14px; border-radius: 12px; max-width: 85%; font-size: 14px; line-height: 1.4; position: relative; }
+    .msg-me { background: var(--primary); color: #fff; align-self: flex-end; border-bottom-right-radius: 4px; }
+    .msg-other { background: var(--card); border: 1px solid var(--border); color: var(--text); align-self: flex-start; border-bottom-left-radius: 4px; }
+    .msg-meta { font-size: 11px; color: rgba(255,255,255,0.7); margin-bottom: 4px; display: block; }
     .chat-input-container { display: flex; gap: 10px; }
     .chat-input-container input { margin-bottom: 0; text-align: left; }
-    .chat-input-container button { width: auto; padding: 16px 20px; margin: 0; }
+    .chat-input-container button { width: auto; padding: 16px 24px; margin: 0; }
+    
+    .settings-link { color: var(--muted); text-decoration: none; font-size: 13px; margin-top: 20px; display: inline-block; transition: color 0.2s; }
+    .settings-link:hover { color: var(--primary); }
 
-    .settings-link { color: var(--muted); text-decoration: none; font-size: 13px; margin-top: 20px; display: inline-block; border-bottom: 1px dashed var(--muted); padding-bottom: 2px; }
+    .question { font-size: 1.3rem; margin: 20px 0; font-weight: 500; line-height: 1.4; min-height: 60px;}
+    .result-card { background: var(--bg); border: 2px solid var(--primary); border-radius: 12px; padding: 20px; margin-top: 20px; text-align: left; }
+    .result-match { font-size: 20px; font-weight: 700; color: var(--primary); text-align: center; margin-top: 15px; border-top: 1px solid var(--border); padding-top: 15px; font-family: 'Playfair Display', serif;}
+
+    .btn-vote { background: var(--bg-sec); border: 1px solid var(--border); margin: 6px; width: calc(50% - 12px); display: inline-block; padding: 16px 10px; font-size: 15px; font-weight: 500; color: var(--text); cursor: pointer; border-radius: 12px; transition: 0.2s;}
+    .btn-vote:active { background: var(--border); transform: scale(0.95); }
+    .btn-vote-full { width: 100%; display: flex; justify-content: center; }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { animation: none !important; transition: none !important; }
+    }
   </style>
 </head>
 <body>
 
-<div id="splash-screen"><h1 class="splash-logo">Shizu</h1></div>
+<!-- Floating Hearts -->
+<div class="heart-bg" id="heartBg"></div>
+<input type="file" id="ludoImageUpload" accept="image/*" class="hidden" onchange="window.handleLudoImageUpload(event)">
+
+<div id="splash-screen">
+  <h1 class="splash-logo">SHIZU</h1>
+  <p class="splash-sub">A Little Game for Two Hearts.</p>
+</div>
 <div id="transition-overlay"><img src="animation.png" alt="Loading..."></div>
-<input type="file" id="avatarUpload" accept="image/*" class="hidden" onchange="window.handleImageUpload(event)">
 
 <div class="container">
-  <h1>Shizu</h1>
+  
+  <!-- HEADER -->
+  <div class="header">
+    <h1>SHIZU 🤍</h1>
+    <p>Your little world, together.</p>
+  </div>
 
+  <!-- AUTH -->
   <div id="page-auth" class="card hidden">
-    <h2 id="authTitle">Login</h2>
+    <h2 id="authTitle" style="font-family: 'Playfair Display';">Welcome Back</h2>
+    <p style="color: var(--muted); font-size: 14px; margin-bottom: 20px;">Sign in to your private world.</p>
     <input type="text" id="username" class="input" placeholder="Username" style="text-transform:none;" />
     <input type="password" id="password" class="input" placeholder="Password" style="text-transform:none;" />
     <button class="btn btn-primary" onclick="window.handleAuth()" id="authBtn">Login</button>
     <p style="margin-top: 20px; font-size: 14px; color: var(--muted);">
       <span id="authSwitchText">New here?</span> 
-      <a href="#" onclick="window.toggleAuth(event)" style="color: var(--yellow); text-decoration: none; font-weight: 600;" id="authSwitchLink">Sign up</a>
+      <a href="#" onclick="window.toggleAuth(event)" style="color: var(--primary); text-decoration: none; font-weight: 600;" id="authSwitchLink">Sign up</a>
     </p>
   </div>
 
+  <!-- PAIRING -->
   <div id="page-pairing" class="card hidden">
-    <h2>Pair</h2>
-    <p style="color: var(--muted);">Send this 6-digit code to your partner:</p>
-    <div id="myPairCode" style="display:inline-block; border:1px solid var(--yellow); color:var(--yellow); padding:12px 24px; border-radius:6px; font-size:24px; font-weight:700; letter-spacing:4px; margin:15px 0;">------</div>
-    <hr style="border-color: var(--border); margin: 30px 0;">
-    <p style="color: var(--muted);">Or enter their Username:</p>
+    <h2 style="font-family: 'Playfair Display';">Connect</h2>
+    <p style="color: var(--muted); font-size: 14px; margin-bottom: 15px;">Send this 6-digit code to your partner:</p>
+    <div id="myPairCode" style="display:inline-block; border:1px solid var(--primary); color:var(--primary); padding:12px 24px; border-radius:12px; font-size:24px; font-weight:600; letter-spacing:4px; margin:15px 0;">------</div>
+    <hr style="border-color: var(--border); margin: 20px 0;">
+    <p style="color: var(--muted); font-size: 14px; margin-bottom: 15px;">Or enter their Username:</p>
     <input type="text" id="partnerCodeInput" class="input" placeholder="USERNAME OR CODE" style="text-transform:none;" />
-    <button class="btn" onclick="window.linkPartner()">Link Accounts</button>
-    <p id="pairingStatus" style="color: var(--yellow); margin-top: 15px; font-size: 14px;"></p>
+    <button class="btn btn-primary" onclick="window.linkPartner()">Link Accounts</button>
+    <p id="pairingStatus" style="color: var(--primary); margin-top: 15px; font-size: 14px;"></p>
   </div>
 
-  <div id="page-lobby" class="card hidden">
-    <h2>Connected</h2>
-    <img id="partnerAvatarDisplay" class="avatar" src="" alt="Partner" style="display:none;">
-    <div id="partnerAvatarFallback" class="avatar" style="display:flex; justify-content:center; align-items:center; font-size:32px;">👤</div>
+  <!-- LOBBY -->
+  <div id="page-lobby" class="card hidden" style="padding: 30px 20px;">
     
-    <p style="color: var(--muted); margin-bottom: 5px;">Playing with:</p>
-    <p style="font-size: 1.5rem; font-weight: 700; margin-top: 0; margin-bottom: 30px; color: var(--yellow);">
-      <span id="partnerStatusDot" class="status-dot"></span>
-      <span id="partnerNameDisplay">...</span>
-    </p>
+    <!-- Connection Status -->
+    <div class="connection-status">
+      <span class="status-dot"></span> CONNECTED
+    </div>
     
-    <div id="hostControls">
-      <div style="margin: 20px 0; font-size: 14px;">
-        <label style="cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px;">
-          <input type="checkbox" id="spicyToggle" style="transform: scale(1.2); accent-color: var(--yellow);"> 
-          <span style="color: var(--yellow); font-weight: 600;">Spicy Mode</span>
-        </label>
+    <div class="players-row">
+      <span id="player1Name">...</span>
+      <svg class="heart-connect" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+      </svg>
+      <span id="player2Name">...</span>
+    </div>
+    
+    <div style="margin-top: 40px;">
+      <h2 class="section-title">Choose Your Moment</h2>
+      <p class="section-subtitle">Pick a game and make some memories.</p>
+      
+      <div id="hostControls">
+        
+        <!-- Game Cards -->
+        <div class="game-card" onclick="window.startGame('moreLikely')">
+          <div class="game-icon">✨</div>
+          <h3>Who is more likely to...</h3>
+          <p>Discover what you really think about each other.</p>
+        </div>
+        
+        <div class="game-card" onclick="window.startGame('neverHaveIEver')">
+          <div class="game-icon">🤫</div>
+          <h3>Never Have I Ever</h3>
+          <p>Reveal the unexpected things you have done.</p>
+        </div>
+        
+        <div class="game-card" onclick="window.startGame('thisOrThat')">
+          <div class="game-icon">🎭</div>
+          <h3>This or That</h3>
+          <p>Pick a side and see if you match.</p>
+        </div>
+
+        <!-- Ludo Card -->
+        <div class="game-card" onclick="window.goToLudo()">
+          <div class="game-icon">🎲</div>
+          <h3>Play Ludo</h3>
+          <p>A little friendly competition.</p>
+        </div>
+
+        <!-- Spicy Toggle -->
+        <div style="margin: 20px 0; font-size: 14px; display: flex; justify-content: center;">
+          <label style="cursor: pointer; display: flex; align-items: center; gap: 10px;">
+            <input type="checkbox" id="spicyToggle" style="transform: scale(1.2); accent-color: var(--primary);"> 
+            <span style="color: var(--primary); font-weight: 600;">Enable Spicy Mode</span>
+          </label>
+        </div>
+
+        <!-- Main Action Button -->
+        <button class="btn btn-primary" onclick="window.startGame('moreLikely')" style="margin-top: 10px;">
+          PLAY TOGETHER
+        </button>
+
       </div>
-      <button class="btn" onclick="window.startGame('moreLikely')">Who is more likely to...</button>
-      <button class="btn" onclick="window.startGame('neverHaveIEver')">Never Have I Ever</button>
-      <button class="btn" onclick="window.startGame('thisOrThat')">This or That</button>
-      <button class="btn btn-primary" onclick="window.goToLudo()" style="margin-top: 15px;">🎲 Play Ludo</button>
-    </div>
-    
-    <div id="guestControls" class="hidden">
-      <p style="color: var(--muted); margin-top: 30px;">Waiting for host to start...</p>
-    </div>
+      
+      <div id="guestControls" class="hidden">
+        <p style="color: var(--muted); margin-top: 30px; font-style: italic;">Waiting for host to choose a moment...</p>
+      </div>
 
-    <button class="btn" onclick="window.openChat()" style="margin-top: 20px;">
-      💬 Open Chat <span id="lobbyUnreadDot" class="unread-dot"></span>
-    </button>
-    
-    <br>
-    <a href="#" onclick="document.getElementById('avatarUpload').click()" class="settings-link">Upload My Photo</a>
-    <span style="color: var(--border); margin: 0 10px;">|</span>
-    <a href="#" onclick="window.leavePartner()" class="settings-link">Change Partner</a>
-    <br><br>
-    <a href="#" onclick="window.logout()" class="logout-link" style="color: var(--muted); text-decoration: none; font-size: 13px;">Log out</a>
+      <!-- Chat Section -->
+      <div class="game-card chat-card" style="margin-top: 30px;" onclick="window.openChat()">
+        <h3>Your Private Space</h3>
+        <p>Talk, laugh and share moments together.</p>
+        <button class="btn" style="margin: 0; width: auto; padding: 10px 20px; font-size: 14px;">OPEN CHAT</button>
+      </div>
+
+      <br>
+      <!-- Text link to upload Ludo image -->
+      <a href="#" onclick="document.getElementById('ludoImageUpload').click()" class="settings-link">Upload Photo for Ludo</a>
+      <span style="color: var(--border); margin: 0 10px;">|</span>
+      <a href="#" onclick="window.leavePartner()" class="settings-link">Disconnect Partner</a>
+      <br><br>
+      <a href="#" onclick="window.logout()" class="settings-link">Log out</a>
+    </div>
   </div>
 
+  <!-- GAME SCREEN -->
   <div id="page-game" class="card hidden">
     <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
-      <div id="roundBadge" style="color:var(--muted); font-weight:bold;">ROUND 1</div>
+      <div id="roundBadge" style="color:var(--muted); font-weight:bold; font-size:12px; letter-spacing:1px;">ROUND 1</div>
+      <div id="timerDisplay" style="color:var(--primary); font-weight:bold; font-size:12px;">20s</div>
     </div>
     <div id="questionDisplay" class="question">Loading...</div>
     <div id="voteButtonsContainer"></div>
     <div id="resultContainer" class="hidden"></div>
-    <div id="myVoteStatus" style="margin-top: 20px; font-size: 14px; color: var(--yellow); font-weight: 600;"></div>
-    <button class="btn" onclick="window.leaveGame()" style="margin-top: 20px; background: transparent; border-color: #555; color: #aaa;">Leave Game</button>
+    <div id="myVoteStatus" style="margin-top: 20px; font-size: 14px; color: var(--primary); font-weight: 500;"></div>
+    <button class="btn" onclick="window.leaveGame()" style="margin-top: 30px; border-color: transparent; color: var(--muted);">Leave Game</button>
   </div>
 
+  <!-- CHAT SCREEN -->
   <div id="page-chat" class="card hidden">
-    <h2>Chat</h2>
+    <h2 style="font-family: 'Playfair Display';">Your Private Space</h2>
     <div id="chatBox" class="chat-box"></div>
+    <div id="typingIndicator" style="font-size:11px; color:var(--muted); text-align:left; margin-bottom:5px; font-style:italic;" class="hidden">Partner is typing...</div>
     <div class="chat-input-container">
-      <input type="text" id="chatInput" class="input" placeholder="Type a message..." onkeypress="window.handleChatEnter(event)">
+      <input type="text" id="chatInput" class="input" placeholder="Type a message..." oninput="window.handleTyping()" onkeypress="window.handleChatEnter(event)">
       <button class="btn btn-primary" onclick="window.sendChat()">Send</button>
     </div>
     <br>
-    <button class="btn" onclick="window.closeChat()">Back</button>
+    <button class="btn" onclick="window.closeChat()" style="border-color: transparent; color: var(--muted);">Back to Lobby</button>
   </div>
 </div>
 
@@ -178,6 +400,22 @@
   let isSignupMode = false;
   let unsubRoom, unsubVotes, unsubChat, unsubPartner;
 
+  // --- FLOATING HEARTS ANIMATION ---
+  function createHearts() {
+    const bg = document.getElementById('heartBg');
+    const heartSVG = `<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`;
+    for (let i = 0; i < 15; i++) {
+      const heart = document.createElement('div');
+      heart.className = 'heart-particle';
+      heart.innerHTML = heartSVG;
+      heart.style.left = `${Math.random() * 100}vw`;
+      heart.style.animationDelay = `${Math.random() * 8}s`;
+      heart.style.animationDuration = `${6 + Math.random() * 6}s`;
+      bg.appendChild(heart);
+    }
+  }
+  createHearts();
+
   window.onload = () => {
     setTimeout(() => {
       document.getElementById('splash-screen').classList.add('fade-out');
@@ -188,7 +426,7 @@
         if (savedUser && savedPass) checkLogin(savedUser, savedPass);
         else showPage('page-auth');
       }, 500);
-    }, 1500);
+    }, 2000);
   };
 
   function showPage(pageId) {
@@ -198,19 +436,16 @@
     document.getElementById(pageId).classList.remove('hidden');
   }
 
-  function vibrate() { if (navigator.vibrate) navigator.vibrate(50); }
-
   function toggleAuth(e) {
     if(e) e.preventDefault(); 
     isSignupMode = !isSignupMode;
-    document.getElementById('authTitle').innerText = isSignupMode ? 'Create Account' : 'Login';
+    document.getElementById('authTitle').innerText = isSignupMode ? 'Create Account' : 'Welcome Back';
     document.getElementById('authBtn').innerText = isSignupMode ? 'Sign Up' : 'Login';
     document.getElementById('authSwitchText').innerText = isSignupMode ? 'Already have an account?' : "New here?";
     document.getElementById('authSwitchLink').innerText = isSignupMode ? 'Login' : 'Sign up';
   }
 
   async function handleAuth() {
-    vibrate();
     const user = document.getElementById('username').value.trim();
     const pass = document.getElementById('password').value.trim();
     if (!user || !pass) return alert('Please fill both fields.');
@@ -256,10 +491,14 @@
     }
   }
 
-  function handleImageUpload(event) {
+  // --- LUDO IMAGE UPLOAD LOGIC ---
+  function handleLudoImageUpload(event) {
     const file = event.target.files[0];
     if (!file) return;
-    document.getElementById('partnerAvatarFallback').innerText = "⏳";
+    
+    const uploadLink = document.querySelector('a[onclick*="ludoImageUpload"]');
+    const originalText = uploadLink.innerText;
+    uploadLink.innerText = "Uploading...";
 
     const reader = new FileReader();
     reader.onload = function(e) {
@@ -267,17 +506,31 @@
       img.onload = function() {
         const canvas = document.createElement('canvas');
         const MAX_SIZE = 150;
-        let width = img.width, height = img.height;
-        if (width > height) { if (width > MAX_SIZE) { height *= MAX_SIZE / width; width = MAX_SIZE; } }
-        else { if (height > MAX_SIZE) { width *= MAX_SIZE / height; height = MAX_SIZE; } }
-        canvas.width = width; canvas.height = height;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > MAX_SIZE) { height *= MAX_SIZE / width; width = MAX_SIZE; }
+        } else {
+          if (height > MAX_SIZE) { width *= MAX_SIZE / height; height = MAX_SIZE; }
+        }
+        
+        canvas.width = width;
+        canvas.height = height;
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, width, height);
+        
         const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
         
         updateDoc(doc(db, "users", currentUser.toLowerCase()), { avatar: dataUrl })
-          .then(() => alert("Photo updated!"))
-          .catch(err => alert("Error uploading: " + err.message));
+          .then(() => {
+              uploadLink.innerText = "Photo Saved!";
+              setTimeout(() => uploadLink.innerText = originalText, 2000);
+          })
+          .catch(err => {
+              alert("Error uploading: " + err.message);
+              uploadLink.innerText = originalText;
+          });
       };
       img.src = e.target.result;
     };
@@ -285,7 +538,6 @@
   }
 
   async function linkPartner() {
-    vibrate();
     const input = document.getElementById('partnerCodeInput').value.trim();
     if (!input) return alert('Enter username or code.');
     document.getElementById('pairingStatus').innerText = "Linking...";
@@ -321,8 +573,7 @@
   }
 
   async function leavePartner() {
-    vibrate();
-    if(!confirm("Unlink from " + partnerName + "?")) return;
+    if(!confirm("Disconnect from " + partnerName + "?")) return;
     await updateDoc(doc(db, "users", currentUser.toLowerCase()), { partner: '', roomId: '' });
     await updateDoc(doc(db, "users", partnerName.toLowerCase()), { partner: '', roomId: '' });
     if (unsubRoom) unsubRoom();
@@ -336,35 +587,20 @@
     localStorage.setItem('shizu_room', roomId);
     localStorage.setItem('shizu_partner', partnerName);
     
-    document.getElementById('partnerNameDisplay').innerText = partnerName;
+    document.getElementById('player1Name').innerText = currentUser;
+    document.getElementById('player2Name').innerText = partnerName;
+    
     isHost = (currentUser.toLowerCase() < partnerName.toLowerCase());
     document.getElementById('hostControls').classList.toggle('hidden', !isHost);
     document.getElementById('guestControls').classList.toggle('hidden', isHost);
     showPage('page-lobby');
-
-    if (unsubPartner) unsubPartner();
-    unsubPartner = onSnapshot(doc(db, "users", partnerName.toLowerCase()), (docSnap) => {
-      if (docSnap.exists()) {
-        const data = docSnap.data();
-        if (data.avatar) {
-            document.getElementById('partnerAvatarDisplay').src = data.avatar;
-            document.getElementById('partnerAvatarDisplay').style.display = 'inline-block';
-            document.getElementById('partnerAvatarFallback').style.display = 'none';
-        } else {
-            document.getElementById('partnerAvatarDisplay').style.display = 'none';
-            document.getElementById('partnerAvatarFallback').style.display = 'flex';
-        }
-      }
-    });
   }
 
   function goToLudo() {
-      vibrate();
       window.location.href = "ludo.html";
   }
 
   async function startGame(mode) {
-    vibrate();
     const isSpicy = document.getElementById('spicyToggle').checked;
     currentMode = mode;
     document.getElementById('questionDisplay').innerText = "Fetching questions...";
@@ -405,7 +641,8 @@
       localVotes = [];
       snapshot.forEach(doc => { if(doc.data().round === currentRound) localVotes.push(doc.data()); });
       
-      if (localVotes.length >= 2) {
+      const uniqueVoters = new Set(localVotes.map(v => v.voter));
+      if (uniqueVoters.size >= 2) {
         showRoundResult(localVotes);
         if (isHost) checkIfNextQuestionReady();
       }
@@ -423,7 +660,7 @@
     document.getElementById('resultContainer').classList.remove('hidden');
     document.getElementById('resultContainer').innerHTML = `
       <div class="result-card">
-        <div class="result-row">You: <b>${myChoice}</b> | ${partnerName}: <b>${partnerChoice}</b></div>
+        <div class="result-row" style="margin-bottom:10px;">You: <b>${myChoice}</b> | ${partnerName}: <b>${partnerChoice}</b></div>
         <div class="result-match">${isMatch ? 'MATCH!' : 'Different choices!'}</div>
       </div>
     `;
@@ -485,7 +722,6 @@
   }
 
   async function submitVote(target) {
-    vibrate();
     document.getElementById('myVoteStatus').innerText = `You picked: ${target}`;
     document.querySelectorAll('.btn-vote').forEach(b => b.disabled = true);
     await setDoc(doc(db, "rooms", roomId, "votes", `round_${currentRound}_${currentUser}`), {
@@ -494,7 +730,6 @@
   }
 
   async function openChat() {
-    vibrate();
     lastPageBeforeChat = document.getElementById('page-game').classList.contains('hidden') ? 'page-lobby' : 'page-game';
     showPage('page-chat');
     if (unsubChat) unsubChat();
@@ -512,7 +747,7 @@
     });
   }
 
-  function closeChat() { vibrate(); showPage(lastPageBeforeChat); }
+  function closeChat() { showPage(lastPageBeforeChat); }
 
   async function sendChat() {
     const input = document.getElementById('chatInput');
@@ -521,10 +756,7 @@
     input.value = '';
   }
 
-  function handleChatEnter(e) { if (e.key === 'Enter') sendChat(); }
-
   function leaveGame() {
-      vibrate();
       showPage('page-lobby');
   }
 
@@ -535,9 +767,11 @@
 
   window.toggleAuth = toggleAuth; window.handleAuth = handleAuth; window.linkPartner = linkPartner; window.leavePartner = leavePartner;
   window.startGame = startGame; window.openChat = openChat; window.closeChat = closeChat; window.sendChat = sendChat;
-  window.leaveGame = leaveGame; window.logout = logout; window.handleImageUpload = handleImageUpload; window.goToLudo = goToLudo;
-  window.handleChatEnter = handleChatEnter;
+  window.leaveGame = leaveGame; window.logout = logout; window.goToLudo = goToLudo; 
+  window.handleLudoImageUpload = handleLudoImageUpload;
+  window.handleChatEnter = (e) => { if (e.key === 'Enter') sendChat(); };
+  window.handleTyping = () => {};
 
 </script>
 </body>
-</html>
+    </html>
