@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Shizu Ludo</title>
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -16,12 +16,13 @@
       --muted: #A99AA5; --border: rgba(232, 121, 165, 0.16); --green: #4CAF50;
     }
     
-    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
     
     body { 
       font-family: 'Inter', sans-serif; text-align: center; padding: 20px; 
+      padding-bottom: env(safe-area-inset-bottom);
       background: var(--bg); color: var(--text); margin: 0; 
-      overflow-x: hidden; min-height: 100vh; display: flex; 
+      overflow-x: hidden; min-height: 100dvh; display: flex; 
       flex-direction: column; justify-content: center;
     }
 
@@ -56,7 +57,7 @@
       width: 12%; 
       height: 18%; 
       cursor: pointer;
-      transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+      transition: left 0.3s ease-in-out, top 0.3s ease-in-out;
       z-index: 10;
       transform: translate(-50%, -85%); 
     }
@@ -122,9 +123,27 @@
     
     .bottom-controls { display: flex; gap: 10px; margin-top: 20px; }
     .bottom-controls .btn { margin: 0; }
+
+    /* Custom Modal */
+    #customModal { position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh; background: rgba(0,0,0,0.8); display: flex; justify-content: center; align-items: center; z-index: 9999; opacity: 0; pointer-events: none; transition: 0.2s; }
+    #customModal.active { opacity: 1; pointer-events: all; }
+    .modal-box { background: var(--card); border: 1px solid var(--border); padding: 20px; border-radius: 16px; width: 80%; max-width: 300px; text-align: center; transform: scale(0.9); transition: 0.2s; }
+    #customModal.active .modal-box { transform: scale(1); }
+    .modal-box h3 { color: var(--primary); margin-bottom: 10px; }
+    .modal-box p { color: var(--text); font-size: 14px; margin-bottom: 20px; }
+    .modal-box .btn { margin: 5px 0; }
   </style>
 </head>
 <body>
+
+<div id="customModal">
+    <div class="modal-box">
+        <h3 id="modalTitle">Alert</h3>
+        <p id="modalMessage">Message</p>
+        <button class="btn" id="modalConfirmBtn" onclick="closeModal(true)">OK</button>
+        <button class="btn hidden" id="modalCancelBtn" onclick="closeModal(false)">Cancel</button>
+    </div>
+</div>
 
 <div class="container">
   <h1>Ludo</h1>
@@ -178,24 +197,28 @@
   let ludoState = {};
   let unsubLudo, unsubUsers;
   let isRolling = false;
+  let isProcessing = false;
 
   const TRACK = [
-    {r:7, c:2}, {r:7, c:3}, {r:7, c:4}, {r:7, c:5}, {r:7, c:6}, 
-    {r:6, c:7}, {r:5, c:7}, {r:4, c:7}, {r:3, c:7}, {r:2, c:7}, {r:1, c:7}, 
-    {r:1, c:8}, {r:1, c:9}, 
-    {r:2, c:9}, {r:3, c:9}, {r:4, c:9}, {r:5, c:9}, {r:6, c:9}, 
-    {r:7, c:10}, {r:7, c:11}, {r:7, c:12}, {r:7, c:13}, {r:7, c:14}, {r:7, c:15}, 
-    {r:8, c:15}, {r:9, c:15}, 
-    {r:9, c:14}, {r:9, c:13}, {r:9, c:12}, {r:9, c:11}, {r:9, c:10}, 
-    {r:10, c:9}, {r:11, c:9}, {r:12, c:9}, {r:13, c:9}, {r:14, c:9}, {r:15, c:9}, 
-    {r:15, c:8}, {r:15, c:7}, 
-    {r:14, c:7}, {r:13, c:7}, {r:12, c:7}, {r:11, c:7}, {r:10, c:7}, 
-    {r:9, c:6}, {r:9, c:5}, {r:9, c:4}, {r:9, c:3}, {r:9, c:2}, {r:9, c:1}, 
-    {r:8, c:1}, {r:7, c:1}  
+    {r:6, c:1}, {r:6, c:2}, {r:6, c:3}, {r:6, c:4}, {r:6, c:5},
+    {r:5, c:6}, {r:4, c:6}, {r:3, c:6}, {r:2, c:6}, {r:1, c:6},
+    {r:1, c:7}, {r:1, c:8},
+    {r:2, c:8}, {r:3, c:8}, {r:4, c:8}, {r:5, c:8}, {r:6, c:8},
+    {r:7, c:9}, {r:7, c:10}, {r:7, c:11}, {r:7, c:12}, {r:7, c:13},
+    {r:8, c:14},
+    {r:9, c:14}, {r:9, c:13}, {r:9, c:12}, {r:9, c:11}, {r:9, c:10},
+    {r:9, c:9}, {r:9, c:8},
+    {r:10, c:8}, {r:11, c:8}, {r:12, c:8}, {r:13, c:8}, {r:14, c:8},
+    {r:14, c:7},
+    {r:14, c:6}, {r:13, c:6}, {r:12, c:6}, {r:11, c:6}, {r:10, c:6},
+    {r:9, c:5},
+    {r:9, c:4}, {r:9, c:3}, {r:9, c:2}, {r:9, c:1},
+    {r:8, c:1},
+    {r:7, c:1}, {r:7, c:2}, {r:7, c:3}, {r:7, c:4}
   ];
 
-  const HOME_RED = [{r:7, c:8}, {r:6, c:8}, {r:5, c:8}, {r:4, c:8}, {r:3, c:8}, {r:2, c:8}];
-  const HOME_GREEN = [{r:9, c:8}, {r:10, c:8}, {r:11, c:8}, {r:12, c:8}, {r:13, c:8}, {r:14, c:8}];
+  const HOME_RED = [{r:7, c:5}, {r:7, c:6}, {r:7, c:7}, {r:7, c:8}, {r:7, c:9}, {r:7, c:10}];
+  const HOME_GREEN = [{r:9, c:5}, {r:9, c:6}, {r:9, c:7}, {r:9, c:8}, {r:9, c:9}, {r:9, c:10}];
 
   const BASE_RED = [{r:2.5, c:2.5}, {r:2.5, c:4.5}, {r:4.5, c:2.5}, {r:4.5, c:4.5}];
   const BASE_GREEN = [{r:11.5, c:11.5}, {r:11.5, c:13.5}, {r:13.5, c:11.5}, {r:13.5, c:13.5}];
@@ -204,7 +227,7 @@
     const gameRef = doc(db, "rooms", roomId, "games", "ludo");
     const gameSnap = await getDoc(gameRef);
     
-    if (!gameSnap.exists() || gameSnap.data().winner) {
+    if (!gameSnap.exists()) {
       await setDoc(gameRef, {
         turn: isHost ? currentUser : partnerName,
         dice: 0,
@@ -233,8 +256,31 @@
     });
   }
 
+  function showModal(title, msg, isConfirm = false) {
+      return new Promise((resolve) => {
+          document.getElementById('modalTitle').innerText = title;
+          document.getElementById('modalMessage').innerText = msg;
+          document.getElementById('customModal').classList.add('active');
+          
+          const confirmBtn = document.getElementById('modalConfirmBtn');
+          const cancelBtn = document.getElementById('modalCancelBtn');
+          
+          if (isConfirm) {
+              cancelBtn.classList.remove('hidden');
+          } else {
+              cancelBtn.classList.add('hidden');
+          }
+          
+          window.closeModal = (result) => {
+              document.getElementById('customModal').classList.remove('active');
+              resolve(result);
+          };
+      });
+  }
+
   async function restartLudo() {
-      if(confirm("Restart the Ludo board? All progress will be lost.")) {
+      const confirmed = await showModal("Restart Board", "Are you sure? All progress will be lost.", true);
+      if(confirmed) {
           await setDoc(doc(db, "rooms", roomId, "games", "ludo"), {
               turn: isHost ? currentUser : partnerName,
               dice: 0,
@@ -250,28 +296,30 @@
   function renderBoard() {
     const container = document.getElementById('pieces-container');
     if (!container || !ludoState.red) return;
-    container.innerHTML = '';
+    
+    if (container.children.length === 0) {
+        for (let p in ludoState.red) createPieceElement('red', p);
+        for (let p in ludoState.green) createPieceElement('green', p);
+    }
 
     for (let p in ludoState.red) {
       const pos = ludoState.red[p];
       let gridPos;
-      
       if (pos === -1) gridPos = BASE_RED[parseInt(p.slice(1))-1];
       else if (pos >= 0 && pos <= 51) gridPos = TRACK[pos]; 
       else gridPos = HOME_RED[pos - 52];
       
-      createPieceElement('red', p, gridPos);
+      updatePieceElement('red', p, gridPos);
     }
 
     for (let p in ludoState.green) {
       const pos = ludoState.green[p];
       let gridPos;
-      
       if (pos === -1) gridPos = BASE_GREEN[parseInt(p.slice(1))-1];
       else if (pos >= 0 && pos <= 51) gridPos = TRACK[(pos + 26) % 52]; 
       else gridPos = HOME_GREEN[pos - 52];
       
-      createPieceElement('green', p, gridPos);
+      updatePieceElement('green', p, gridPos);
     }
 
     const diceBtn = document.getElementById('diceBtn');
@@ -280,7 +328,7 @@
       diceBtn.classList.add('disabled');
     } else if (ludoState.turn === currentUser) {
       document.getElementById('ludoTurnText').innerText = "Your Turn!";
-      diceBtn.classList.toggle('disabled', ludoState.hasRolled || isRolling);
+      diceBtn.classList.toggle('disabled', ludoState.hasRolled || isRolling || isProcessing);
     } else {
       document.getElementById('ludoTurnText').innerText = `Waiting for ${partnerName}...`;
       diceBtn.classList.add('disabled');
@@ -295,15 +343,25 @@
     }
   }
 
-  function createPieceElement(color, pieceId, gridPos) {
+  function createPieceElement(color, pieceId) {
     const el = document.createElement('div');
+    el.id = `piece-${color}-${pieceId}`;
     el.className = `piece piece-${color}`;
     
-    el.style.left = `${((gridPos.c - 0.5) / 15) * 100}%`;
-    el.style.top = `${((gridPos.r - 0.5) / 15) * 100}%`;
-
     const avatarDiv = document.createElement('div');
     avatarDiv.className = 'piece-avatar';
+    el.appendChild(avatarDiv);
+
+    el.onclick = () => handlePieceClick(color, pieceId);
+    document.getElementById('pieces-container').appendChild(el);
+  }
+
+  function updatePieceElement(color, pieceId, gridPos) {
+    const el = document.getElementById(`piece-${color}-${pieceId}`);
+    if (!el) return;
+
+    el.style.left = `${((gridPos.c - 0.5) / 15) * 100}%`;
+    el.style.top = `${((gridPos.r - 0.5) / 15) * 100}%`;
 
     let imageToUse = '';
     if (color === 'red' && myColor === 'red') imageToUse = myAvatar;
@@ -311,21 +369,20 @@
     if (color === 'green' && myColor === 'green') imageToUse = myAvatar;
     if (color === 'green' && oppColor === 'green') imageToUse = oppAvatar;
 
+    const avatarDiv = el.querySelector('.piece-avatar');
     if (imageToUse) {
-      avatarDiv.style.backgroundImage = `url(${imageToUse})`;
+      avatarDiv.style.backgroundImage = `url("${imageToUse}")`;
     }
-    el.appendChild(avatarDiv);
 
     if (color === myColor && ludoState.turn === currentUser && ludoState.hasRolled && !ludoState.winner) {
         el.classList.add('my-turn');
-        el.onclick = () => handlePieceClick(color, pieceId);
+    } else {
+        el.classList.remove('my-turn');
     }
-
-    document.getElementById('pieces-container').appendChild(el);
   }
 
   async function rollDice() {
-    if (ludoState.turn !== currentUser || ludoState.hasRolled || isRolling) return;
+    if (ludoState.turn !== currentUser || ludoState.hasRolled || isRolling || isProcessing) return;
     
     isRolling = true;
     const diceBtn = document.getElementById('diceBtn');
@@ -349,7 +406,7 @@
         else newSixCount = 0;
 
         if (newSixCount === 3) {
-            alert("Three 6s in a row! Your turn is skipped.");
+            await showModal("Three 6s!", "You rolled three 6s in a row. Your turn is skipped.");
             await updateDoc(doc(db, "rooms", roomId, "games", "ludo"), { dice: newDice, hasRolled: true, sixCount: 0 });
             setTimeout(passTurn, 1000);
             return;
@@ -375,7 +432,7 @@
   }
 
   async function handlePieceClick(color, pieceId) {
-    if (ludoState.turn !== currentUser || !ludoState.hasRolled || color !== myColor) return;
+    if (ludoState.turn !== currentUser || !ludoState.hasRolled || color !== myColor || isProcessing) return;
     
     const dice = ludoState.dice;
     const pos = ludoState[color][pieceId];
@@ -387,22 +444,26 @@
     else if (pos >= 0 && pos + dice <= 56) { newPos = pos + dice; isValidMove = true; }
     
     if (isValidMove) {
+      isProcessing = true;
+      
+      let updates = {};
+      updates[`${color}.${pieceId}`] = newPos;
+      
       let newAbsIndex = -1;
       if (newPos < 52) {
           let offset = color === 'red' ? 0 : 26;
           newAbsIndex = (newPos + offset) % 52;
       }
 
-      const oppPieces = ludoState[oppColor];
-      
       if (newAbsIndex !== -1) {
+          const oppPieces = ludoState[oppColor];
           for (let op in oppPieces) {
             const oppPos = oppPieces[op];
             if (oppPos >= 0 && oppPos < 52) {
                let oppOffset = color === 'red' ? 26 : 0;
                let oppAbsIndex = (oppPos + oppOffset) % 52;
                if (oppAbsIndex === newAbsIndex && !isSafeCell(newAbsIndex)) {
-                 await updateDoc(doc(db, "rooms", roomId, "games", "ludo"), { [`${oppColor}.${op}`]: -1 });
+                 updates[`${oppColor}.${op}`] = -1;
                }
             }
           }
@@ -415,15 +476,28 @@
       }
       
       if (win) {
-        await updateDoc(doc(db, "rooms", roomId, "games", "ludo"), { [`${color}.${pieceId}`]: newPos, winner: currentUser });
+        updates['winner'] = currentUser;
+        updates['dice'] = 0;
+        updates['hasRolled'] = false;
       } else {
-        await updateDoc(doc(db, "rooms", roomId, "games", "ludo"), { [`${color}.${pieceId}`]: newPos });
-        
         if (dice !== 6) {
-            setTimeout(passTurn, 600);
+            updates['turn'] = ludoState.turn === currentUser ? partnerName : currentUser;
+            updates['dice'] = 0;
+            updates['hasRolled'] = false;
+            updates['sixCount'] = 0;
         } else {
-            await updateDoc(doc(db, "rooms", roomId, "games", "ludo"), { hasRolled: false, dice: 0 });
+            updates['dice'] = 0;
+            updates['hasRolled'] = false;
         }
+      }
+      
+      try {
+          await updateDoc(doc(db, "rooms", roomId, "games", "ludo"), updates);
+      } catch(e) {
+          console.error(e);
+          showModal("Error", "Could not move piece. Check connection.");
+      } finally {
+          isProcessing = false;
       }
     }
   }
