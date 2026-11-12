@@ -83,6 +83,7 @@
       box-shadow: 0 10px 30px rgba(0,0,0,0.5);
       overflow: hidden;
       margin-bottom: 20px;
+      background-color: #111; /* Fallback */
     }
 
     /* Your Uploaded Board Image */
@@ -95,51 +96,57 @@
       z-index: 1;
     }
 
-    /* The 3D Pawn Container */
+    /* --- THE FIXED PIECE STYLES --- */
     .piece {
       position: absolute;
-      width: 10%; /* Slightly larger to fit the ring */
-      height: 15%; /* Taller to accommodate the 3D shape */
-      background-image: url('red-piece.png'); /* Base image is red */
-      background-size: contain;
-      background-repeat: no-repeat;
-      background-position: center bottom;
+      width: 12%; 
+      height: 18%; 
       cursor: pointer;
       transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
       z-index: 10;
-      /* Shift up so the base of the pawn touches the grid point */
       transform: translate(-50%, -85%); 
     }
 
-    /* Magic CSS Filter to turn the transparent red pawn green! */
-    .piece-green {
+    /* The 3D Pawn image is drawn on this layer */
+    .piece::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background-image: url('red-piece.png'); 
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center bottom;
+      z-index: 1; /* Behind the avatar */
+      pointer-events: none;
+    }
+
+    /* Apply green filter ONLY to the pawn layer, not the avatar */
+    .piece-green::before {
       filter: hue-rotate(120deg) saturate(1.5);
     }
 
-    /* The Profile Picture inside the top ring */
+    /* The Profile Picture sits ON TOP of the pawn */
     .piece-avatar {
       position: absolute;
-      top: 13%; /* Fits exactly inside the top ring of the 3D image */
+      top: 13%; /* Centers exactly inside the top ring */
       left: 50%;
       transform: translateX(-50%);
-      width: 45%; 
+      width: 46%; 
       aspect-ratio: 1; 
       border-radius: 50%;
       background-size: cover;
       background-position: center;
-      background-color: #222; /* Fallback if image fails */
-      box-shadow: inset 0 3px 6px rgba(0,0,0,0.8); /* Makes it look recessed */
+      background-color: #222; /* Fallback */
+      z-index: 2; /* ON TOP of the pawn */
+      box-shadow: inset 0 3px 6px rgba(0,0,0,0.8); 
     }
 
-    /* Glow when it's a valid move */
+    /* Glow effect when it's a valid move */
     .piece.my-turn { 
         cursor: pointer; 
         transform: translate(-50%, -85%) scale(1.15); 
         z-index: 20; 
-        filter: drop-shadow(0px 0px 10px var(--primary)) hue-rotate(0deg); 
-    }
-    .piece-green.my-turn {
-        filter: drop-shadow(0px 0px 10px var(--primary)) hue-rotate(120deg) saturate(1.5); 
+        filter: drop-shadow(0px 0px 10px var(--primary)); 
     }
 
     /* Dice Area */
@@ -183,7 +190,6 @@
       text-align: left;
     }
 
-    /* Back button */
     .back-btn {
       margin-top: 30px;
       border-color: transparent;
