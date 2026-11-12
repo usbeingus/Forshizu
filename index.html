@@ -2,12 +2,21 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>SHIZU — A Little Game for Two Hearts</title>
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <!-- Bug #16 Fix: Fallback if Firebase CDN fails -->
+  <script>
+    setTimeout(() => {
+      if (document.getElementById('splash-screen') && !document.getElementById('splash-screen').classList.contains('fade-out')) {
+        document.getElementById('splash-screen').innerHTML = '<p style="color:#E879A5; font-family:sans-serif;">Connection failed. Please refresh and check your internet.</p>';
+      }
+    }, 8000);
+  </script>
 
   <style>
     :root { 
@@ -20,19 +29,21 @@
       --muted: #A99AA5; 
       --border: rgba(232, 121, 165, 0.16); 
       --green: #4CAF50;
+      --red: #ff4d4d; /* Bug #1 Fix: Added red variable */
     }
     
-    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
     
     body { 
       font-family: 'Inter', sans-serif; 
       text-align: center; 
       padding: 20px; 
+      padding-bottom: env(safe-area-inset-bottom);
       background: var(--bg); 
       color: var(--text); 
       margin: 0; 
       overflow-x: hidden;
-      min-height: 100vh;
+      min-height: 100dvh;
     }
 
     h1, h2, h3 { 
@@ -41,17 +52,17 @@
       margin-top: 0; 
     }
     
-    .heart-bg { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1; overflow: hidden; }
+    .heart-bg { position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh; z-index: -1; overflow: hidden; }
     .heart-particle { position: absolute; bottom: -20px; color: var(--primary); opacity: 0.15; animation: floatUp 8s linear infinite; }
-    @keyframes floatUp { 0% { transform: translateY(0) scale(0.8); opacity: 0; } 10% { opacity: 0.15; } 90% { opacity: 0.15; } 100% { transform: translateY(-100vh) scale(1.2); opacity: 0; } }
+    @keyframes floatUp { 0% { transform: translateY(0) scale(0.8); opacity: 0; } 10% { opacity: 0.15; } 90% { opacity: 0.15; } 100% { transform: translateY(-100dvh) scale(1.2); opacity: 0; } }
 
-    #splash-screen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: var(--bg); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; transition: opacity 0.5s; }
+    #splash-screen { position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh; background: var(--bg); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; transition: opacity 0.5s; }
     .splash-logo { font-family: 'Playfair Display', serif; font-size: 3.5rem; font-weight: 700; color: var(--primary); margin: 0; animation: fadeIn 1.5s forwards; opacity: 0; }
     .splash-sub { color: var(--muted); font-size: 14px; margin-top: 10px; animation: fadeIn 2s forwards; opacity: 0; }
     .fade-out { opacity: 0 !important; pointer-events: none; }
     @keyframes fadeIn { to { opacity: 1; } }
 
-    #transition-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: var(--bg); display: flex; justify-content: center; align-items: center; z-index: 9998; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+    #transition-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh; background: var(--bg); display: flex; justify-content: center; align-items: center; z-index: 9998; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
     #transition-overlay.active { opacity: 1; pointer-events: all; }
     #transition-overlay img { width: 120px; height: 120px; object-fit: contain; }
     #transition-overlay.active img { animation: spinAndGrow 1.2s cubic-bezier(0.25, 1, 0.5, 1) forwards; }
@@ -99,7 +110,7 @@
     .chat-card p { color: var(--muted); font-size: 14px; margin-bottom: 20px; }
 
     .chat-box { height: 350px; overflow-y: auto; background: var(--bg); border-radius: 12px; padding: 15px; margin-bottom: 15px; text-align: left; display: flex; flex-direction: column; border: 1px solid var(--border); }
-    .msg { margin-bottom: 12px; padding: 10px 14px; border-radius: 12px; max-width: 85%; font-size: 14px; line-height: 1.4; position: relative; }
+    .msg { margin-bottom: 12px; padding: 10px 14px; border-radius: 12px; max-width: 85%; font-size: 14px; line-height: 1.4; position: relative; word-wrap: break-word; }
     .msg-me { background: var(--primary); color: #fff; align-self: flex-end; border-bottom-right-radius: 4px; }
     .msg-other { background: var(--card); border: 1px solid var(--border); color: var(--text); align-self: flex-start; border-bottom-left-radius: 4px; }
     .msg-meta { font-size: 11px; color: rgba(255,255,255,0.7); margin-bottom: 4px; display: block; }
@@ -117,6 +128,8 @@
     .btn-vote { background: var(--bg-sec); border: 1px solid var(--border); margin: 6px; width: calc(50% - 12px); display: inline-block; padding: 16px 10px; font-size: 15px; font-weight: 500; color: var(--text); cursor: pointer; border-radius: 12px; transition: 0.2s;}
     .btn-vote:active { background: var(--border); transform: scale(0.95); }
     .btn-vote-full { width: 100%; display: flex; justify-content: center; }
+
+    .join-prompt { background: rgba(232, 121, 165, 0.1); border: 2px solid var(--primary); margin-top: 20px; padding: 20px; border-radius: 16px; animation: slideUp 0.4s ease; }
 
     @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
   </style>
@@ -142,8 +155,8 @@
   <div id="page-auth" class="card hidden">
     <h2 id="authTitle" style="font-family: 'Playfair Display';">Welcome Back</h2>
     <p style="color: var(--muted); font-size: 14px; margin-bottom: 20px;">Sign in to your private world.</p>
-    <input type="text" id="username" class="input" placeholder="Username" style="text-transform:none;" />
-    <input type="password" id="password" class="input" placeholder="Password" style="text-transform:none;" />
+    <input type="text" id="username" class="input" placeholder="Username" style="text-transform:none;" autocomplete="username" />
+    <input type="password" id="password" class="input" placeholder="Password" style="text-transform:none;" autocomplete="current-password" />
     <button class="btn btn-primary" onclick="window.handleAuth()" id="authBtn">Login</button>
     <p style="margin-top: 20px; font-size: 14px; color: var(--muted);">
       <span id="authSwitchText">New here?</span> 
@@ -176,8 +189,7 @@
       <span id="player2Name">...</span>
     </div>
 
-    <!-- GUEST JOIN PROMPT -->
-    <div id="guestJoinPrompt" class="card hidden" style="background: rgba(232, 121, 165, 0.1); border: 2px solid var(--primary); margin-top: 20px; padding: 20px;">
+    <div id="guestJoinPrompt" class="join-prompt hidden">
         <h3 style="color: var(--primary); margin-bottom: 5px;">Your Partner Started a Game!</h3>
         <p id="guestGameName" style="font-weight: 600; font-size: 1.1rem; margin-bottom: 15px;">...</p>
         <button class="btn btn-primary" onclick="window.joinPartnerGame()">Join Now</button>
@@ -250,7 +262,18 @@
     <div id="voteButtonsContainer"></div>
     <div id="resultContainer" class="hidden"></div>
     <div id="myVoteStatus" style="margin-top: 20px; font-size: 14px; color: var(--primary); font-weight: 500;"></div>
-    <button class="btn" onclick="window.leaveGame()" style="margin-top: 30px; border-color: transparent; color: var(--muted);">Leave Game</button>
+    
+    <!-- Bug #12 Fix: Added chat button to game page -->
+    <button class="btn btn-secondary" onclick="window.openChat()" style="margin-top: 20px; background: transparent; border-color: var(--border);">💬 Open Chat</button>
+    
+    <button class="btn" onclick="window.leaveGame()" style="margin-top: 10px; border-color: transparent; color: var(--muted);">Leave Game</button>
+  </div>
+
+  <div id="page-summary" class="card hidden">
+    <h2 style="font-family: 'Playfair Display';">Game Over</h2>
+    <p style="color: var(--muted); margin-bottom: 20px;">You matched on <span id="finalMatchCount" style="color:var(--primary); font-weight:bold; font-size:1.2rem;">0</span> out of 10 rounds!</p>
+    <div id="summaryContainer" style="max-height: 300px; overflow-y: auto; text-align: left; margin-bottom: 20px;"></div>
+    <button class="btn btn-primary" onclick="window.backToLobby()">Back to Lobby</button>
   </div>
 
   <div id="page-chat" class="card hidden">
@@ -258,17 +281,17 @@
     <div id="chatBox" class="chat-box"></div>
     <div id="typingIndicator" style="font-size:11px; color:var(--muted); text-align:left; margin-bottom:5px; font-style:italic;" class="hidden">Partner is typing...</div>
     <div class="chat-input-container">
-      <input type="text" id="chatInput" class="input" placeholder="Type a message..." oninput="window.handleTyping()" onkeypress="window.handleChatEnter(event)">
+      <input type="text" id="chatInput" class="input" placeholder="Type a message..." oninput="window.handleTyping()" onkeydown="window.handleChatEnter(event)">
       <button class="btn btn-primary" onclick="window.sendChat()">Send</button>
     </div>
     <br>
-    <button class="btn" onclick="window.closeChat()" style="border-color: transparent; color: var(--muted);">Back to Lobby</button>
+    <button class="btn" onclick="window.closeChat()" style="border-color: transparent; color: var(--muted);">Back</button>
   </div>
 </div>
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-  import { getFirestore, doc, setDoc, getDoc, updateDoc, onSnapshot, collection, addDoc, query, orderBy, serverTimestamp, getDocs, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+  import { getFirestore, doc, setDoc, getDoc, updateDoc, onSnapshot, collection, addDoc, query, orderBy, serverTimestamp, getDocs, where, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyAQg9F4Sn3GsZOghWxSJqwbLMsJetvo03w",
@@ -289,8 +312,28 @@
   let localVotes = [];
   let lastPageBeforeChat = 'page-lobby';
   let isSignupMode = false;
-  let unsubRoom, unsubVotes, unsubChat, unsubPartner;
+  let unsubRoom, unsubVotes, unsubChat;
   let hasJoined = false;
+  let userLeftGame = false; // Bug #3 Fix
+  let summaryRendered = false; // Bug #7 Fix
+  let timerInterval, timeLeft = 20;
+
+  // Bug #15 Fix: Safe undefined handling
+  function escapeHTML(str) {
+    if (str === null || str === undefined) return '';
+    return String(str).replace(/[&<>'"]/g, 
+      tag => ({
+          '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+        }[tag] || tag)
+    );
+  }
+
+  async function hashPassword(password) {
+      const msgBuffer = new TextEncoder().encode(password);
+      const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  }
 
   function createHearts() {
     const bg = document.getElementById('heartBg');
@@ -307,21 +350,24 @@
   }
   createHearts();
 
-  window.onload = () => {
-    setTimeout(() => {
+  // Bug #18 Fix: Use DOMContentLoaded or direct init
+  window.addEventListener('load', async () => {
+    setTimeout(async () => {
       document.getElementById('splash-screen').classList.add('fade-out');
-      setTimeout(() => {
+      setTimeout(async () => {
         document.getElementById('splash-screen').style.display = 'none';
         const savedUser = localStorage.getItem('shizu_user');
         const savedPass = localStorage.getItem('shizu_pass');
-        if (savedUser && savedPass) checkLogin(savedUser, savedPass);
+        if (savedUser && savedPass) {
+            checkLogin(savedUser, savedPass, true); // pass true to indicate it's already hashed
+        }
         else showPage('page-auth');
       }, 500);
     }, 2000);
-  };
+  });
 
   function showPage(pageId) {
-    ['page-auth', 'page-pairing', 'page-lobby', 'page-game', 'page-chat'].forEach(id => {
+    ['page-auth', 'page-pairing', 'page-lobby', 'page-game', 'page-chat', 'page-summary'].forEach(id => {
       document.getElementById(id).classList.add('hidden');
     });
     document.getElementById(pageId).classList.remove('hidden');
@@ -341,50 +387,70 @@
     const pass = document.getElementById('password').value.trim();
     if (!user || !pass) return alert('Please fill both fields.');
 
+    const hashedPass = await hashPassword(pass);
+
     if (isSignupMode) {
       const userRef = doc(db, "users", user.toLowerCase());
       const userSnap = await getDoc(userRef);
       if (userSnap.exists()) return alert('Username taken.');
       
       const pairCode = Math.floor(100000 + Math.random() * 900000).toString();
-      await setDoc(userRef, { displayName: user, password: pass, pairCode: pairCode, partner: '', roomId: '', avatar: '' });
+      await setDoc(userRef, { displayName: user, password: hashedPass, pairCode: pairCode, partner: '', roomId: '', avatar: '' });
       
       localStorage.setItem('shizu_user', user);
-      localStorage.setItem('shizu_pass', pass);
+      localStorage.setItem('shizu_pass', hashedPass); // Bug #22 Fix: Store hash, not plaintext
       currentUser = user;
       document.getElementById('myPairCode').innerText = pairCode;
       showPage('page-pairing');
     } else {
-      checkLogin(user, pass);
+      checkLogin(user, hashedPass, false);
     }
   }
 
-  async function checkLogin(user, pass) {
+  // Bug #2 Fix: Handle legacy plaintext and hashed passwords
+  async function checkLogin(user, passAttempt, isHashedFromStorage) {
     const userRef = doc(db, "users", user.toLowerCase());
     const userSnap = await getDoc(userRef);
     
-    if (userSnap.exists() && userSnap.data().password === pass) {
-      localStorage.setItem('shizu_user', user);
-      localStorage.setItem('shizu_pass', pass);
-      currentUser = user;
+    if (userSnap.exists()) {
       const data = userSnap.data();
-
-      if (!data.roomId) {
-        document.getElementById('myPairCode').innerText = data.pairCode;
-        showPage('page-pairing');
-      } else {
-        roomId = data.roomId;
-        partnerName = data.partner;
-        enterLobby();
+      let finalPass = passAttempt;
+      
+      // If it's a legacy plaintext password in DB
+      if (!isHashedFromStorage && data.password === passAttempt && passAttempt.length < 64) {
+         // It's legacy, hash it and update DB
+         finalPass = await hashPassword(passAttempt);
+         await updateDoc(userRef, { password: finalPass });
       }
-    } else {
-      alert('Invalid credentials.'); showPage('page-auth');
+      
+      if (data.password === finalPass) {
+        localStorage.setItem('shizu_user', user);
+        localStorage.setItem('shizu_pass', finalPass); // Store hash
+        currentUser = user;
+
+        if (!data.roomId) {
+          document.getElementById('myPairCode').innerText = data.pairCode;
+          showPage('page-pairing');
+        } else {
+          roomId = data.roomId;
+          partnerName = data.partner;
+          enterLobby();
+        }
+        return;
+      }
     }
+    
+    alert('Invalid credentials.'); showPage('page-auth');
   }
 
   function handleLudoImageUpload(event) {
     const file = event.target.files[0];
     if (!file) return;
+    
+    // Bug #21 Fix: File size check
+    if (file.size > 5_000_000) {
+        return alert('Image is too large. Please choose one under 5MB.');
+    }
     
     const uploadLink = document.querySelector('a[onclick*="ludoImageUpload"]');
     const originalText = uploadLink.innerText;
@@ -450,6 +516,13 @@
     if (pData.displayName.toLowerCase() === currentUser.toLowerCase()) return alert('Cannot pair with yourself.');
     if (pData.roomId) return alert('That person is already paired with someone.');
 
+    // Bug #11 Fix: Concurrency guard by re-checking
+    const reCheckSnap = await getDoc(partnerRef);
+    if (reCheckSnap.data().roomId) {
+        document.getElementById('pairingStatus').innerText = "";
+        return alert('Partner just paired with someone else.');
+    }
+
     const names = [currentUser.toLowerCase(), pData.displayName.toLowerCase()].sort();
     const newRoomId = names[0] + "_" + names[1];
     const myRef = doc(db, "users", currentUser.toLowerCase());
@@ -466,8 +539,13 @@
     if(!confirm("Disconnect from " + partnerName + "?")) return;
     await updateDoc(doc(db, "users", currentUser.toLowerCase()), { partner: '', roomId: '' });
     await updateDoc(doc(db, "users", partnerName.toLowerCase()), { partner: '', roomId: '' });
+    
+    // Bug #10 Fix: Unsubscribe all listeners
     if (unsubRoom) unsubRoom();
-    if (unsubPartner) unsubPartner();
+    if (unsubVotes) unsubVotes();
+    if (unsubChat) unsubChat();
+    isAdvancing = false;
+    
     document.getElementById('partnerCodeInput').value = '';
     document.getElementById('myPairCode').innerText = (await getDoc(doc(db, "users", currentUser.toLowerCase()))).data().pairCode;
     showPage('page-pairing');
@@ -490,19 +568,30 @@
       if (docSnap.exists() && docSnap.data().gameState) {
         const gs = docSnap.data().gameState;
         
-        // If Guest, show prompt to join
-        if (!isHost && !hasJoined) {
-            if (gs.status === 'ludo') {
-                document.getElementById('guestGameName').innerText = "Ludo";
-                document.getElementById('guestJoinPrompt').classList.remove('hidden');
-            } else if (gs.status === 'playing') {
-                let modeName = gs.mode === 'moreLikely' ? 'Who is more likely to...' : (gs.mode === 'neverHaveIEver' ? 'Never Have I Ever' : 'This or That');
-                document.getElementById('guestGameName').innerText = modeName;
-                document.getElementById('guestJoinPrompt').classList.remove('hidden');
-            }
+        if (!isHost && gs.status === 'playing' && !hasJoined) {
+            let modeName = gs.mode === 'moreLikely' ? 'Who is more likely to...' : (gs.mode === 'neverHaveIEver' ? 'Never Have I Ever' : 'This or That');
+            document.getElementById('guestGameName').innerText = modeName;
+            document.getElementById('guestJoinPrompt').classList.remove('hidden');
+        }
+        
+        if (!isHost && gs.status === 'ludo') {
+            window.location.href = "ludo.html";
         }
 
-        // Sync Game State if already in game
+        // Bug #3 Fix: Don't auto-rejoin if host explicitly left
+        if (gs.status === 'playing' && !hasJoined && isHost && !userLeftGame) {
+            hasJoined = true;
+            currentMode = gs.mode;
+            currentRound = gs.round;
+            currentQuestionText = gs.question;
+            // Bug #4 Fix: Restore saved questions on refresh
+            if (gs.questions) currentQuestions = gs.questions; 
+            
+            showPage('page-game');
+            setupVotesListener();
+            loadQuestionUI();
+        }
+
         if (gs.status === 'playing' && hasJoined) {
             if (gs.question && gs.question !== currentQuestionText) {
                 currentRound = gs.round;
@@ -511,14 +600,21 @@
                 loadQuestionUI();
             }
         }
+        
+        if (gs.status === 'finished' && hasJoined) {
+            showSummary();
+        }
       }
+    }, (error) => {
+        console.error("Room snapshot error:", error);
     });
   }
 
   async function joinPartnerGame() {
     const roomSnap = await getDoc(doc(db, "rooms", roomId));
-    const gs = roomSnap.data().gameState;
+    if (!roomSnap.exists() || !roomSnap.data().gameState) return;
     
+    const gs = roomSnap.data().gameState;
     hasJoined = true;
     document.getElementById('guestJoinPrompt').classList.add('hidden');
 
@@ -528,6 +624,7 @@
         currentMode = gs.mode;
         currentRound = gs.round;
         currentQuestionText = gs.question;
+        if (gs.questions) currentQuestions = gs.questions; // Bug #4 Fix
         showPage('page-game');
         setupVotesListener();
         loadQuestionUI();
@@ -535,16 +632,32 @@
   }
 
   async function goToLudo() {
-      // Update Firebase to tell both players to go to Ludo
       await setDoc(doc(db, "rooms", roomId), { gameState: { status: 'ludo' } }, { merge: true });
       window.location.href = "ludo.html";
   }
 
-  async function startGame(mode) {
+  async function startGame(mode, isRetry = false) {
     const isSpicy = document.getElementById('spicyToggle').checked;
     currentMode = mode;
+    hasJoined = true; 
+    userLeftGame = false;
+    summaryRendered = false;
     document.getElementById('questionDisplay').innerText = "Fetching questions...";
     showPage('page-game');
+
+    if (!isRetry) {
+        // Bug #6 Fix: Abort if cleanup fails
+        try {
+            const votesSnapshot = await getDocs(collection(db, "rooms", roomId, "votes"));
+            const deletePromises = votesSnapshot.docs.map(voteDoc => deleteDoc(doc(db, "rooms", roomId, "votes", voteDoc.id)));
+            await Promise.all(deletePromises);
+        } catch(e) { 
+            console.error("Error clearing old votes", e); 
+            alert("Network issue. Could not start game. Please try again.");
+            showPage('page-lobby');
+            return;
+        }
+    }
 
     let questions = [];
     try {
@@ -553,22 +666,47 @@
         body: JSON.stringify({ action: 'fetchQuestions', mode: mode, spice: isSpicy ? 'spicy' : 'normal' })
       });
       const data = await res.json();
-      if (data && data.questions && data.questions.length > 0) questions = data.questions;
-    } catch(e) { console.log(e); }
-
-    if (questions.length < 10) {
-        alert("Not enough questions in the Google Sheet yet. Please wait a minute and try again.");
+      
+      if (data.error) {
+          alert(data.error);
+          showPage('page-lobby');
+          return;
+      }
+      
+      if (!data.questions || data.questions.length < 10) {
+          if (data.reason && data.reason.includes('Server busy') && !isRetry) {
+              setTimeout(() => startGame(mode, true), 1000);
+              return;
+          }
+          alert(data.reason || 'Not enough questions in the Google Sheet yet. Please wait a minute and try again.');
+          showPage('page-lobby');
+          return;
+      }
+      
+      questions = data.questions;
+      
+    } catch(e) { 
+        console.log(e); 
+        alert("Network error while fetching questions.");
         showPage('page-lobby');
         return;
     }
-    
+
     questions = questions.sort(() => 0.5 - Math.random());
     currentQuestions = questions.slice(0, 10);
     currentRound = 1;
     currentQuestionText = currentQuestions[0];
     
+    // Bug #4 Fix: Save currentQuestions to DB
     await setDoc(doc(db, "rooms", roomId), {
-      gameState: { mode: mode, round: 1, question: currentQuestions[0], status: 'playing', host: currentUser }
+      gameState: { 
+          mode: mode, 
+          round: 1, 
+          question: currentQuestions[0], 
+          questions: currentQuestions, // <--- Saved for refresh recovery
+          status: 'playing', 
+          host: currentUser 
+      }
     }, { merge: true });
     
     setupVotesListener();
@@ -579,14 +717,20 @@
     if (unsubVotes) unsubVotes();
     unsubVotes = onSnapshot(collection(db, "rooms", roomId, "votes"), (snapshot) => {
       localVotes = [];
-      snapshot.forEach(doc => { if(doc.data().round === currentRound) localVotes.push(doc.data()); });
+      snapshot.forEach(voteDoc => { 
+          if(voteDoc.data().round === currentRound) localVotes.push(voteDoc.data()); 
+      });
       
       const uniqueVoters = new Set(localVotes.map(v => v.voter));
       if (uniqueVoters.size >= 2) {
-        showRoundResult(localVotes);
+        // Bug #17 Fix: Guard against re-rendering
+        if (window.lastResultRound !== currentRound) {
+            showRoundResult(localVotes);
+            window.lastResultRound = currentRound;
+        }
         if (isHost) checkIfNextQuestionReady();
       }
-    });
+    }, (error) => console.error("Votes error:", error));
   }
 
   function showRoundResult(votes) {
@@ -595,12 +739,14 @@
     const partnerVoteObj = votes.find(v => v.voter === partnerName);
     const myChoice = myVoteObj ? myVoteObj.target : "?";
     const partnerChoice = partnerVoteObj ? partnerVoteObj.target : "?";
-    const isMatch = myChoice === partnerChoice;
+    
+    // Bug #5 Fix: Time out is not a match
+    const isMatch = (myChoice === partnerChoice && myChoice !== 'Time out');
 
     document.getElementById('resultContainer').classList.remove('hidden');
     document.getElementById('resultContainer').innerHTML = `
       <div class="result-card">
-        <div class="result-row" style="margin-bottom:10px;">You: <b>${myChoice}</b> | ${partnerName}: <b>${partnerChoice}</b></div>
+        <div class="result-row" style="margin-bottom:10px;">You: <b>${escapeHTML(myChoice)}</b> | ${escapeHTML(partnerName)}: <b>${escapeHTML(partnerChoice)}</b></div>
         <div class="result-match">${isMatch ? 'MATCH!' : 'Different choices!'}</div>
       </div>
     `;
@@ -611,34 +757,70 @@
     window.isAdvancing = true;
 
     setTimeout(async () => {
-      if (currentRound >= 10) {
-        await updateDoc(doc(db, "rooms", roomId), { "gameState.status": "finished" });
-      } else {
-        const nextQ = currentQuestions[currentRound];
-        await updateDoc(doc(db, "rooms", roomId), { "gameState.round": currentRound + 1, "gameState.question": nextQ });
+      try {
+          if (currentRound >= 10) {
+            await updateDoc(doc(db, "rooms", roomId), { "gameState.status": "finished" });
+          } else {
+            const nextQ = currentQuestions[currentRound];
+            if (!nextQ) throw new Error("Missing question data");
+            await updateDoc(doc(db, "rooms", roomId), { "gameState.round": currentRound + 1, "gameState.question": nextQ });
+          }
+      } catch(e) {
+          console.error(e);
+      } finally {
+          window.isAdvancing = false;
       }
-      window.isAdvancing = false;
     }, 4000); 
   }
 
   function loadQuestionUI() {
+    document.getElementById('myVoteStatus').innerText = ""; 
     const overlay = document.getElementById('transition-overlay');
     overlay.classList.add('active');
+    
+    clearInterval(timerInterval);
+    timeLeft = 20;
+    document.getElementById('timerDisplay').innerText = `${timeLeft}s`;
+    document.getElementById('timerDisplay').style.color = 'var(--primary)';
+
     setTimeout(() => {
       document.getElementById('roundBadge').innerText = `ROUND ${currentRound} OF 10`;
       document.getElementById('questionDisplay').innerText = currentQuestionText;
       document.getElementById('voteButtonsContainer').classList.remove('hidden');
       document.getElementById('resultContainer').classList.add('hidden');
       buildVoteButtons();
-      setTimeout(() => { overlay.classList.remove('active'); }, 200);
+      window.lastResultRound = null; // Reset for new round
+      
+      setTimeout(() => { 
+          overlay.classList.remove('active'); 
+          
+          // Bug #8 Fix: Start timer only after overlay is removed
+          timerInterval = setInterval(() => {
+              timeLeft--;
+              document.getElementById('timerDisplay').innerText = `${timeLeft}s`;
+              if (timeLeft <= 5) document.getElementById('timerDisplay').style.color = 'var(--red)';
+              
+              if (timeLeft <= 0) {
+                  clearInterval(timerInterval);
+                  if (!document.getElementById('voteButtonsContainer').classList.contains('hidden')) {
+                      submitVote('Time out');
+                  }
+              }
+          }, 1000);
+          
+      }, 200);
     }, 1200);
   }
 
   function buildVoteButtons() {
     const container = document.getElementById('voteButtonsContainer');
     container.innerHTML = '';
+    
+    // Bug #9 Fix: Sort players alphabetically for consistent UI
+    const sortedPlayers = [currentUser, partnerName].sort((a, b) => a.localeCompare(b));
+    
     if (currentMode === 'moreLikely') {
-      [currentUser, partnerName].forEach(p => {
+      sortedPlayers.forEach(p => {
         const btn = document.createElement('button');
         btn.className = 'btn btn-vote'; btn.innerText = p;
         btn.onclick = () => submitVote(p);
@@ -651,9 +833,13 @@
     } else if (currentMode === 'thisOrThat') {
       let opt1 = 'A', opt2 = 'B';
       if (currentQuestionText.includes(':')) {
-        let text = currentQuestionText.split(':')[1].trim().replace(/\?$/, '');
-        let parts = text.split(' or ');
-        if (parts.length >= 2) { opt1 = parts[0].trim(); opt2 = parts[1].trim(); }
+        let parts = currentQuestionText.split(':');
+        let text = parts.slice(1).join(':').trim().replace(/\?$/, '');
+        let options = text.split(' or ');
+        if (options.length >= 2) {
+            opt1 = options[0].trim();
+            opt2 = options.slice(1).join(' or ').trim();
+        }
       }
       const b1 = document.createElement('button'); b1.className = 'btn btn-vote'; b1.innerText = opt1; b1.onclick = () => submitVote(opt1);
       const b2 = document.createElement('button'); b2.className = 'btn btn-vote'; b2.innerText = opt2; b2.onclick = () => submitVote(opt2);
@@ -669,25 +855,66 @@
     });
   }
 
+  async function showSummary() {
+      if (summaryRendered) return; // Bug #7 Fix
+      summaryRendered = true;
+      clearInterval(timerInterval);
+      
+      document.getElementById('page-game').classList.add('hidden');
+      showPage('page-summary');
+      
+      const summaryContainer = document.getElementById('summaryContainer');
+      summaryContainer.innerHTML = 'Loading summary...';
+      
+      const snapshot = await getDocs(collection(db, "rooms", roomId, "votes"));
+      let summary = {};
+      snapshot.forEach(voteDoc => {
+        const v = voteDoc.data();
+        if (!summary[v.round]) summary[v.round] = { round: v.round, votes: [] };
+        summary[v.round].votes.push(v);
+      });
+      
+      let html = '';
+      let matchCount = 0;
+      
+      Object.values(summary).forEach(item => {
+        const myV = item.votes.find(v => v.voter === currentUser);
+        const partV = item.votes.find(v => v.voter === partnerName);
+        
+        if (myV && partV) {
+          const isMatch = (myV.target === partV.target && myV.target !== 'Time out'); // Bug #5 Fix
+          if (isMatch) matchCount++;
+          html += `<div class="summary-item" style="background:var(--bg); padding:10px; margin-bottom:8px; border-radius:8px; border-left:2px solid var(--primary);"><b>Round ${item.round}:</b> You: ${escapeHTML(myV.target)} | ${escapeHTML(partnerName)}: ${escapeHTML(partV.target)}<br><span style="color:${isMatch ? 'var(--green)' : 'var(--muted)'}; font-size:12px;">${isMatch ? 'Matched!' : 'Different'}</span></div>`;
+        }
+      });
+      
+      document.getElementById('finalMatchCount').innerText = matchCount;
+      summaryContainer.innerHTML = html || '<p>No votes recorded.</p>';
+  }
+
   async function openChat() {
-    lastPageBeforeChat = document.getElementById('page-game').classList.contains('hidden') ? 'page-lobby' : 'page-game';
+    lastPageBeforeChat = document.getElementById('page-game').classList.contains('hidden') ? (document.getElementById('page-summary').classList.contains('hidden') ? 'page-lobby' : 'page-summary') : 'page-game';
     showPage('page-chat');
     if (unsubChat) unsubChat();
     unsubChat = onSnapshot(query(collection(db, "rooms", roomId, "messages"), orderBy("time")), (snapshot) => {
       const box = document.getElementById('chatBox');
       box.innerHTML = '';
-      snapshot.forEach(doc => {
-        const m = doc.data();
+      snapshot.forEach(messageDoc => {
+        const m = messageDoc.data();
+        if (!m.time) return; // Bug #20 Fix: ignore null timestamps
         const div = document.createElement('div');
         div.className = 'msg ' + (m.user === currentUser ? 'msg-me' : 'msg-other');
-        div.innerHTML = `<span class="msg-meta">${m.user}</span>${m.text}`;
+        div.innerHTML = `<span class="msg-meta">${escapeHTML(m.user)}</span>${escapeHTML(m.text)}`;
         box.appendChild(div);
       });
       box.scrollTop = box.scrollHeight;
-    });
+    }, (error) => console.error(error));
   }
 
-  function closeChat() { showPage(lastPageBeforeChat); }
+  function closeChat() { 
+      if (unsubChat) unsubChat();
+      showPage(lastPageBeforeChat); 
+  }
 
   async function sendChat() {
     const input = document.getElementById('chatInput');
@@ -696,12 +923,29 @@
     input.value = '';
   }
 
+  function handleChatEnter(e) { if (e.key === 'Enter') sendChat(); }
+
   function leaveGame() {
       hasJoined = false;
+      userLeftGame = true; // Bug #3 Fix
+      isAdvancing = false; // Bug #19 Fix
+      clearInterval(timerInterval);
+      showPage('page-lobby');
+  }
+
+  function backToLobby() {
+      hasJoined = false;
+      userLeftGame = true;
+      isAdvancing = false;
       showPage('page-lobby');
   }
 
   function logout() {
+    if (unsubRoom) unsubRoom();
+    if (unsubVotes) unsubVotes();
+    if (unsubChat) unsubChat();
+    isAdvancing = false; // Bug #19 Fix
+    
     localStorage.removeItem('shizu_user'); localStorage.removeItem('shizu_pass'); localStorage.removeItem('shizu_room'); localStorage.removeItem('shizu_partner');
     window.location.reload();
   }
@@ -711,8 +955,8 @@
   window.leaveGame = leaveGame; window.logout = logout; window.goToLudo = goToLudo; 
   window.handleLudoImageUpload = handleLudoImageUpload;
   window.joinPartnerGame = joinPartnerGame;
-  window.handleChatEnter = (e) => { if (e.key === 'Enter') sendChat(); };
-  window.handleTyping = () => {};
+  window.backToLobby = backToLobby;
+  window.handleChatEnter = handleChatEnter;
 
 </script>
 </body>
