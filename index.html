@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Shizu</title>
   <style>
-    :root { --bg: #050505; --card: #111111; --text: #ffffff; --muted: #888888; --yellow: #FFD700; --border: #333333; --green: #4CAF50; --red: #f44336; --blue: #2196F3; }
+    :root { --bg: #050505; --card: #111111; --text: #ffffff; --muted: #888888; --yellow: #FFD700; --border: #333333; --green: #4CAF50; --red: #f44336; }
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; text-align: center; padding: 20px; background: var(--bg); color: var(--text); margin: 0; overflow-x: hidden; }
     
@@ -32,21 +32,6 @@
     .btn-primary { background: var(--yellow); color: #000; border-color: var(--yellow); }
     .btn-primary:hover:not(:disabled) { background: #e6c200; }
     
-    .btn-vote { background: var(--card); border: 1px solid var(--border); margin: 6px; width: calc(50% - 12px); display: inline-block; padding: 20px 10px; font-size: 16px; font-weight: 600; color: var(--text); cursor: pointer; border-radius: 6px; transition: 0.2s; touch-action: pan-y; }
-    .btn-vote:active { background: var(--border); transform: scale(0.95); }
-    .btn-vote-full { width: 100%; display: flex; justify-content: center; }
-
-    .swipe-left { transform: translateX(-100px) rotate(-10deg); opacity: 0; transition: 0.3s; }
-    .swipe-right { transform: translateX(100px) rotate(10deg); opacity: 0; transition: 0.3s; }
-
-    .timer-badge { border: 1px solid var(--yellow); color: var(--yellow); padding: 6px 12px; border-radius: 4px; font-size: 14px; font-weight: 800; transition: 0.3s; }
-    .timer-warning { background: var(--red); border-color: var(--red); color: white; animation: pulseRed 1s infinite; }
-    @keyframes pulseRed { 0% { transform: scale(1); } 50% { transform: scale(1.1); box-shadow: 0 0 15px var(--red); } 100% { transform: scale(1); } }
-
-    .badge-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-    .round-badge { border: 1px solid var(--border); padding: 6px 12px; border-radius: 4px; font-size: 12px; font-weight: 600; color: var(--muted); }
-
-    .question { font-size: 1.4rem; margin: 20px 0; font-weight: 600; line-height: 1.4; min-height: 60px;}
     .input { padding: 16px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg); color: var(--text); width: 100%; font-size: 16px; margin-bottom: 15px; text-align: center; }
     .input:focus { outline: none; border-color: var(--yellow); }
     .hidden { display: none !important; }
@@ -54,17 +39,13 @@
     .status-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #555; margin-right: 8px; transition: 0.3s; }
     .status-dot.online { background: var(--green); box-shadow: 0 0 8px var(--green); }
     .unread-dot { position: absolute; top: -5px; right: -5px; width: 12px; height: 12px; background: var(--red); border-radius: 50%; display: none; border: 2px solid var(--bg); }
-    .avatar { font-size: 2rem; margin-bottom: 10px; display: inline-block; }
+    
+    .avatar { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 2px solid var(--yellow); margin-bottom: 15px; display: inline-block; background: #333; }
 
-    .result-card { background: var(--bg); border: 2px solid var(--yellow); border-radius: 8px; padding: 20px; margin-top: 20px; text-align: left; animation: fadeIn 0.3s ease-in; }
+    .question { font-size: 1.4rem; margin: 20px 0; font-weight: 600; line-height: 1.4; min-height: 60px;}
+    
+    .result-card { background: var(--bg); border: 2px solid var(--yellow); border-radius: 8px; padding: 20px; margin-top: 20px; text-align: left; }
     .result-match { font-size: 22px; font-weight: 800; color: var(--yellow); text-align: center; margin-top: 15px; border-top: 1px solid var(--border); padding-top: 15px; }
-    .streak-glow { box-shadow: 0 0 20px rgba(255, 215, 0, 0.6); border-color: #FFF; }
-    .broken-heart { color: var(--muted); border-color: var(--muted); box-shadow: none;}
-
-    .summary-item { background: var(--bg); margin-bottom: 12px; padding: 15px; border-radius: 6px; text-align: left; border-left: 2px solid var(--yellow); }
-    .summary-q { font-weight: 600; color: var(--text); margin-bottom: 8px; font-size: 14px;}
-    .summary-votes { color: var(--muted); font-size: 14px; line-height: 1.5; }
-    .summary-match { color: var(--yellow); font-weight: bold; margin-top: 5px; }
     
     .chat-box { height: 350px; overflow-y: auto; background: var(--bg); border-radius: 6px; padding: 15px; margin-bottom: 15px; text-align: left; display: flex; flex-direction: column; border: 1px solid var(--border); }
     .msg { margin-bottom: 12px; padding: 10px 14px; border-radius: 6px; max-width: 85%; font-size: 14px; line-height: 1.4; position: relative; }
@@ -75,12 +56,6 @@
     .chat-input-container input { margin-bottom: 0; text-align: left; }
     .chat-input-container button { width: auto; padding: 16px 20px; margin: 0; }
 
-    .reaction-bar { display: flex; justify-content: center; gap: 15px; margin-top: 15px; }
-    .reaction-btn { background: var(--bg); border: 1px solid var(--border); border-radius: 50%; width: 50px; height: 50px; font-size: 24px; display: flex; justify-content: center; align-items: center; cursor: pointer; transition: 0.2s; }
-    .reaction-btn:active { transform: scale(1.2); }
-    .floating-emoji { position: fixed; font-size: 3rem; pointer-events: none; animation: floatUp 2s forwards; z-index: 1000; }
-    @keyframes floatUp { 0% { transform: translateY(0) scale(0.5); opacity: 0; } 20% { opacity: 1; transform: translateY(-50px) scale(1.2); } 100% { transform: translateY(-200px) scale(1); opacity: 0; } }
-
     .settings-link { color: var(--muted); text-decoration: none; font-size: 13px; margin-top: 20px; display: inline-block; border-bottom: 1px dashed var(--muted); padding-bottom: 2px; }
   </style>
 </head>
@@ -88,6 +63,7 @@
 
 <div id="splash-screen"><h1 class="splash-logo">Shizu</h1></div>
 <div id="transition-overlay"><img src="animation.png" alt="Loading..."></div>
+<input type="file" id="avatarUpload" accept="image/*" class="hidden" onchange="window.handleImageUpload(event)">
 
 <div class="container">
   <h1>Shizu</h1>
@@ -106,7 +82,7 @@
   <div id="page-pairing" class="card hidden">
     <h2>Pair</h2>
     <p style="color: var(--muted);">Send this 6-digit code to your partner:</p>
-    <div id="myPairCode" class="room-badge" style="display:inline-block; border:1px solid var(--yellow); color:var(--yellow); padding:12px 24px; border-radius:6px; font-size:24px; font-weight:700; letter-spacing:4px; margin:15px 0;">------</div>
+    <div id="myPairCode" style="display:inline-block; border:1px solid var(--yellow); color:var(--yellow); padding:12px 24px; border-radius:6px; font-size:24px; font-weight:700; letter-spacing:4px; margin:15px 0;">------</div>
     <hr style="border-color: var(--border); margin: 30px 0;">
     <p style="color: var(--muted);">Or enter their Username:</p>
     <input type="text" id="partnerCodeInput" class="input" placeholder="USERNAME OR CODE" style="text-transform:none;" />
@@ -116,7 +92,9 @@
 
   <div id="page-lobby" class="card hidden">
     <h2>Connected</h2>
-    <div class="avatar" id="partnerAvatarDisplay">👤</div>
+    <img id="partnerAvatarDisplay" class="avatar" src="" alt="Partner" style="display:none;">
+    <div id="partnerAvatarFallback" class="avatar" style="display:flex; justify-content:center; align-items:center; font-size:32px;">👤</div>
+    
     <p style="color: var(--muted); margin-bottom: 5px;">Playing with:</p>
     <p style="font-size: 1.5rem; font-weight: 700; margin-top: 0; margin-bottom: 30px; color: var(--yellow);">
       <span id="partnerStatusDot" class="status-dot"></span>
@@ -133,6 +111,7 @@
       <button class="btn" onclick="window.startGame('moreLikely')">Who is more likely to...</button>
       <button class="btn" onclick="window.startGame('neverHaveIEver')">Never Have I Ever</button>
       <button class="btn" onclick="window.startGame('thisOrThat')">This or That</button>
+      <button class="btn btn-primary" onclick="window.goToLudo()" style="margin-top: 15px;">🎲 Play Ludo</button>
     </div>
     
     <div id="guestControls" class="hidden">
@@ -142,10 +121,9 @@
     <button class="btn" onclick="window.openChat()" style="margin-top: 20px;">
       💬 Open Chat <span id="lobbyUnreadDot" class="unread-dot"></span>
     </button>
-    <button class="btn" onclick="window.showStats()" style="background: var(--bg); border-color: var(--border); color: var(--text);">📊 Our Stats</button>
     
     <br>
-    <a href="#" onclick="window.openAvatarPicker()" class="settings-link">Change Avatar</a>
+    <a href="#" onclick="document.getElementById('avatarUpload').click()" class="settings-link">Upload My Photo</a>
     <span style="color: var(--border); margin: 0 10px;">|</span>
     <a href="#" onclick="window.leavePartner()" class="settings-link">Change Partner</a>
     <br><br>
@@ -153,53 +131,21 @@
   </div>
 
   <div id="page-game" class="card hidden">
-    <div class="badge-container">
-      <div id="roundBadge" class="round-badge">ROUND 1 OF 10</div>
-      <div id="timerDisplay" class="timer-badge">20s</div>
+    <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
+      <div id="roundBadge" style="color:var(--muted); font-weight:bold;">ROUND 1</div>
     </div>
-    <div id="gameTitle" style="color: var(--muted); font-size: 14px; margin-bottom: 10px; text-transform: uppercase;">Game Mode</div>
     <div id="questionDisplay" class="question">Loading...</div>
-    
-    <div id="voteButtonsContainer" style="margin-top: 20px; position:relative;">
-      <div style="font-size:12px; color:var(--muted); margin-bottom:10px;" id="swipeHint">Tap or Swipe to vote</div>
-    </div>
-
+    <div id="voteButtonsContainer"></div>
     <div id="resultContainer" class="hidden"></div>
     <div id="myVoteStatus" style="margin-top: 20px; font-size: 14px; color: var(--yellow); font-weight: 600;"></div>
-
-    <div class="reaction-bar">
-      <div class="reaction-btn" onclick="window.sendReaction('❤️')">❤️</div>
-      <div class="reaction-btn" onclick="window.sendReaction('😂')">😂</div>
-      <div class="reaction-btn" onclick="window.sendReaction('😡')">😡</div>
-    </div>
-
-    <br>
-    <button class="btn" onclick="window.openChat()" style="margin-bottom: 10px;">
-      💬 Chat <span id="gameUnreadDot" class="unread-dot"></span>
-    </button>
-    <button class="btn" onclick="window.leaveGame()" style="background: transparent; border-color: #555; color: #aaa;">Leave Game</button>
-  </div>
-
-  <div id="page-summary" class="card hidden">
-    <h2>Results</h2>
-    <div id="summaryContainer" style="max-height: 400px; overflow-y: auto; margin-top: 20px;"></div>
-    <button class="btn" onclick="window.backToLobby()" style="margin-top: 20px;">Back to Lobby</button>
-  </div>
-
-  <div id="page-stats" class="card hidden">
-    <h2>Our Stats</h2>
-    <div id="statsContainer" style="text-align:left; font-size:16px; line-height:2;">
-      Loading...
-    </div>
-    <button class="btn" onclick="window.closeStats()" style="margin-top:20px;">Back to Lobby</button>
+    <button class="btn" onclick="window.leaveGame()" style="margin-top: 20px; background: transparent; border-color: #555; color: #aaa;">Leave Game</button>
   </div>
 
   <div id="page-chat" class="card hidden">
     <h2>Chat</h2>
     <div id="chatBox" class="chat-box"></div>
-    <div id="typingIndicator" class="msg-status hidden" style="font-size:11px; color:var(--muted); text-align:left; margin-bottom:5px; font-style:italic;">Partner is typing...</div>
     <div class="chat-input-container">
-      <input type="text" id="chatInput" class="input" placeholder="Type a message..." oninput="window.handleTyping()" onkeypress="window.handleChatEnter(event)">
+      <input type="text" id="chatInput" class="input" placeholder="Type a message..." onkeypress="window.handleChatEnter(event)">
       <button class="btn btn-primary" onclick="window.sendChat()">Send</button>
     </div>
     <br>
@@ -222,23 +168,15 @@
 
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
-  
   const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbx9DwCUGQtAfTHcPGj62BIyvUhIz-NH4jpx6_jZV8e_DlqRw4J0jdJsB9nQHPXIUgVN4g/exec";
 
   let currentUser = '', roomId = '', partnerName = '', isHost = false;
   let currentMode = 'moreLikely', currentQuestionText = '', currentRound = 0;
   let currentQuestions = [];
   let localVotes = [];
-  let matchStreak = 0;
-  
-  let questionTimerInterval, timeLeft = 20;
   let lastPageBeforeChat = 'page-lobby';
-  let typingTimeout, heartbeatInterval;
   let isSignupMode = false;
-  let unsubRoom, unsubVotes, unsubChat, unsubTyping, unsubPartner, unsubMyStatus, unsubReaction;
-
-  let touchStartX = 0, touchEndX = 0;
-  let wakeLock = null;
+  let unsubRoom, unsubVotes, unsubChat, unsubPartner;
 
   window.onload = () => {
     setTimeout(() => {
@@ -254,7 +192,7 @@
   };
 
   function showPage(pageId) {
-    ['page-auth', 'page-pairing', 'page-lobby', 'page-game', 'page-summary', 'page-chat', 'page-stats'].forEach(id => {
+    ['page-auth', 'page-pairing', 'page-lobby', 'page-game', 'page-chat'].forEach(id => {
       document.getElementById(id).classList.add('hidden');
     });
     document.getElementById(pageId).classList.remove('hidden');
@@ -283,14 +221,13 @@
       if (userSnap.exists()) return alert('Username taken.');
       
       const pairCode = Math.floor(100000 + Math.random() * 900000).toString();
-      await setDoc(userRef, { displayName: user, password: pass, pairCode: pairCode, partner: '', roomId: '', lastSeen: Date.now(), unread: false, avatar: '👤' });
+      await setDoc(userRef, { displayName: user, password: pass, pairCode: pairCode, partner: '', roomId: '', avatar: '' });
       
       localStorage.setItem('shizu_user', user);
       localStorage.setItem('shizu_pass', pass);
       currentUser = user;
       document.getElementById('myPairCode').innerText = pairCode;
       showPage('page-pairing');
-      startHeartbeat();
     } else {
       checkLogin(user, pass);
     }
@@ -305,8 +242,6 @@
       localStorage.setItem('shizu_pass', pass);
       currentUser = user;
       const data = userSnap.data();
-      await updateDoc(userRef, { lastSeen: Date.now() });
-      startHeartbeat();
 
       if (!data.roomId) {
         document.getElementById('myPairCode').innerText = data.pairCode;
@@ -321,20 +256,32 @@
     }
   }
 
-  function startHeartbeat() {
-    if (heartbeatInterval) clearInterval(heartbeatInterval);
-    heartbeatInterval = setInterval(() => {
-      if (currentUser) updateDoc(doc(db, "users", currentUser.toLowerCase()), { lastSeen: Date.now() });
-    }, 10000);
-  }
+  function handleImageUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    document.getElementById('partnerAvatarFallback').innerText = "⏳";
 
-  function openAvatarPicker() {
-    vibrate();
-    let currentAvatar = prompt("Type an emoji for your avatar (e.g. 🐱, 🦊):", "👤");
-    if (currentAvatar) {
-      updateDoc(doc(db, "users", currentUser.toLowerCase()), { avatar: currentAvatar });
-      alert("Avatar updated!");
-    }
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const img = new Image();
+      img.onload = function() {
+        const canvas = document.createElement('canvas');
+        const MAX_SIZE = 150;
+        let width = img.width, height = img.height;
+        if (width > height) { if (width > MAX_SIZE) { height *= MAX_SIZE / width; width = MAX_SIZE; } }
+        else { if (height > MAX_SIZE) { width *= MAX_SIZE / height; height = MAX_SIZE; } }
+        canvas.width = width; canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+        
+        updateDoc(doc(db, "users", currentUser.toLowerCase()), { avatar: dataUrl })
+          .then(() => alert("Photo updated!"))
+          .catch(err => alert("Error uploading: " + err.message));
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
   }
 
   async function linkPartner() {
@@ -386,120 +333,42 @@
   }
 
   function enterLobby() {
+    localStorage.setItem('shizu_room', roomId);
+    localStorage.setItem('shizu_partner', partnerName);
+    
     document.getElementById('partnerNameDisplay').innerText = partnerName;
     isHost = (currentUser.toLowerCase() < partnerName.toLowerCase());
     document.getElementById('hostControls').classList.toggle('hidden', !isHost);
     document.getElementById('guestControls').classList.toggle('hidden', isHost);
-    currentRound = 0; 
-    matchStreak = 0;
     showPage('page-lobby');
-    
-    if (wakeLock) { wakeLock.release(); wakeLock = null; }
 
     if (unsubPartner) unsubPartner();
     unsubPartner = onSnapshot(doc(db, "users", partnerName.toLowerCase()), (docSnap) => {
       if (docSnap.exists()) {
         const data = docSnap.data();
-        const dot = document.getElementById('partnerStatusDot');
-        const isOnline = data.lastSeen && (Date.now() - data.lastSeen < 30000); 
-        if (isOnline) dot.classList.add('online'); else dot.classList.remove('online');
-        document.getElementById('partnerAvatarDisplay').innerText = data.avatar || '👤';
-      }
-    });
-
-    if (unsubMyStatus) unsubMyStatus();
-    unsubMyStatus = onSnapshot(doc(db, "users", currentUser.toLowerCase()), (docSnap) => {
-      if (docSnap.exists()) {
-        const hasUnread = docSnap.data().unread;
-        document.getElementById('lobbyUnreadDot').style.display = hasUnread ? 'block' : 'none';
-        document.getElementById('gameUnreadDot').style.display = hasUnread ? 'block' : 'none';
-      }
-    });
-
-    if (unsubRoom) unsubRoom();
-    unsubRoom = onSnapshot(doc(db, "rooms", roomId), (docSnap) => {
-      if (docSnap.exists() && docSnap.data().gameState) {
-        const gs = docSnap.data().gameState;
-        if (gs.status === 'playing') {
-          if (!document.getElementById('page-lobby').classList.contains('hidden')) {
-             currentMode = gs.mode;
-             document.getElementById('gameTitle').innerText = gs.mode === 'moreLikely' ? 'Who is more likely to...' : (gs.mode === 'neverHaveIEver' ? 'Never Have I Ever' : 'This or That');
-             showPage('page-game');
-             requestWakeLock();
-          }
-          if (gs.question && gs.question !== currentQuestionText) {
-            currentRound = gs.round;
-            currentQuestionText = gs.question;
-            setupVotesListener();
-            loadQuestionUI();
-          }
-        } else if (gs.status === 'waiting') {
-           showPage('page-lobby');
-           clearInterval(questionTimerInterval);
-           if (wakeLock) { wakeLock.release(); wakeLock = null; }
-        } else if (gs.status === 'finished') {
-          if (document.getElementById('page-summary').classList.contains('hidden') && !document.getElementById('page-lobby').classList.contains('hidden')) {
-            showSummary();
-          }
+        if (data.avatar) {
+            document.getElementById('partnerAvatarDisplay').src = data.avatar;
+            document.getElementById('partnerAvatarDisplay').style.display = 'inline-block';
+            document.getElementById('partnerAvatarFallback').style.display = 'none';
+        } else {
+            document.getElementById('partnerAvatarDisplay').style.display = 'none';
+            document.getElementById('partnerAvatarFallback').style.display = 'flex';
         }
       }
     });
-    
-    if (unsubTyping) unsubTyping();
-    unsubTyping = onSnapshot(doc(db, "rooms", roomId), (docSnap) => {
-      if (docSnap.exists() && docSnap.data().typing) {
-        document.getElementById('typingIndicator').classList.toggle('hidden', docSnap.data().typing === currentUser);
-      } else document.getElementById('typingIndicator').classList.add('hidden');
-    });
   }
 
-  async function showStats() {
-    vibrate();
-    showPage('page-stats');
-    const statsContainer = document.getElementById('statsContainer');
-    statsContainer.innerHTML = 'Calculating...';
-
-    const snapshot = await getDocs(collection(db, "rooms", roomId, "votes"));
-    let summary = {};
-    snapshot.forEach(doc => {
-      const v = doc.data();
-      if (!summary[v.round]) summary[v.round] = { round: v.round, votes: [] };
-      summary[v.round].votes.push(v);
-    });
-    
-    let matchCount = 0, totalRounds = 0;
-    Object.values(summary).forEach(item => {
-      const myV = item.votes.find(v => v.voter === currentUser);
-      const partV = item.votes.find(v => v.voter === partnerName);
-      if (myV && partV) {
-        totalRounds++;
-        if (myV.target === partV.target) matchCount++;
-      }
-    });
-
-    const percent = totalRounds === 0 ? 0 : Math.round((matchCount / totalRounds) * 100);
-
-    statsContainer.innerHTML = `
-      <p><b>Total Rounds Played:</b> ${totalRounds}</p>
-      <p><b>Times You Matched:</b> ${matchCount}</p>
-      <p><b>Match Rate:</b> <span style="color:var(--yellow); font-weight:800; font-size:24px;">${percent}%</span></p>
-      <p style="font-size:14px; color:var(--muted); margin-top:20px;">${percent > 70 ? 'You two are basically the same person! 🧠' : percent > 40 ? 'A healthy mix of agreement and chaos. ⚖️' : 'You two are complete opposites! 🧨'}</p>
-    `;
-  }
-  function closeStats() { vibrate(); showPage('page-lobby'); }
-
-  async function requestWakeLock() {
-    try { if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); } catch (err) {}
+  function goToLudo() {
+      vibrate();
+      window.location.href = "ludo.html";
   }
 
   async function startGame(mode) {
     vibrate();
     const isSpicy = document.getElementById('spicyToggle').checked;
     currentMode = mode;
-    document.getElementById('gameTitle').innerText = mode === 'moreLikely' ? 'Who is more likely to...' : (mode === 'neverHaveIEver' ? 'Never Have I Ever' : 'This or That');
-    document.getElementById('questionDisplay').innerText = "Fetching unique questions...";
+    document.getElementById('questionDisplay').innerText = "Fetching questions...";
     showPage('page-game');
-    requestWakeLock();
 
     let questions = [];
     try {
@@ -509,23 +378,23 @@
       });
       const data = await res.json();
       if (data && data.questions && data.questions.length > 0) questions = data.questions;
-    } catch(e) { console.log("Fallback to built-in questions"); }
+    } catch(e) { console.log(e); }
 
     if (questions.length < 10) {
-        // If we failed to get enough, pad with fallbacks
-        const fallbacks = ["Who is most likely to forget their own birthday?", "Never have I ever lied about my age.", "This or That: Coffee or Tea?", "Who is most likely to cry at a sad movie?", "Never have I ever eaten food off the floor."];
-        while(questions.length < 10) questions = questions.concat(fallbacks);
+        alert("Not enough questions in the Google Sheet yet. Please wait a minute and try again.");
+        showPage('page-lobby');
+        return;
     }
     
     questions = questions.sort(() => 0.5 - Math.random());
     currentQuestions = questions.slice(0, 10);
+    currentRound = 1;
+    currentQuestionText = currentQuestions[0];
     
     await setDoc(doc(db, "rooms", roomId), {
       gameState: { mode: mode, round: 1, question: currentQuestions[0], status: 'playing', host: currentUser }
     }, { merge: true });
     
-    currentRound = 1;
-    currentQuestionText = currentQuestions[0];
     setupVotesListener();
     loadQuestionUI();
   }
@@ -536,7 +405,6 @@
       localVotes = [];
       snapshot.forEach(doc => { if(doc.data().round === currentRound) localVotes.push(doc.data()); });
       
-      // Strictly wait for exactly 2 votes before advancing
       if (localVotes.length >= 2) {
         showRoundResult(localVotes);
         if (isHost) checkIfNextQuestionReady();
@@ -546,240 +414,89 @@
 
   function showRoundResult(votes) {
     document.getElementById('voteButtonsContainer').classList.add('hidden');
-    document.getElementById('swipeHint').classList.add('hidden');
-    
     const myVoteObj = votes.find(v => v.voter === currentUser);
     const partnerVoteObj = votes.find(v => v.voter === partnerName);
-    
     const myChoice = myVoteObj ? myVoteObj.target : "?";
     const partnerChoice = partnerVoteObj ? partnerVoteObj.target : "?";
     const isMatch = myChoice === partnerChoice;
 
-    if (isMatch) { matchStreak++; vibrate(); } else { matchStreak = 0; }
-
-    const resContainer = document.getElementById('resultContainer');
-    resContainer.classList.remove('hidden');
-    
-    let streakText = '';
-    if (matchStreak > 1) streakText = `<div style="color:var(--yellow); font-size:24px; text-align:center; margin-top:10px;">🔥 ${matchStreak} Match Streak!</div>`;
-    else if (!isMatch) streakText = `<div style="color:var(--muted); font-size:24px; text-align:center; margin-top:10px;">💔 Streak Broken</div>`;
-
-    let cardClass = isMatch ? 'result-card streak-glow' : 'result-card broken-heart';
-
-    resContainer.innerHTML = `
-      <div class="${cardClass}">
-        <div class="result-row">You picked: <b>${myChoice}</b></div>
-        <div class="result-row">${partnerName} picked: <b>${partnerChoice}</b></div>
+    document.getElementById('resultContainer').classList.remove('hidden');
+    document.getElementById('resultContainer').innerHTML = `
+      <div class="result-card">
+        <div class="result-row">You: <b>${myChoice}</b> | ${partnerName}: <b>${partnerChoice}</b></div>
         <div class="result-match">${isMatch ? 'MATCH!' : 'Different choices!'}</div>
-        ${streakText}
       </div>
     `;
   }
 
   async function checkIfNextQuestionReady() {
-    clearInterval(questionTimerInterval);
     if (window.isAdvancing) return;
     window.isAdvancing = true;
 
-    // Wait 4 seconds so they can read the result
     setTimeout(async () => {
       if (currentRound >= 10) {
         await updateDoc(doc(db, "rooms", roomId), { "gameState.status": "finished" });
       } else {
-        const nextQ = currentQuestions[currentRound] || "This or That: Error loading question?";
+        const nextQ = currentQuestions[currentRound];
         await updateDoc(doc(db, "rooms", roomId), { "gameState.round": currentRound + 1, "gameState.question": nextQ });
       }
       window.isAdvancing = false;
-    }, 4000);
+    }, 4000); 
   }
 
   function loadQuestionUI() {
     const overlay = document.getElementById('transition-overlay');
     overlay.classList.add('active');
-    
     setTimeout(() => {
       document.getElementById('roundBadge').innerText = `ROUND ${currentRound} OF 10`;
       document.getElementById('questionDisplay').innerText = currentQuestionText;
-      document.getElementById('myVoteStatus').innerText = "";
-      
       document.getElementById('voteButtonsContainer').classList.remove('hidden');
-      document.getElementById('swipeHint').classList.remove('hidden');
-      document.getElementById('voteButtonsContainer').innerHTML = '<div style="font-size:12px; color:var(--muted); margin-bottom:10px;" id="swipeHint">Tap or Swipe to vote</div>';
       document.getElementById('resultContainer').classList.add('hidden');
-      
       buildVoteButtons();
-      startTimer();
-      
       setTimeout(() => { overlay.classList.remove('active'); }, 200);
     }, 1200);
   }
 
-  function startTimer() {
-    clearInterval(questionTimerInterval);
-    timeLeft = 20;
-    const timerEl = document.getElementById('timerDisplay');
-    timerEl.innerText = `${timeLeft}s`;
-    timerEl.classList.remove('timer-warning');
-    
-    questionTimerInterval = setInterval(() => {
-      timeLeft--;
-      timerEl.innerText = `${timeLeft}s`;
-      if (timeLeft <= 5) timerEl.classList.add('timer-warning');
-      if (timeLeft <= 0) clearInterval(questionTimerInterval); // Stops at 0 but doesn't auto-advance
-    }, 1000);
-  }
-
   function buildVoteButtons() {
     const container = document.getElementById('voteButtonsContainer');
-    
+    container.innerHTML = '';
     if (currentMode === 'moreLikely') {
       [currentUser, partnerName].forEach(p => {
-        if(!p) return;
         const btn = document.createElement('button');
-        btn.className = 'btn btn-vote btn-vote-full';
-        btn.innerText = p + (p === currentUser ? ' (You)' : '');
-        btn.onclick = () => submitVote(p, 'full');
+        btn.className = 'btn btn-vote'; btn.innerText = p;
+        btn.onclick = () => submitVote(p);
         container.appendChild(btn);
       });
     } else if (currentMode === 'neverHaveIEver') {
-      const btn1 = document.createElement('button');
-      btn1.className = 'btn btn-vote'; btn1.innerText = 'I have'; btn1.onclick = () => submitVote('True', 'left');
-      const btn2 = document.createElement('button');
-      btn2.className = 'btn btn-vote'; btn2.innerText = 'I haven\'t'; btn2.onclick = () => submitVote('False', 'right');
-      container.appendChild(btn1); container.appendChild(btn2);
+      const b1 = document.createElement('button'); b1.className = 'btn btn-vote'; b1.innerText = 'I have'; b1.onclick = () => submitVote('True');
+      const b2 = document.createElement('button'); b2.className = 'btn btn-vote'; b2.innerText = 'I haven\'t'; b2.onclick = () => submitVote('False');
+      container.appendChild(b1); container.appendChild(b2);
     } else if (currentMode === 'thisOrThat') {
-      let opt1 = 'Option A', opt2 = 'Option B';
+      let opt1 = 'A', opt2 = 'B';
       if (currentQuestionText.includes(':')) {
         let text = currentQuestionText.split(':')[1].trim().replace(/\?$/, '');
         let parts = text.split(' or ');
         if (parts.length >= 2) { opt1 = parts[0].trim(); opt2 = parts[1].trim(); }
       }
-      const btn1 = document.createElement('button');
-      btn1.className = 'btn btn-vote'; btn1.innerText = opt1; btn1.onclick = () => submitVote(opt1, 'left');
-      const btn2 = document.createElement('button');
-      btn2.className = 'btn btn-vote'; btn2.innerText = opt2; btn2.onclick = () => submitVote(opt2, 'right');
-      container.appendChild(btn1); container.appendChild(btn2);
+      const b1 = document.createElement('button'); b1.className = 'btn btn-vote'; b1.innerText = opt1; b1.onclick = () => submitVote(opt1);
+      const b2 = document.createElement('button'); b2.className = 'btn btn-vote'; b2.innerText = opt2; b2.onclick = () => submitVote(opt2);
+      container.appendChild(b1); container.appendChild(b2);
     }
   }
 
-  document.getElementById('page-game').addEventListener('touchstart', e => {
-    touchStartX = e.changedTouches[0].screenX;
-  }, {passive: true});
-
-  document.getElementById('page-game').addEventListener('touchend', e => {
-    if (document.getElementById('voteButtonsContainer').classList.contains('hidden')) return;
-    touchEndX = e.changedTouches[0].screenX;
-    handleSwipe();
-  }, {passive: true});
-
-  function handleSwipe() {
-    const deltaX = touchEndX - touchStartX;
-    if (Math.abs(deltaX) > 60) {
-      const buttons = document.querySelectorAll('.btn-vote');
-      if (currentMode === 'moreLikely') return;
-      if (deltaX > 0 && buttons.length >= 2) submitVote(buttons[1].innerText, 'right');
-      else if (deltaX < 0 && buttons.length >= 2) submitVote(buttons[0].innerText, 'left');
-    }
-  }
-
-  async function submitVote(target, direction) {
+  async function submitVote(target) {
     vibrate();
-    const btns = document.querySelectorAll('.btn-vote');
-    if (direction === 'left') btns[0].classList.add('swipe-left');
-    if (direction === 'right' && btns[1]) btns[1].classList.add('swipe-right');
-    
-    document.getElementById('myVoteStatus').innerText = `You picked: ${target}. Waiting for partner...`;
-    document.getElementById('swipeHint').innerText = "Waiting for partner...";
-    
-    btns.forEach(b => b.disabled = true);
-    
+    document.getElementById('myVoteStatus').innerText = `You picked: ${target}`;
+    document.querySelectorAll('.btn-vote').forEach(b => b.disabled = true);
     await setDoc(doc(db, "rooms", roomId, "votes", `round_${currentRound}_${currentUser}`), {
       round: currentRound, voter: currentUser, target: target
     });
-  }
-
-  async function sendReaction(emoji) {
-    vibrate();
-    await setDoc(doc(db, "rooms", roomId, "reaction"), {
-      sender: currentUser, emoji: emoji, time: Date.now()
-    });
-  }
-
-  onSnapshot(doc(db, "rooms", roomId, "reaction"), (docSnap) => {
-    if (docSnap.exists()) {
-      const data = docSnap.data();
-      if (data.sender !== currentUser && (Date.now() - data.time < 3000)) {
-        showFloatingEmoji(data.emoji);
-        vibrate();
-      }
-    }
-  });
-
-  function showFloatingEmoji(emoji) {
-    const el = document.createElement('div');
-    el.className = 'floating-emoji';
-    el.innerText = emoji;
-    el.style.left = Math.random() * 80 + 10 + 'vw';
-    el.style.bottom = '100px';
-    document.body.appendChild(el);
-    setTimeout(() => el.remove(), 2000);
-  }
-
-  async function leaveGame() {
-    vibrate();
-    if(confirm("Leave the game?")) {
-      if (isHost) await updateDoc(doc(db, "rooms", roomId), { "gameState.status": "waiting" });
-      showPage('page-lobby');
-      if (wakeLock) { wakeLock.release(); wakeLock = null; }
-    }
-  }
-
-  async function showSummary() {
-    clearInterval(questionTimerInterval);
-    showPage('page-summary');
-    const summaryContainer = document.getElementById('summaryContainer');
-    summaryContainer.innerHTML = 'Loading answers...';
-    
-    const snapshot = await getDocs(collection(db, "rooms", roomId, "votes"));
-    let summary = {};
-    snapshot.forEach(doc => {
-      const v = doc.data();
-      if (!summary[v.round]) summary[v.round] = { round: v.round, votes: [] };
-      summary[v.round].votes.push(v);
-    });
-    
-    let html = '';
-    let matchCount = 0;
-    
-    Object.values(summary).forEach(item => {
-      const myV = item.votes.find(v => v.voter === currentUser);
-      const partV = item.votes.find(v => v.voter === partnerName);
-      
-      if (myV && partV) {
-        const isMatch = myV.target === partV.target;
-        if (isMatch) matchCount++;
-        html += `<div class="summary-item"><div class="summary-q">Round ${item.round}</div><div class="summary-votes">You: <b>${myV.target}</b><br>${partnerName}: <b>${partV.target}</b></div><div class="summary-match">${isMatch ? 'Matched!' : 'Different'}</div></div>`;
-      }
-    });
-    
-    summaryContainer.innerHTML = `<h3 style="color:var(--yellow); margin-bottom: 20px;">You matched on ${matchCount} out of 10 rounds!</h3>` + html;
-  }
-
-  function backToLobby() { 
-    vibrate();
-    showPage('page-lobby'); 
-    currentRound = 0;
-    if (wakeLock) { wakeLock.release(); wakeLock = null; }
   }
 
   async function openChat() {
     vibrate();
     lastPageBeforeChat = document.getElementById('page-game').classList.contains('hidden') ? 'page-lobby' : 'page-game';
     showPage('page-chat');
-    await updateDoc(doc(db, "users", currentUser.toLowerCase()), { unread: false });
-    document.getElementById('lobbyUnreadDot').style.display = 'none';
-    document.getElementById('gameUnreadDot').style.display = 'none';
-
     if (unsubChat) unsubChat();
     unsubChat = onSnapshot(query(collection(db, "rooms", roomId, "messages"), orderBy("time")), (snapshot) => {
       const box = document.getElementById('chatBox');
@@ -801,30 +518,26 @@
     const input = document.getElementById('chatInput');
     if (!input.value.trim()) return;
     await addDoc(collection(db, "rooms", roomId, "messages"), { user: currentUser, text: input.value.trim(), time: serverTimestamp() });
-    await updateDoc(doc(db, "users", partnerName.toLowerCase()), { unread: true });
     input.value = '';
   }
 
   function handleChatEnter(e) { if (e.key === 'Enter') sendChat(); }
-  function handleTyping() {
-    updateDoc(doc(db, "rooms", roomId), { typing: currentUser });
-    if (typingTimeout) clearTimeout(typingTimeout);
-    typingTimeout = setTimeout(() => { updateDoc(doc(db, "rooms", roomId), { typing: null }); }, 2000);
+
+  function leaveGame() {
+      vibrate();
+      showPage('page-lobby');
   }
 
   function logout() {
-    vibrate();
-    if (currentUser) updateDoc(doc(db, "users", currentUser.toLowerCase()), { lastSeen: 0 });
-    localStorage.removeItem('shizu_user'); localStorage.removeItem('shizu_pass');
+    localStorage.removeItem('shizu_user'); localStorage.removeItem('shizu_pass'); localStorage.removeItem('shizu_room'); localStorage.removeItem('shizu_partner');
     window.location.reload();
   }
 
   window.toggleAuth = toggleAuth; window.handleAuth = handleAuth; window.linkPartner = linkPartner; window.leavePartner = leavePartner;
   window.startGame = startGame; window.openChat = openChat; window.closeChat = closeChat; window.sendChat = sendChat;
-  window.handleTyping = handleTyping; window.handleChatEnter = handleChatEnter; window.backToLobby = backToLobby;
-  window.leaveGame = leaveGame; window.logout = logout; window.sendReaction = sendReaction;
-  window.openAvatarPicker = openAvatarPicker; window.showStats = showStats; window.closeStats = closeStats;
+  window.leaveGame = leaveGame; window.logout = logout; window.handleImageUpload = handleImageUpload; window.goToLudo = goToLudo;
+  window.handleChatEnter = handleChatEnter;
 
 </script>
 </body>
-        </html>
+</html>
