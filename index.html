@@ -175,6 +175,13 @@
       </svg>
       <span id="player2Name">...</span>
     </div>
+
+    <!-- GUEST JOIN PROMPT -->
+    <div id="guestJoinPrompt" class="card hidden" style="background: rgba(232, 121, 165, 0.1); border: 2px solid var(--primary); margin-top: 20px; padding: 20px;">
+        <h3 style="color: var(--primary); margin-bottom: 5px;">Your Partner Started a Game!</h3>
+        <p id="guestGameName" style="font-weight: 600; font-size: 1.1rem; margin-bottom: 15px;">...</p>
+        <button class="btn btn-primary" onclick="window.joinPartnerGame()">Join Now</button>
+    </div>
     
     <div style="margin-top: 40px;">
       <h2 class="section-title">Choose Your Moment</h2>
@@ -212,10 +219,6 @@
             <span style="color: var(--primary); font-weight: 600;">Enable Spicy Mode</span>
           </label>
         </div>
-
-        <button class="btn btn-primary" onclick="window.startGame('moreLikely')" style="margin-top: 10px;">
-          PLAY TOGETHER
-        </button>
 
       </div>
       
@@ -287,6 +290,7 @@
   let lastPageBeforeChat = 'page-lobby';
   let isSignupMode = false;
   let unsubRoom, unsubVotes, unsubChat, unsubPartner;
+  let hasJoined = false;
 
   function createHearts() {
     const bg = document.getElementById('heartBg');
@@ -481,16 +485,53 @@
     document.getElementById('guestControls').classList.toggle('hidden', isHost);
     showPage('page-lobby');
 
-    // Listen to room state to redirect to Ludo if host starts it
     if (unsubRoom) unsubRoom();
     unsubRoom = onSnapshot(doc(db, "rooms", roomId), (docSnap) => {
       if (docSnap.exists() && docSnap.data().gameState) {
         const gs = docSnap.data().gameState;
-        if (gs.status === 'ludo') {
-            window.location.href = "ludo.html";
+        
+        // If Guest, show prompt to join
+        if (!isHost && !hasJoined) {
+            if (gs.status === 'ludo') {
+                document.getElementById('guestGameName').innerText = "Ludo";
+                document.getElementById('guestJoinPrompt').classList.remove('hidden');
+            } else if (gs.status === 'playing') {
+                let modeName = gs.mode === 'moreLikely' ? 'Who is more likely to...' : (gs.mode === 'neverHaveIEver' ? 'Never Have I Ever' : 'This or That');
+                document.getElementById('guestGameName').innerText = modeName;
+                document.getElementById('guestJoinPrompt').classList.remove('hidden');
+            }
+        }
+
+        // Sync Game State if already in game
+        if (gs.status === 'playing' && hasJoined) {
+            if (gs.question && gs.question !== currentQuestionText) {
+                currentRound = gs.round;
+                currentQuestionText = gs.question;
+                setupVotesListener();
+                loadQuestionUI();
+            }
         }
       }
     });
+  }
+
+  async function joinPartnerGame() {
+    const roomSnap = await getDoc(doc(db, "rooms", roomId));
+    const gs = roomSnap.data().gameState;
+    
+    hasJoined = true;
+    document.getElementById('guestJoinPrompt').classList.add('hidden');
+
+    if (gs.status === 'ludo') {
+        window.location.href = "ludo.html";
+    } else if (gs.status === 'playing') {
+        currentMode = gs.mode;
+        currentRound = gs.round;
+        currentQuestionText = gs.question;
+        showPage('page-game');
+        setupVotesListener();
+        loadQuestionUI();
+    }
   }
 
   async function goToLudo() {
@@ -656,6 +697,7 @@
   }
 
   function leaveGame() {
+      hasJoined = false;
       showPage('page-lobby');
   }
 
@@ -668,6 +710,7 @@
   window.startGame = startGame; window.openChat = openChat; window.closeChat = closeChat; window.sendChat = sendChat;
   window.leaveGame = leaveGame; window.logout = logout; window.goToLudo = goToLudo; 
   window.handleLudoImageUpload = handleLudoImageUpload;
+  window.joinPartnerGame = joinPartnerGame;
   window.handleChatEnter = (e) => { if (e.key === 'Enter') sendChat(); };
   window.handleTyping = () => {};
 
