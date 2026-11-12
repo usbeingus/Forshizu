@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Shizu Ludo</title>
+  <style>
+    :root { --bg: #050505; --card: #111111; --text: #ffffff; --muted: #888888; --yellow: #FFD700; --border: #333333; --green: #4CAF50; --red: #f44336; }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; text-align: center; padding: 20px; background: var(--bg); color: var(--text); margin: 0; overflow-x: hidden; }
+    
+    .container { max-width: 500px; margin: 0 auto; }
+    h1 { color: var(--yellow); font-size: 2rem; margin-bottom: 5px; }
+    h2 { font-weight: 700; margin-top: 0; }
+    
+    .btn { background: transparent; color: var(--text); border: 1px solid var(--border); padding: 16px; margin: 8px 0; border-radius: 6px; font-size: 16px; font-weight: 600; cursor: pointer; width: 100%; transition: 0.15s; }
+    .btn:active { transform: scale(0.97); }
+    .btn-primary { background: var(--yellow); color: #000; border-color: var(--yellow); }
+    
+    .ludo-container { display: flex; flex-direction: column; align-items: center; margin-top: 20px; }
+    .ludo-board { 
+      display: grid; grid-template-columns: repeat(15, 1fr); grid-template-rows: repeat(15, 1fr); 
+      width: 100%; max-width: 350px; aspect-ratio: 1; background: #222; 
+      border: 2px solid var(--border); border-radius: 8px; position: relative; overflow: hidden;
+    }
+    
+    .cell { border: 1px solid #333; position: relative; display: flex; justify-content: center; align-items: center; }
+    .safe-cell::after { content: '★'; color: rgba(255,255,255,0.2); font-size: 10px; position: absolute; }
+    
+    .base-red { grid-area: 1 / 1 / 7 / 7; background: rgba(244, 67, 54, 0.2); border: 2px solid var(--red); display: flex; flex-wrap: wrap; padding: 10px; gap: 10px; align-content: center; justify-content: center; }
+    .base-green { grid-area: 10 / 10 / 16 / 16; background: rgba(76, 175, 80, 0.2); border: 2px solid var(--green); display: flex; flex-wrap: wrap; padding: 10px; gap: 10px; align-content: center; justify-content: center; }
+    .home-center { grid-area: 7 / 7 / 10 / 10; background: #111; display: flex; justify-content: center; align-items: center; color: var(--yellow); font-weight: bold; font-size: 12px; border: 1px solid var(--border); }
+
+    .piece { width: 85%; height: 85%; border-radius: 50%; display: flex; justify-content: center; align-items: center; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.5); transition: all 0.3s ease; position: absolute; z-index: 10; border: 2px solid #fff; background-size: cover; background-position: center; }
+    .piece-red { background-color: var(--red); }
+    .piece-green { background-color: var(--green); }
+    .piece.active { transform: scale(1.2); box-shadow: 0 0 15px white; z-index: 20; }
+
+    .dice-container { margin-top: 20px; display: flex; justify-content: center; align-items: center; gap: 20px; }
+    .dice { width: 60px; height: 60px; background: white; color: black; font-size: 30px; font-weight: bold; border-radius: 10px; display: flex; justify-content: center; align-items: center; cursor: pointer; box-shadow: 0 4px 0 #999; }
+    .dice:active { transform: translateY(4px); box-shadow: 0 0 0 #999; }
+    .dice.disabled { opacity: 0.5; cursor: not-allowed; }
+    
+    .status-text { color: var(--yellow); font-weight: bold; font-size: 18px; margin-bottom: 10px; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>Ludo</h1>
+  <div class="status-text" id="ludoTurnText">Loading...</div>
+  
+  <div class="ludo-container">
+    <div class="ludo-board" id="ludoBoard"></div>
+    <div class="dice-container">
+      <div class="dice" id="diceBtn" onclick="rollDice()">🎲</div>
+      <div id="diceResult" style="font-size:14px; color:var(--muted);"></div>
+    </div>
+  </div>
+
+  <button class="btn" onclick="leaveLudo()" style="margin-top: 30px;">Leave Game</button>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+  import { getFirestore, doc, setDoc, getDoc, updateDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAQg9F4Sn3GsZOghWxSJqwbLMsJetvo03w",
+    authDomain: "shizu-c984a.firebaseapp.com",
+    projectId: "shizu-c984a",
+    storageBucket: "shizu-c984a.firebasestorage.app",
+    messagingSenderId: "512395203618",
+    appId: "1:512395203618:web:496a2f959a3545975c667b"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  const currentUser = localStorage.getItem('shizu_user');
+  const roomId = localStorage.getItem('shizu_room');
+  const partnerName = localStorage.getItem('shizu_partner');
+  const isHost = currentUser.toLowerCase() < partnerName.toLowerCase();
+  const myColor = isHost ? 'red' : 'green';
+  const oppColor = isHost ? 'green' : 'red';
+
+  let myAvatar = '', oppAvatar = '';
+  let ludoState = {};
+  let unsubLudo, unsubUsers;
+
+  async function initGame() {
+    const gameRef = doc(db, "rooms", roomId, "games", "ludo");
+    const gameSnap = await getDoc(gameRef);
+    
+    if (!gameSnap.exists() || gameSnap.data().winner) {
+      await setDoc(gameRef, {
+        turn: isHost ? currentUser : partnerName,
+        dice: 0,
+        hasRolled: false,
+        red: { p1: -1, p2: -1, p3: -1, p4: -1 },
+        green: { p1: -1, p2: -1, p3: -1, p4: -1 },
+        winner: null
+      });
+    }
+
+    unsubUsers = onSnapshot(doc(db, "users", currentUser.toLowerCase()), (snap) => {
+        if(snap.exists() && snap.data().avatar) myAvatar = snap.data().avatar;
+        renderLudoBoard();
+    });
+    onSnapshot(doc(db, "users", partnerName.toLowerCase()), (snap) => {
+        if(snap.exists() && snap.data().avatar) oppAvatar = snap.data().avatar;
+        renderLudoBoard();
+    });
+
+    unsubLudo = onSnapshot(gameRef, (docSnap) => {
+      if (docSnap.exists()) {
+        ludoState = docSnap.data();
+        renderLudoBoard();
+      }
+    });
+  }
+
+  function renderLudoBoard() {
+    const board = document.getElementById('ludoBoard');
+    if (!board || !ludoState.red) return;
+    board.innerHTML = '';
+    
+    for (let i = 0; i < 225; i++) {
+      const cell = document.createElement('div');
+      cell.className = 'cell';
+      cell.id = `cell-${i}`;
+      board.appendChild(cell);
+    }
+    
+    const baseRed = document.createElement('div'); baseRed.className = 'base-red';
+    const baseGreen = document.createElement('div'); baseGreen.className = 'base-green';
+    const center = document.createElement('div'); center.className = 'home-center'; center.innerText = "HOME";
+    board.appendChild(baseRed); board.appendChild(baseGreen); board.appendChild(center);
+
+    const redBaseCells = [16, 18, 46, 48];
+    const greenBaseCells = [176, 178, 206, 208];
+
+    for (let p in ludoState.red) {
+        const pos = ludoState.red[p];
+        let targetCellId = pos === -1 ? redBaseCells[parseInt(p.slice(1))-1] : (pos <= 51 ? getMainTrackIndex('red', pos) : getHomeStretchIndex('red', pos));
+        
+        const piece = document.createElement('div');
+        piece.className = 'piece piece-red';
+        if (myColor === 'red' && myAvatar) piece.style.backgroundImage = `url(${myAvatar})`;
+        if (oppColor === 'red' && oppAvatar) piece.style.backgroundImage = `url(${oppAvatar})`;
+        
+        if (myColor === 'red') piece.onclick = () => handlePieceClick('red', p);
+        document.getElementById(`cell-${targetCellId}`).appendChild(piece);
+    }
+
+    for (let p in ludoState.green) {
+        const pos = ludoState.green[p];
+        let targetCellId = pos === -1 ? greenBaseCells[parseInt(p.slice(1))-1] : (pos <= 51 ? getMainTrackIndex('green', pos) : getHomeStretchIndex('green', pos));
+        
+        const piece = document.createElement('div');
+        piece.className = 'piece piece-green';
+        if (myColor === 'green' && myAvatar) piece.style.backgroundImage = `url(${myAvatar})`;
+        if (oppColor === 'green' && oppAvatar) piece.style.backgroundImage = `url(${oppAvatar})`;
+        
+        if (myColor === 'green') piece.onclick = () => handlePieceClick('green', p);
+        document.getElementById(`cell-${targetCellId}`).appendChild(piece);
+    }
+
+    const diceBtn = document.getElementById('diceBtn');
+    if (ludoState.winner) {
+      document.getElementById('ludoTurnText').innerText = `🏆 ${ludoState.winner} Wins!`;
+      diceBtn.classList.add('disabled');
+    } else if (ludoState.turn === currentUser) {
+      document.getElementById('ludoTurnText').innerText = "Your Turn!";
+      diceBtn.classList.toggle('disabled', ludoState.hasRolled);
+    } else {
+      document.getElementById('ludoTurnText').innerText = `Waiting for ${partnerName}...`;
+      diceBtn.classList.add('disabled');
+    }
+    
+    if (ludoState.dice > 0) document.getElementById('diceResult').innerText = `Rolled: ${ludoState.dice}`;
+  }
+
+  function getMainTrackIndex(color, pos) {
+    const track = [90, 91, 92, 93, 94, 75, 60, 61, 62, 63, 64, 65, 66, 81, 96, 111, 126, 141, 156, 157, 158, 159, 160, 161, 162, 177, 192, 193, 194, 195, 196, 197, 198, 183, 168, 153, 138, 123, 108, 107, 106, 105, 104, 103, 102, 87, 72, 57, 56, 55, 54, 53];
+    let offset = color === 'green' ? 26 : 0;
+    let actualPos = (pos + offset) % 52;
+    return track[actualPos];
+  }
+
+  function getHomeStretchIndex(color, pos) {
+    if (color === 'red') return 97 + (pos - 52);
+    else return 157 - (pos - 52);
+  }
+
+  async function rollDice() {
+    if (ludoState.turn !== currentUser || ludoState.hasRolled) return;
+    
+    const newDice = Math.floor(Math.random() * 6) + 1;
+    document.getElementById('diceResult').innerText = `Rolled: ${newDice}`;
+    
+    const myPieces = ludoState[myColor];
+    let hasValidMove = false;
+    
+    for (let p in myPieces) {
+      const pos = myPieces[p];
+      if (pos === -1 && newDice === 6) hasValidMove = true;
+      else if (pos >= 0 && pos + newDice <= 56) hasValidMove = true;
+    }
+    
+    if (!hasValidMove) {
+      document.getElementById('ludoTurnText').innerText = "No valid moves. Passing...";
+      await updateDoc(doc(db, "rooms", roomId, "games", "ludo"), { dice: newDice, hasRolled: true });
+      setTimeout(passTurn, 1000);
+    } else {
+      await updateDoc(doc(db, "rooms", roomId, "games", "ludo"), { dice: newDice, hasRolled: true });
+    }
+  }
+
+  async function handlePieceClick(color, pieceId) {
+    if (ludoState.turn !== currentUser || !ludoState.hasRolled || color !== myColor) return;
+    
+    const dice = ludoState.dice;
+    const pos = ludoState[color][pieceId];
+    
+    let newPos = pos;
+    let isValidMove = false;
+    
+    if (pos === -1 && dice === 6) { newPos = 0; isValidMove = true; }
+    else if (pos >= 0 && pos + dice <= 56) { newPos = pos + dice; isValidMove = true; }
+    
+    if (isValidMove) {
+      let newAbsPos = newPos < 52 ? getMainTrackIndex(color, newPos) : getHomeStretchIndex(color, newPos);
+      const oppPieces = ludoState[oppColor];
+      
+      for (let op in oppPieces) {
+        const oppPos = oppPieces[op];
+        if (oppPos >= 0 && oppPos < 52) {
+           let oppAbsPos = getMainTrackIndex(oppColor, oppPos);
+           if (oppAbsPos === newAbsPos && !isSafeCell(newAbsPos)) {
+             await updateDoc(doc(db, "rooms", roomId, "games", "ludo"), { [`${oppColor}.${op}`]: -1 });
+           }
+        }
+      }
+      
+      let win = true;
+      for (let p in ludoState[color]) {
+        if (p === pieceId) { if (newPos !== 56) win = false; }
+        else { if (ludoState[color][p] !== 56) win = false; }
+      }
+      
+      if (win) {
+        await updateDoc(doc(db, "rooms", roomId, "games", "ludo"), { [`${color}.${pieceId}`]: newPos, winner: currentUser });
+      } else {
+        await updateDoc(doc(db, "rooms", roomId, "games", "ludo"), { [`${color}.${pieceId}`]: newPos });
+        if (dice !== 6) setTimeout(passTurn, 500);
+        else await updateDoc(doc(db, "rooms", roomId, "games", "ludo"), { hasRolled: false, dice: 0 });
+      }
+    }
+  }
+
+  function isSafeCell(absIndex) {
+    return [90, 75, 65, 66, 156, 141, 123, 108].includes(absIndex);
+  }
+
+  async function passTurn() {
+    if (ludoState.winner) return;
+    await updateDoc(doc(db, "rooms", roomId, "games", "ludo"), {
+      turn: ludoState.turn === currentUser ? partnerName : currentUser,
+      dice: 0,
+      hasRolled: false
+    });
+    document.getElementById('diceResult').innerText = "";
+  }
+
+  function leaveLudo() {
+    if (unsubLudo) unsubLudo();
+    if (unsubUsers) unsubUsers();
+    window.location.href = "index.html";
+  }
+
+  window.rollDice = rollDice;
+  window.leaveLudo = leaveLudo;
+
+  initGame();
+
+</script>
+</body>
+</html>
