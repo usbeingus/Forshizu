@@ -9,48 +9,22 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 
-  <!-- Bug #16 Fix: Fallback if Firebase CDN fails -->
-  <script>
-    setTimeout(() => {
-      if (document.getElementById('splash-screen') && !document.getElementById('splash-screen').classList.contains('fade-out')) {
-        document.getElementById('splash-screen').innerHTML = '<p style="color:#E879A5; font-family:sans-serif;">Connection failed. Please refresh and check your internet.</p>';
-      }
-    }, 8000);
-  </script>
-
   <style>
     :root { 
-      --bg: #100B12; 
-      --bg-sec: #19111C;
-      --card: #211722; 
-      --primary: #E879A5; 
-      --secondary: #B96A91;
-      --text: #F8EAF0; 
-      --muted: #A99AA5; 
-      --border: rgba(232, 121, 165, 0.16); 
-      --green: #4CAF50;
-      --red: #ff4d4d; /* Bug #1 Fix: Added red variable */
+      --bg: #100B12; --bg-sec: #19111C; --card: #211722; 
+      --primary: #E879A5; --secondary: #B96A91; --text: #F8EAF0; 
+      --muted: #A99AA5; --border: rgba(232, 121, 165, 0.16); --green: #4CAF50; --red: #ff4d4d;
     }
     
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
     
     body { 
-      font-family: 'Inter', sans-serif; 
-      text-align: center; 
-      padding: 20px; 
-      padding-bottom: env(safe-area-inset-bottom);
-      background: var(--bg); 
-      color: var(--text); 
-      margin: 0; 
-      overflow-x: hidden;
-      min-height: 100dvh;
+      font-family: 'Inter', sans-serif; text-align: center; padding: 20px; 
+      padding-bottom: 20px; /* Fixed padding override */
+      background: var(--bg); color: var(--text); margin: 0; overflow-x: hidden; min-height: 100dvh;
     }
 
-    h1, h2, h3 { 
-      font-family: 'Playfair Display', serif; 
-      font-weight: 600; 
-      margin-top: 0; 
-    }
+    h1, h2, h3 { font-family: 'Playfair Display', serif; font-weight: 600; margin-top: 0; }
     
     .heart-bg { position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh; z-index: -1; overflow: hidden; }
     .heart-particle { position: absolute; bottom: -20px; color: var(--primary); opacity: 0.15; animation: floatUp 8s linear infinite; }
@@ -62,14 +36,11 @@
     .fade-out { opacity: 0 !important; pointer-events: none; }
     @keyframes fadeIn { to { opacity: 1; } }
 
-    #transition-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh; background: var(--bg); display: flex; justify-content: center; align-items: center; z-index: 9998; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
-    #transition-overlay.active { opacity: 1; pointer-events: all; }
-    #transition-overlay img { width: 120px; height: 120px; object-fit: contain; }
-    #transition-overlay.active img { animation: spinAndGrow 1.2s cubic-bezier(0.25, 1, 0.5, 1) forwards; }
-    @keyframes spinAndGrow { 0% { transform: scale(0.6) rotate(0deg); opacity: 0; } 20% { opacity: 1; } 100% { transform: scale(1.5) rotate(360deg); opacity: 1; } }
+    /* Timer Progress Bar */
+    #timerBarContainer { width: 100%; height: 4px; background: var(--bg-sec); border-radius: 2px; overflow: hidden; margin-bottom: 20px; }
+    #timerBar { height: 100%; background: var(--primary); width: 100%; transition: width 1s linear, background-color 0.3s; }
 
     .container { max-width: 500px; margin: 0 auto; position: relative; z-index: 10; }
-    
     .header { margin-bottom: 30px; }
     .header h1 { color: var(--primary); font-size: 2.8rem; margin-bottom: 5px; letter-spacing: 1px; display: flex; justify-content: center; align-items: center; gap: 10px; }
     .header p { color: var(--muted); font-size: 14px; margin: 0; }
@@ -80,6 +51,7 @@
     .btn { background: transparent; color: var(--text); border: 1px solid var(--border); padding: 16px; margin: 8px 0; border-radius: 12px; font-family: 'Inter', sans-serif; font-size: 16px; font-weight: 500; cursor: pointer; width: 100%; transition: all 0.2s ease; position: relative; display: flex; justify-content: center; align-items: center; gap: 10px; min-height: 44px; }
     .btn:active { transform: scale(0.97); }
     .btn-primary { background: linear-gradient(135deg, var(--primary), var(--secondary)); color: #fff; border: none; font-weight: 600; box-shadow: 0 4px 15px rgba(232, 121, 165, 0.3); }
+    .btn-secondary { background: transparent; border-color: var(--border); color: var(--text); }
     .btn-primary:hover:not(:disabled) { filter: brightness(1.1); box-shadow: 0 6px 20px rgba(232, 121, 165, 0.4); }
     
     .input { padding: 16px; border-radius: 12px; border: 1px solid var(--border); background: var(--bg); color: var(--text); width: 100%; font-size: 16px; margin-bottom: 15px; text-align: center; font-family: 'Inter', sans-serif; transition: border-color 0.3s; }
@@ -131,7 +103,10 @@
 
     .join-prompt { background: rgba(232, 121, 165, 0.1); border: 2px solid var(--primary); margin-top: 20px; padding: 20px; border-radius: 16px; animation: slideUp 0.4s ease; }
 
-    @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+    @media (prefers-reduced-motion: reduce) { 
+        * { animation: none !important; transition: none !important; } 
+        .card { opacity: 1; transform: none; } /* Bug Fix: Ensure cards are visible */
+    }
   </style>
 </head>
 <body>
@@ -143,7 +118,6 @@
   <h1 class="splash-logo">SHIZU</h1>
   <p class="splash-sub">A Little Game for Two Hearts.</p>
 </div>
-<div id="transition-overlay"><img src="animation.png" alt="Loading..."></div>
 
 <div class="container">
   
@@ -152,18 +126,22 @@
     <p>Your little world, together.</p>
   </div>
 
+  <!-- PAGE 1: AUTH -->
   <div id="page-auth" class="card hidden">
     <h2 id="authTitle" style="font-family: 'Playfair Display';">Welcome Back</h2>
     <p style="color: var(--muted); font-size: 14px; margin-bottom: 20px;">Sign in to your private world.</p>
-    <input type="text" id="username" class="input" placeholder="Username" style="text-transform:none;" autocomplete="username" />
-    <input type="password" id="password" class="input" placeholder="Password" style="text-transform:none;" autocomplete="current-password" />
-    <button class="btn btn-primary" onclick="window.handleAuth()" id="authBtn">Login</button>
+    <form onsubmit="window.handleAuth(event); return false;">
+        <input type="text" id="username" class="input" placeholder="Username" style="text-transform:none;" autocomplete="username" />
+        <input type="password" id="password" class="input" placeholder="Password" style="text-transform:none;" autocomplete="current-password" />
+        <button type="submit" class="btn btn-primary" id="authBtn">Login</button>
+    </form>
     <p style="margin-top: 20px; font-size: 14px; color: var(--muted);">
       <span id="authSwitchText">New here?</span> 
       <a href="#" onclick="window.toggleAuth(event)" style="color: var(--primary); text-decoration: none; font-weight: 600;" id="authSwitchLink">Sign up</a>
     </p>
   </div>
 
+  <!-- PAGE 2: PAIRING -->
   <div id="page-pairing" class="card hidden">
     <h2 style="font-family: 'Playfair Display';">Connect</h2>
     <p style="color: var(--muted); font-size: 14px; margin-bottom: 15px;">Send this 6-digit code to your partner:</p>
@@ -175,6 +153,7 @@
     <p id="pairingStatus" style="color: var(--primary); margin-top: 15px; font-size: 14px;"></p>
   </div>
 
+  <!-- PAGE 3: LOBBY -->
   <div id="page-lobby" class="card hidden" style="padding: 30px 20px;">
     
     <div class="connection-status">
@@ -190,7 +169,7 @@
     </div>
 
     <div id="guestJoinPrompt" class="join-prompt hidden">
-        <h3 style="color: var(--primary); margin-bottom: 5px;">Your Partner Started a Game!</h3>
+        <h3 id="joinPromptTitle" style="color: var(--primary); margin-bottom: 5px;">Game in Progress</h3>
         <p id="guestGameName" style="font-weight: 600; font-size: 1.1rem; margin-bottom: 15px;">...</p>
         <button class="btn btn-primary" onclick="window.joinPartnerGame()">Join Now</button>
     </div>
@@ -253,7 +232,9 @@
     </div>
   </div>
 
+  <!-- PAGE 4: GAME -->
   <div id="page-game" class="card hidden">
+    <div id="timerBarContainer"><div id="timerBar"></div></div>
     <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
       <div id="roundBadge" style="color:var(--muted); font-weight:bold; font-size:12px; letter-spacing:1px;">ROUND 1</div>
       <div id="timerDisplay" style="color:var(--primary); font-weight:bold; font-size:12px;">20s</div>
@@ -263,12 +244,12 @@
     <div id="resultContainer" class="hidden"></div>
     <div id="myVoteStatus" style="margin-top: 20px; font-size: 14px; color: var(--primary); font-weight: 500;"></div>
     
-    <!-- Bug #12 Fix: Added chat button to game page -->
     <button class="btn btn-secondary" onclick="window.openChat()" style="margin-top: 20px; background: transparent; border-color: var(--border);">💬 Open Chat</button>
     
     <button class="btn" onclick="window.leaveGame()" style="margin-top: 10px; border-color: transparent; color: var(--muted);">Leave Game</button>
   </div>
 
+  <!-- PAGE 5: SUMMARY -->
   <div id="page-summary" class="card hidden">
     <h2 style="font-family: 'Playfair Display';">Game Over</h2>
     <p style="color: var(--muted); margin-bottom: 20px;">You matched on <span id="finalMatchCount" style="color:var(--primary); font-weight:bold; font-size:1.2rem;">0</span> out of 10 rounds!</p>
@@ -276,12 +257,13 @@
     <button class="btn btn-primary" onclick="window.backToLobby()">Back to Lobby</button>
   </div>
 
+  <!-- PAGE 6: CHAT -->
   <div id="page-chat" class="card hidden">
     <h2 style="font-family: 'Playfair Display';">Your Private Space</h2>
     <div id="chatBox" class="chat-box"></div>
     <div id="typingIndicator" style="font-size:11px; color:var(--muted); text-align:left; margin-bottom:5px; font-style:italic;" class="hidden">Partner is typing...</div>
     <div class="chat-input-container">
-      <input type="text" id="chatInput" class="input" placeholder="Type a message..." oninput="window.handleTyping()" onkeydown="window.handleChatEnter(event)">
+      <input type="text" id="chatInput" class="input" placeholder="Type a message..." onkeydown="window.handleChatEnter(event)">
       <button class="btn btn-primary" onclick="window.sendChat()">Send</button>
     </div>
     <br>
@@ -305,6 +287,7 @@
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
   const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbx9DwCUGQtAfTHcPGj62BIyvUhIz-NH4jpx6_jZV8e_DlqRw4J0jdJsB9nQHPXIUgVN4g/exec";
+  const SECRET_KEY = "shizu_secure_9918"; // Must match Code.gs
 
   let currentUser = '', roomId = '', partnerName = '', isHost = false;
   let currentMode = 'moreLikely', currentQuestionText = '', currentRound = 0;
@@ -312,13 +295,11 @@
   let localVotes = [];
   let lastPageBeforeChat = 'page-lobby';
   let isSignupMode = false;
-  let unsubRoom, unsubVotes, unsubChat;
+  let unsubRoom, unsubVotes, unsubChat, unsubMyUser;
   let hasJoined = false;
-  let userLeftGame = false; // Bug #3 Fix
-  let summaryRendered = false; // Bug #7 Fix
+  let summaryRendered = false; 
   let timerInterval, timeLeft = 20;
 
-  // Bug #15 Fix: Safe undefined handling
   function escapeHTML(str) {
     if (str === null || str === undefined) return '';
     return String(str).replace(/[&<>'"]/g, 
@@ -350,7 +331,6 @@
   }
   createHearts();
 
-  // Bug #18 Fix: Use DOMContentLoaded or direct init
   window.addEventListener('load', async () => {
     setTimeout(async () => {
       document.getElementById('splash-screen').classList.add('fade-out');
@@ -359,7 +339,7 @@
         const savedUser = localStorage.getItem('shizu_user');
         const savedPass = localStorage.getItem('shizu_pass');
         if (savedUser && savedPass) {
-            checkLogin(savedUser, savedPass, true); // pass true to indicate it's already hashed
+            checkLogin(savedUser, savedPass, true); 
         }
         else showPage('page-auth');
       }, 500);
@@ -387,6 +367,12 @@
     const pass = document.getElementById('password').value.trim();
     if (!user || !pass) return alert('Please fill both fields.');
 
+    // Bug Fix: Username validation
+    const usernameRegex = /^[a-zA-Z0-9]{3,20}$/;
+    if (!usernameRegex.test(user)) {
+        return alert('Username must be 3-20 characters, letters/numbers only.');
+    }
+
     const hashedPass = await hashPassword(pass);
 
     if (isSignupMode) {
@@ -398,16 +384,16 @@
       await setDoc(userRef, { displayName: user, password: hashedPass, pairCode: pairCode, partner: '', roomId: '', avatar: '' });
       
       localStorage.setItem('shizu_user', user);
-      localStorage.setItem('shizu_pass', hashedPass); // Bug #22 Fix: Store hash, not plaintext
+      localStorage.setItem('shizu_pass', hashedPass); 
       currentUser = user;
       document.getElementById('myPairCode').innerText = pairCode;
       showPage('page-pairing');
+      listenToSelf();
     } else {
       checkLogin(user, hashedPass, false);
     }
   }
 
-  // Bug #2 Fix: Handle legacy plaintext and hashed passwords
   async function checkLogin(user, passAttempt, isHashedFromStorage) {
     const userRef = doc(db, "users", user.toLowerCase());
     const userSnap = await getDoc(userRef);
@@ -416,21 +402,21 @@
       const data = userSnap.data();
       let finalPass = passAttempt;
       
-      // If it's a legacy plaintext password in DB
+      // Bug Fix: Proper migration logic
       if (!isHashedFromStorage && data.password === passAttempt && passAttempt.length < 64) {
-         // It's legacy, hash it and update DB
          finalPass = await hashPassword(passAttempt);
          await updateDoc(userRef, { password: finalPass });
       }
       
       if (data.password === finalPass) {
         localStorage.setItem('shizu_user', user);
-        localStorage.setItem('shizu_pass', finalPass); // Store hash
+        localStorage.setItem('shizu_pass', finalPass); 
         currentUser = user;
 
         if (!data.roomId) {
           document.getElementById('myPairCode').innerText = data.pairCode;
           showPage('page-pairing');
+          listenToSelf();
         } else {
           roomId = data.roomId;
           partnerName = data.partner;
@@ -443,12 +429,33 @@
     alert('Invalid credentials.'); showPage('page-auth');
   }
 
+  // Bug Fix: Listen to own user doc for pairing/disconnect updates
+  function listenToSelf() {
+      if (unsubMyUser) unsubMyUser();
+      unsubMyUser = onSnapshot(doc(db, "users", currentUser.toLowerCase()), (snap) => {
+          if (!snap.exists()) return;
+          const data = snap.data();
+          if (data.roomId && !roomId) {
+              roomId = data.roomId;
+              partnerName = data.partner;
+              enterLobby();
+          } else if (!data.roomId && roomId) {
+              // Partner disconnected us
+              roomId = '';
+              partnerName = '';
+              if (unsubRoom) unsubRoom();
+              if (unsubVotes) unsubVotes();
+              showPage('page-pairing');
+          }
+      });
+  }
+
   function handleLudoImageUpload(event) {
     const file = event.target.files[0];
     if (!file) return;
     
-    // Bug #21 Fix: File size check
     if (file.size > 5_000_000) {
+        event.target.value = ''; // Bug Fix: Reset input
         return alert('Image is too large. Please choose one under 5MB.');
     }
     
@@ -482,10 +489,12 @@
           .then(() => {
               uploadLink.innerText = "Photo Saved!";
               setTimeout(() => uploadLink.innerText = originalText, 2000);
+              event.target.value = ''; // Bug Fix: Reset input
           })
           .catch(err => {
               alert("Error uploading: " + err.message);
               uploadLink.innerText = originalText;
+              event.target.value = ''; // Bug Fix: Reset input
           });
       };
       img.src = e.target.result;
@@ -516,15 +525,15 @@
     if (pData.displayName.toLowerCase() === currentUser.toLowerCase()) return alert('Cannot pair with yourself.');
     if (pData.roomId) return alert('That person is already paired with someone.');
 
-    // Bug #11 Fix: Concurrency guard by re-checking
     const reCheckSnap = await getDoc(partnerRef);
     if (reCheckSnap.data().roomId) {
         document.getElementById('pairingStatus').innerText = "";
         return alert('Partner just paired with someone else.');
     }
 
+    // Bug Fix: Use double underscore for room IDs
     const names = [currentUser.toLowerCase(), pData.displayName.toLowerCase()].sort();
-    const newRoomId = names[0] + "_" + names[1];
+    const newRoomId = names[0] + "__" + names[1];
     const myRef = doc(db, "users", currentUser.toLowerCase());
     
     await updateDoc(myRef, { partner: pData.displayName, roomId: newRoomId });
@@ -540,11 +549,9 @@
     await updateDoc(doc(db, "users", currentUser.toLowerCase()), { partner: '', roomId: '' });
     await updateDoc(doc(db, "users", partnerName.toLowerCase()), { partner: '', roomId: '' });
     
-    // Bug #10 Fix: Unsubscribe all listeners
     if (unsubRoom) unsubRoom();
     if (unsubVotes) unsubVotes();
     if (unsubChat) unsubChat();
-    isAdvancing = false;
     
     document.getElementById('partnerCodeInput').value = '';
     document.getElementById('myPairCode').innerText = (await getDoc(doc(db, "users", currentUser.toLowerCase()))).data().pairCode;
@@ -568,28 +575,18 @@
       if (docSnap.exists() && docSnap.data().gameState) {
         const gs = docSnap.data().gameState;
         
-        if (!isHost && gs.status === 'playing' && !hasJoined) {
+        if (gs.status === 'playing' && !hasJoined) {
             let modeName = gs.mode === 'moreLikely' ? 'Who is more likely to...' : (gs.mode === 'neverHaveIEver' ? 'Never Have I Ever' : 'This or That');
             document.getElementById('guestGameName').innerText = modeName;
+            document.getElementById('joinPromptTitle').innerText = "Game in Progress";
             document.getElementById('guestJoinPrompt').classList.remove('hidden');
+        } else {
+            document.getElementById('guestJoinPrompt').classList.add('hidden');
         }
         
         if (!isHost && gs.status === 'ludo') {
             window.location.href = "ludo.html";
-        }
-
-        // Bug #3 Fix: Don't auto-rejoin if host explicitly left
-        if (gs.status === 'playing' && !hasJoined && isHost && !userLeftGame) {
-            hasJoined = true;
-            currentMode = gs.mode;
-            currentRound = gs.round;
-            currentQuestionText = gs.question;
-            // Bug #4 Fix: Restore saved questions on refresh
-            if (gs.questions) currentQuestions = gs.questions; 
-            
-            showPage('page-game');
-            setupVotesListener();
-            loadQuestionUI();
+            return; // Bug Fix: Added return
         }
 
         if (gs.status === 'playing' && hasJoined) {
@@ -620,11 +617,12 @@
 
     if (gs.status === 'ludo') {
         window.location.href = "ludo.html";
+        return; // Bug Fix: Added return
     } else if (gs.status === 'playing') {
         currentMode = gs.mode;
         currentRound = gs.round;
         currentQuestionText = gs.question;
-        if (gs.questions) currentQuestions = gs.questions; // Bug #4 Fix
+        if (gs.questions) currentQuestions = gs.questions; 
         showPage('page-game');
         setupVotesListener();
         loadQuestionUI();
@@ -640,13 +638,11 @@
     const isSpicy = document.getElementById('spicyToggle').checked;
     currentMode = mode;
     hasJoined = true; 
-    userLeftGame = false;
     summaryRendered = false;
     document.getElementById('questionDisplay').innerText = "Fetching questions...";
     showPage('page-game');
 
     if (!isRetry) {
-        // Bug #6 Fix: Abort if cleanup fails
         try {
             const votesSnapshot = await getDocs(collection(db, "rooms", roomId, "votes"));
             const deletePromises = votesSnapshot.docs.map(voteDoc => deleteDoc(doc(db, "rooms", roomId, "votes", voteDoc.id)));
@@ -654,6 +650,7 @@
         } catch(e) { 
             console.error("Error clearing old votes", e); 
             alert("Network issue. Could not start game. Please try again.");
+            hasJoined = false; // Bug Fix: reset hasJoined
             showPage('page-lobby');
             return;
         }
@@ -663,12 +660,13 @@
     try {
       const res = await fetch(WEB_APP_URL, {
         method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify({ action: 'fetchQuestions', mode: mode, spice: isSpicy ? 'spicy' : 'normal' })
+        body: JSON.stringify({ action: 'fetchQuestions', mode: mode, spice: isSpicy ? 'spicy' : 'normal', secret: SECRET_KEY })
       });
       const data = await res.json();
       
       if (data.error) {
           alert(data.error);
+          hasJoined = false; // Bug Fix: reset hasJoined
           showPage('page-lobby');
           return;
       }
@@ -679,6 +677,7 @@
               return;
           }
           alert(data.reason || 'Not enough questions in the Google Sheet yet. Please wait a minute and try again.');
+          hasJoined = false; // Bug Fix: reset hasJoined
           showPage('page-lobby');
           return;
       }
@@ -688,6 +687,7 @@
     } catch(e) { 
         console.log(e); 
         alert("Network error while fetching questions.");
+        hasJoined = false; // Bug Fix: reset hasJoined
         showPage('page-lobby');
         return;
     }
@@ -697,13 +697,12 @@
     currentRound = 1;
     currentQuestionText = currentQuestions[0];
     
-    // Bug #4 Fix: Save currentQuestions to DB
     await setDoc(doc(db, "rooms", roomId), {
       gameState: { 
           mode: mode, 
           round: 1, 
           question: currentQuestions[0], 
-          questions: currentQuestions, // <--- Saved for refresh recovery
+          questions: currentQuestions, 
           status: 'playing', 
           host: currentUser 
       }
@@ -723,7 +722,6 @@
       
       const uniqueVoters = new Set(localVotes.map(v => v.voter));
       if (uniqueVoters.size >= 2) {
-        // Bug #17 Fix: Guard against re-rendering
         if (window.lastResultRound !== currentRound) {
             showRoundResult(localVotes);
             window.lastResultRound = currentRound;
@@ -737,10 +735,15 @@
     document.getElementById('voteButtonsContainer').classList.add('hidden');
     const myVoteObj = votes.find(v => v.voter === currentUser);
     const partnerVoteObj = votes.find(v => v.voter === partnerName);
-    const myChoice = myVoteObj ? myVoteObj.target : "?";
-    const partnerChoice = partnerVoteObj ? partnerVoteObj.target : "?";
+    let myChoice = myVoteObj ? myVoteObj.target : "?";
+    let partnerChoice = partnerVoteObj ? partnerVoteObj.target : "?";
     
-    // Bug #5 Fix: Time out is not a match
+    // Bug Fix: Better display for Never Have I Ever
+    if (currentMode === 'neverHaveIEver') {
+        myChoice = myChoice === 'True' ? 'I have' : (myChoice === 'False' ? 'I haven\'t' : myChoice);
+        partnerChoice = partnerChoice === 'True' ? 'I have' : (partnerChoice === 'False' ? 'I haven\'t' : partnerChoice);
+    }
+
     const isMatch = (myChoice === partnerChoice && myChoice !== 'Time out');
 
     document.getElementById('resultContainer').classList.remove('hidden');
@@ -775,48 +778,56 @@
 
   function loadQuestionUI() {
     document.getElementById('myVoteStatus').innerText = ""; 
-    const overlay = document.getElementById('transition-overlay');
-    overlay.classList.add('active');
     
     clearInterval(timerInterval);
     timeLeft = 20;
     document.getElementById('timerDisplay').innerText = `${timeLeft}s`;
     document.getElementById('timerDisplay').style.color = 'var(--primary)';
+    
+    // Bug Fix: Progress bar timer
+    const bar = document.getElementById('timerBar');
+    bar.style.transition = 'none';
+    bar.style.width = '100%';
+    bar.style.backgroundColor = 'var(--primary)';
+    setTimeout(() => { bar.style.transition = 'width 1s linear, background-color 0.3s'; }, 50);
 
-    setTimeout(() => {
-      document.getElementById('roundBadge').innerText = `ROUND ${currentRound} OF 10`;
-      document.getElementById('questionDisplay').innerText = currentQuestionText;
-      document.getElementById('voteButtonsContainer').classList.remove('hidden');
-      document.getElementById('resultContainer').classList.add('hidden');
-      buildVoteButtons();
-      window.lastResultRound = null; // Reset for new round
-      
-      setTimeout(() => { 
-          overlay.classList.remove('active'); 
-          
-          // Bug #8 Fix: Start timer only after overlay is removed
-          timerInterval = setInterval(() => {
-              timeLeft--;
-              document.getElementById('timerDisplay').innerText = `${timeLeft}s`;
-              if (timeLeft <= 5) document.getElementById('timerDisplay').style.color = 'var(--red)';
-              
-              if (timeLeft <= 0) {
-                  clearInterval(timerInterval);
-                  if (!document.getElementById('voteButtonsContainer').classList.contains('hidden')) {
-                      submitVote('Time out');
-                  }
-              }
-          }, 1000);
-          
-      }, 200);
-    }, 1200);
+    document.getElementById('roundBadge').innerText = `ROUND ${currentRound} OF 10`;
+    document.getElementById('questionDisplay').innerText = currentQuestionText;
+    document.getElementById('voteButtonsContainer').classList.remove('hidden');
+    document.getElementById('resultContainer').classList.add('hidden');
+    buildVoteButtons();
+    window.lastResultRound = null; 
+    
+    // Bug Fix: Simple fade overlay instead of full-screen spin
+    const card = document.getElementById('page-game');
+    card.style.animation = 'none';
+    card.offsetHeight; 
+    card.style.animation = 'slideUp 0.3s ease-out';
+
+    timerInterval = setInterval(() => {
+        timeLeft--;
+        document.getElementById('timerDisplay').innerText = `${timeLeft}s`;
+        
+        // Bug Fix: Update progress bar
+        bar.style.width = `${(timeLeft / 20) * 100}%`;
+        if (timeLeft <= 5) {
+            document.getElementById('timerDisplay').style.color = 'var(--red)';
+            bar.style.backgroundColor = 'var(--red)';
+        }
+        
+        if (timeLeft <= 0) {
+            clearInterval(timerInterval);
+            if (!document.getElementById('voteButtonsContainer').classList.contains('hidden')) {
+                submitVote('Time out');
+            }
+        }
+    }, 1000);
   }
 
   function buildVoteButtons() {
     const container = document.getElementById('voteButtonsContainer');
     container.innerHTML = '';
     
-    // Bug #9 Fix: Sort players alphabetically for consistent UI
     const sortedPlayers = [currentUser, partnerName].sort((a, b) => a.localeCompare(b));
     
     if (currentMode === 'moreLikely') {
@@ -848,6 +859,7 @@
   }
 
   async function submitVote(target) {
+    clearInterval(timerInterval); // Bug Fix: Stop timer so it doesn't overwrite vote
     document.getElementById('myVoteStatus').innerText = `You picked: ${target}`;
     document.querySelectorAll('.btn-vote').forEach(b => b.disabled = true);
     await setDoc(doc(db, "rooms", roomId, "votes", `round_${currentRound}_${currentUser}`), {
@@ -856,7 +868,7 @@
   }
 
   async function showSummary() {
-      if (summaryRendered) return; // Bug #7 Fix
+      if (summaryRendered) return; 
       summaryRendered = true;
       clearInterval(timerInterval);
       
@@ -882,9 +894,17 @@
         const partV = item.votes.find(v => v.voter === partnerName);
         
         if (myV && partV) {
-          const isMatch = (myV.target === partV.target && myV.target !== 'Time out'); // Bug #5 Fix
+          const isMatch = (myV.target === partV.target && myV.target !== 'Time out'); 
           if (isMatch) matchCount++;
-          html += `<div class="summary-item" style="background:var(--bg); padding:10px; margin-bottom:8px; border-radius:8px; border-left:2px solid var(--primary);"><b>Round ${item.round}:</b> You: ${escapeHTML(myV.target)} | ${escapeHTML(partnerName)}: ${escapeHTML(partV.target)}<br><span style="color:${isMatch ? 'var(--green)' : 'var(--muted)'}; font-size:12px;">${isMatch ? 'Matched!' : 'Different'}</span></div>`;
+          
+          let myChoice = myV.target;
+          let partChoice = partV.target;
+          if (currentMode === 'neverHaveIEver') {
+              myChoice = myChoice === 'True' ? 'I have' : (myChoice === 'False' ? 'I haven\'t' : myChoice);
+              partChoice = partChoice === 'True' ? 'I have' : (partChoice === 'False' ? 'I haven\'t' : partChoice);
+          }
+
+          html += `<div class="summary-item" style="background:var(--bg); padding:10px; margin-bottom:8px; border-radius:8px; border-left:2px solid var(--primary);"><b>Round ${item.round}:</b> You: ${escapeHTML(myChoice)} | ${escapeHTML(partnerName)}: ${escapeHTML(partChoice)}<br><span style="color:${isMatch ? 'var(--green)' : 'var(--muted)'}; font-size:12px;">${isMatch ? 'Matched!' : 'Different'}</span></div>`;
         }
       });
       
@@ -896,12 +916,14 @@
     lastPageBeforeChat = document.getElementById('page-game').classList.contains('hidden') ? (document.getElementById('page-summary').classList.contains('hidden') ? 'page-lobby' : 'page-summary') : 'page-game';
     showPage('page-chat');
     if (unsubChat) unsubChat();
+    
+    // Bug Fix: Estimate server timestamps
     unsubChat = onSnapshot(query(collection(db, "rooms", roomId, "messages"), orderBy("time")), (snapshot) => {
       const box = document.getElementById('chatBox');
       box.innerHTML = '';
       snapshot.forEach(messageDoc => {
-        const m = messageDoc.data();
-        if (!m.time) return; // Bug #20 Fix: ignore null timestamps
+        const m = messageDoc.data({serverTimestamps: 'estimate'}); 
+        if (!m.time) return;
         const div = document.createElement('div');
         div.className = 'msg ' + (m.user === currentUser ? 'msg-me' : 'msg-other');
         div.innerHTML = `<span class="msg-meta">${escapeHTML(m.user)}</span>${escapeHTML(m.text)}`;
@@ -927,28 +949,36 @@
 
   function leaveGame() {
       hasJoined = false;
-      userLeftGame = true; // Bug #3 Fix
-      isAdvancing = false; // Bug #19 Fix
       clearInterval(timerInterval);
+      window.isAdvancing = false;
+      // Bug Fix: Unsubscribe from listeners when leaving
+      if (unsubVotes) unsubVotes();
       showPage('page-lobby');
+      
+      document.getElementById('guestGameName').innerText = currentMode === 'moreLikely' ? 'Who is more likely to...' : (currentMode === 'neverHaveIEver' ? 'Never Have I Ever' : 'This or That');
+      document.getElementById('joinPromptTitle').innerText = "Game in Progress";
+      document.getElementById('guestJoinPrompt').classList.remove('hidden');
   }
 
   function backToLobby() {
       hasJoined = false;
-      userLeftGame = true;
-      isAdvancing = false;
+      summaryRendered = false;
       showPage('page-lobby');
+      document.getElementById('guestJoinPrompt').classList.add('hidden');
   }
 
   function logout() {
     if (unsubRoom) unsubRoom();
     if (unsubVotes) unsubVotes();
     if (unsubChat) unsubChat();
-    isAdvancing = false; // Bug #19 Fix
+    if (unsubMyUser) unsubMyUser();
     
     localStorage.removeItem('shizu_user'); localStorage.removeItem('shizu_pass'); localStorage.removeItem('shizu_room'); localStorage.removeItem('shizu_partner');
     window.location.reload();
   }
+
+  // Bug Fix: Define the typing stub
+  window.handleTyping = () => {};
 
   window.toggleAuth = toggleAuth; window.handleAuth = handleAuth; window.linkPartner = linkPartner; window.leavePartner = leavePartner;
   window.startGame = startGame; window.openChat = openChat; window.closeChat = closeChat; window.sendChat = sendChat;
