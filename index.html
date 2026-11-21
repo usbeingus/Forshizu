@@ -24,7 +24,7 @@
       font-family: 'Inter', sans-serif; text-align: center;
       padding: calc(20px + env(safe-area-inset-top)) 20px calc(20px + env(safe-area-inset-bottom));
       background: var(--bg); color: var(--text); margin: 0;
-      overflow-x: hidden; min-height: 100dvh;
+      overflow-x: hidden; min-height: 100vh; min-height: 100dvh;
     }
 
     h1, h2, h3 { font-family: 'Playfair Display', serif; font-weight: 600; margin-top: 0; }
@@ -48,7 +48,7 @@
 
     #transition-overlay { position: fixed; inset: 0; background: var(--bg); display: flex; justify-content: center; align-items: center; z-index: 9998; opacity: 0; pointer-events: none; transition: opacity 0.25s; }
     #transition-overlay.active { opacity: 1; pointer-events: all; }
-    #transition-overlay img { width: 120px; height: 120px; object-fit: contain; }
+    #transition-overlay img { height: 220px; width: auto; max-width: 70vw; border-radius: 18px; object-fit: cover; }
     #transition-overlay.active img { animation: spinAndGrow 1s cubic-bezier(0.25, 1, 0.5, 1) forwards; }
     @keyframes spinAndGrow { 0% { transform: scale(0.6) rotate(0deg); opacity: 0; } 20% { opacity: 1; } 100% { transform: scale(1.4) rotate(360deg); opacity: 1; } }
 
@@ -67,7 +67,7 @@
     .btn { background: transparent; color: var(--text); border: 1px solid var(--border); padding: 16px; margin: 8px 0; border-radius: 12px; font-family: 'Inter', sans-serif; font-size: 16px; font-weight: 500; cursor: pointer; width: 100%; transition: transform 0.15s ease, filter 0.2s ease, background 0.2s ease; display: flex; justify-content: center; align-items: center; gap: 10px; min-height: 44px; }
     .btn:active { transform: scale(0.97); }
     .btn:disabled { opacity: 0.6; cursor: default; }
-    .btn-primary { background: linear-gradient(135deg, var(--primary), var(--secondary)); color: #fff; border: none; font-weight: 600; box-shadow: 0 4px 15px rgba(232, 121, 165, 0.3); }
+    .btn-primary { background: linear-gradient(135deg, #C2477E, #9B3A6B); color: #fff; border: none; font-weight: 600; box-shadow: 0 4px 15px rgba(232, 121, 165, 0.3); }
     .btn-primary:hover:not(:disabled) { filter: brightness(1.1); }
     .btn-ghost { border-color: transparent; color: var(--muted); }
 
@@ -100,9 +100,9 @@
     .chat-box { height: 350px; overflow-y: auto; background: var(--bg); border-radius: 12px; padding: 15px; margin-bottom: 15px; text-align: left; display: flex; flex-direction: column; border: 1px solid var(--border); }
     .msg { margin-bottom: 12px; padding: 10px 14px; border-radius: 12px; max-width: 85%; font-size: 14px; line-height: 1.4; word-wrap: break-word; animation: msgIn 0.2s ease both; }
     @keyframes msgIn { from { opacity: 0; transform: translate3d(0, 6px, 0); } }
-    .msg-me { background: var(--primary); color: #fff; align-self: flex-end; border-bottom-right-radius: 4px; }
+    .msg-me { background: #C2477E; color: #fff; align-self: flex-end; border-bottom-right-radius: 4px; }
     .msg-other { background: var(--card); border: 1px solid var(--border); color: var(--text); align-self: flex-start; border-bottom-left-radius: 4px; }
-    .msg-meta { font-size: 11px; color: rgba(255,255,255,0.7); margin-bottom: 4px; display: block; }
+    .msg-meta { font-size: 11px; color: rgba(255,255,255,0.92); margin-bottom: 4px; display: block; }
     .chat-input-container { display: flex; gap: 10px; }
     .chat-input-container .input { margin-bottom: 0; text-align: left; }
     .chat-input-container .btn { width: auto; padding: 16px 24px; margin: 0; }
@@ -175,7 +175,7 @@
   <h1 class="splash-logo">SHIZU</h1>
   <p class="splash-sub">A Little Game for Two Hearts.</p>
 </div>
-<div id="transition-overlay"><img src="animation.png" alt="" onerror="this.style.display='none'"></div>
+<div id="transition-overlay"><img src="animation.webp" alt="" onerror="this.style.display='none'"></div>
 
 <div id="toast" role="status" aria-live="polite"></div>
 
@@ -200,8 +200,8 @@
   <div id="page-auth" class="card hidden">
     <h2 id="authTitle">Welcome Back</h2>
     <p style="color: var(--muted); font-size: 14px; margin-bottom: 20px;">Sign in to your private world.</p>
-    <input type="text" id="username" class="input" placeholder="Username" autocomplete="username" autocapitalize="none" maxlength="20" />
-    <input type="password" id="password" class="input" placeholder="Password" autocomplete="current-password" />
+    <input type="text" id="username" class="input" placeholder="Username" aria-label="Username" autocomplete="username" autocapitalize="none" maxlength="20" />
+    <input type="password" id="password" class="input" placeholder="Password" aria-label="Password" autocomplete="current-password" />
     <button class="btn btn-primary" onclick="window.handleAuth()" id="authBtn">Login</button>
     <p style="margin-top: 20px; font-size: 14px; color: var(--muted);">
       <span id="authSwitchText">New here?</span>
@@ -215,7 +215,7 @@
     <div id="myPairCode" style="display:inline-block; border:1px solid var(--primary); color:var(--primary); padding:12px 24px; border-radius:12px; font-size:24px; font-weight:600; letter-spacing:4px; margin:15px 0;">------</div>
     <hr style="border-color: var(--border); margin: 20px 0;">
     <p style="color: var(--muted); font-size: 14px; margin-bottom: 15px;">Or enter their username / code:</p>
-    <input type="text" id="partnerCodeInput" class="input" placeholder="USERNAME OR CODE" autocapitalize="none" />
+    <input type="text" id="partnerCodeInput" class="input" placeholder="USERNAME OR CODE" aria-label="Partner username or code" autocapitalize="none" />
     <button class="btn btn-primary" onclick="window.linkPartner()" id="linkBtn">Link Accounts</button>
     <p id="pairingStatus" style="color: var(--primary); margin-top: 15px; font-size: 14px; min-height: 18px;"></p>
     <a href="#" onclick="window.logout()" class="settings-link">Log out</a>
@@ -275,10 +275,15 @@
         <p style="color: var(--muted); margin-top: 30px; font-style: italic;">Waiting for host to choose a moment...</p>
       </div>
 
-      <div class="game-card chat-card" style="margin-top: 30px;" onclick="window.openChat()">
+      <div class="game-card" onclick="window.location.href='watch.html'">
+          <h3>🎬 Watch Together</h3>
+          <p>Paste a video link and watch in sync.</p>
+        </div>
+
+        <div class="game-card chat-card" style="margin-top: 30px;" onclick="window.openChat()">
         <h3>Your Private Space</h3>
         <p>Talk, laugh and share moments together.</p>
-        <button class="btn" style="margin: 0; width: auto; padding: 10px 20px; font-size: 14px;">OPEN CHAT</button>
+        <button class="btn" style="margin: 0; width: auto; padding: 10px 20px; font-size: 14px;">OPEN CHAT<span class="chat-badge"></span></button>
       </div>
 
       <br>
@@ -302,7 +307,7 @@
     <div id="myVoteStatus" class="vote-status"></div>
     <div id="waitingStatus" class="vote-status pulse hidden"></div>
 
-    <button class="btn" onclick="window.openChat()" style="margin-top: 20px;">💬 Open Chat</button>
+    <button class="btn" onclick="window.openChat()" style="margin-top: 20px;">💬 Open Chat<span class="chat-badge"></span></button>
     <button class="btn btn-ghost" onclick="window.leaveGame()" style="margin-top: 6px;">Leave Game</button>
   </div>
 
@@ -318,7 +323,7 @@
     <div id="chatBox" class="chat-box"></div>
     <div id="typingIndicator" class="hidden">Partner is typing...</div>
     <div class="chat-input-container">
-      <input type="text" id="chatInput" class="input" placeholder="Type a message..." maxlength="500" autocomplete="off" oninput="window.handleTyping()" onkeydown="window.handleChatEnter(event)">
+      <input type="text" id="chatInput" class="input" placeholder="Type a message..." aria-label="Message" maxlength="500" autocomplete="off" oninput="window.handleTyping()" onkeydown="window.handleChatEnter(event)">
       <button class="btn btn-primary" onclick="window.sendChat()">Send</button>
     </div>
     <br>
@@ -326,6 +331,7 @@
   </div>
 </div>
 
+<script>setTimeout(function(){if(!window.__shizuReady){var s=document.getElementById('splash-screen');if(s)s.innerHTML='<h1 class="splash-logo" style="opacity:1">SHIZU</h1><p class="splash-sub" style="opacity:1">Could not load. Check your connection.</p><button class="btn btn-primary" style="max-width:220px;margin-top:18px" onclick="location.reload()">Retry</button>';}},9000);</script>
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
   import {
@@ -344,6 +350,7 @@
 
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
+  window.__shizuReady = true;
 
   const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbx9DwCUGQtAfTHcPGj62BIyvUhIz-NH4jpx6_jZV8e_DlqRw4J0jdJsB9nQHPXIUgVN4g/exec";
   // Optional: set the same value as the API_SECRET script property in Apps Script. Leave "" to disable.
@@ -352,7 +359,14 @@
   const ROUND_SECONDS = 20;
   const RESULT_DELAY = 3500;
   const USERNAME_RE = /^[a-zA-Z0-9]{3,20}$/;
+  // Two-person app: put the two lowercase usernames here (and in firestore.rules) so nobody else can sign up or be paired.
+  const ALLOWED_USERS = [];
   const MODE_LABELS = { moreLikely: 'Who is more likely to...', neverHaveIEver: 'Never Have I Ever', thisOrThat: 'This or That' };
+  const FALLBACK = {
+    moreLikely: ['fall asleep during a movie', 'get lost with a map in hand', 'cry at a wedding', 'forget an anniversary', 'adopt ten pets', 'win an argument', 'burn dinner', 'say sorry first', 'be late', 'plan a surprise'].map(t => `Who is most likely to ${t}?`),
+    neverHaveIEver: ['sent a text to the wrong person', 'pretended to like a gift', 'fallen asleep in public', 'laughed at the wrong moment', 'gotten lost on purpose', 'sung in the shower', 'talked to a pet like a person', 'forgotten someone\'s name', 'binged a show all night', 'eaten dessert first'].map(t => `Never have I ever ${t}.`),
+    thisOrThat: ['Beach or mountains', 'Coffee or tea', 'Movie night or game night', 'Sunrise or sunset', 'Pizza or sushi', 'Morning or night', 'Sweet or salty', 'Road trip or flight', 'Cats or dogs', 'Summer or winter'].map(t => `This or That: ${t}?`)
+  };
 
   const $ = (id) => document.getElementById(id);
   const sleep = (ms) => new Promise(r => setTimeout(r, ms));
@@ -370,7 +384,7 @@
   let lastResultRound = null, advancingRound = null;
   let lastGameState = null, firstSelfSnap = true;
   let typingPrimed = false, lastSeenTyping = 0, typingHideTO = null, lastTypingSent = 0;
-  let toastTO = null, modalResolve = null;
+  let toastTO = null, modalResolve = null, partnerJoined = false, lastWatchTs = null, unsubChatWatch = null, unreadCount = 0;
 
   // ---------- helpers ----------
   function escapeHTML(str) {
@@ -384,7 +398,12 @@
     return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
   }
   // v2 hash is salted with the username so equal passwords don't give equal hashes
-  const hashPassword = (user, pass) => sha256(`shizu:v2:${user.toLowerCase()}:${pass}`);
+  async function hashPassword(user, pass) {
+    const enc = new TextEncoder();
+    const key = await crypto.subtle.importKey('raw', enc.encode(pass), 'PBKDF2', false, ['deriveBits']);
+    const bits = await crypto.subtle.deriveBits({ name: 'PBKDF2', hash: 'SHA-256', iterations: 150000, salt: enc.encode('shizu:v3:' + user.toLowerCase()) }, key, 256);
+    return 'v3:' + Array.from(new Uint8Array(bits)).map(b => b.toString(16).padStart(2, '0')).join('');
+  }
 
   function toast(msg) {
     const t = $('toast');
@@ -508,7 +527,8 @@
 
     if (isSignupMode) {
       if (!USERNAME_RE.test(user)) return toast('Username: 3-20 letters or numbers only.');
-      if (pass.length < 4) return toast('Password must be at least 4 characters.');
+      if (ALLOWED_USERS.length && !ALLOWED_USERS.includes(user.toLowerCase())) return toast('Only the two invited usernames can sign up.');
+      if (pass.length < 8) return toast('Password must be at least 8 characters.');
     }
 
     setBusy(btn, true, isSignupMode ? 'Creating…' : 'Signing in…');
@@ -549,7 +569,7 @@
     } else {
       // migrate accounts created by older versions (unsalted hash or plain text)
       const legacy = await sha256(pass);
-      if (data.password === legacy || data.password === pass) {
+      if (data.password === legacy || data.password === pass || data.password === await sha256(`shizu:v2:${user.toLowerCase()}:${pass}`)) {
         ok = true;
         try { await updateDoc(ref, { password: v2 }); data.password = v2; } catch (e) {}
       }
@@ -600,7 +620,7 @@
         showPage('page-pairing');
         toast('You are no longer connected to a partner.');
       }
-    }, (err) => console.error('Self snapshot error:', err));
+    }, (err) => { console.error('Self snapshot error:', err); toast('Cannot reach the server. Please try again.'); showPage('page-auth'); });
   }
 
   // ---------- Ludo photo ----------
@@ -628,7 +648,7 @@
         const canvas = document.createElement('canvas');
         canvas.width = Math.max(1, Math.round(w));
         canvas.height = Math.max(1, Math.round(h));
-        canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+        const ctx = canvas.getContext('2d'); ctx.fillStyle = '#222'; ctx.fillRect(0, 0, canvas.width, canvas.height); ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
         const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
 
         updateDoc(doc(db, 'users', currentUser.toLowerCase()), { avatar: dataUrl })
@@ -665,6 +685,7 @@
       const myRef = doc(db, 'users', currentUser.toLowerCase());
       if (partnerRef.id === myRef.id) { status.innerText = ''; return toast('You cannot pair with yourself.'); }
 
+      if (ALLOWED_USERS.length && !ALLOWED_USERS.includes(partnerRef.id)) { status.innerText = ''; return toast('Partner not found.'); }
       const newRoomId = [myRef.id, partnerRef.id].sort().join('__');
 
       // Atomic: both sides are checked and linked together, so nobody can be double-paired
@@ -720,6 +741,8 @@
     if (unsubRoom) { unsubRoom(); unsubRoom = null; }
     if (unsubChat) { unsubChat(); unsubChat = null; }
     resetGameState();
+    if (unsubChatWatch) { unsubChatWatch(); unsubChatWatch = null; }
+    unreadCount = 0; partnerJoined = false;
     roomId = ''; partnerName = '';
     localStorage.removeItem('shizu_room');
     localStorage.removeItem('shizu_partner');
@@ -742,6 +765,7 @@
     if (unsubRoom) unsubRoom();
     typingPrimed = false;
     unsubRoom = onSnapshot(roomRef(), onRoomSnapshot, (err) => console.error('Room snapshot error:', err));
+    startChatWatch();
   }
 
   function updateJoinPrompt() {
@@ -749,7 +773,7 @@
     let label = null;
     if (gs && !isStarting) {
       if (gs.status === 'ludo') label = 'Ludo';
-      else if (gs.status === 'playing' && !hasJoined) label = MODE_LABELS[gs.mode] || 'Game';
+      else if (gs.status === 'playing' && !hasJoined) label = (MODE_LABELS[gs.mode] || 'Game') + (gs.spicy ? ' 🌶️' : '');
     }
     $('guestJoinPrompt').classList.toggle('hidden', !label);
     if (label) $('guestGameName').innerText = label;
@@ -758,6 +782,13 @@
   function onRoomSnapshot(snap) {
     const data = snap.exists() ? snap.data() : {};
     onTypingData(data.typing);
+    const wp = data.watchPing;
+    if (wp) { if (lastWatchTs !== null && wp.ts !== lastWatchTs && wp.by !== currentUser) toast(`🎬 ${wp.by} loaded a video — open Watch Together`); lastWatchTs = wp.ts; }
+    else if (lastWatchTs === null) lastWatchTs = 0;
+    const jg = data.joined ? data.joined[partnerName.toLowerCase()] : '';
+    const wasJoined = partnerJoined;
+    partnerJoined = !!jg && !!data.gameState && jg === data.gameState.gameId;
+    onPartnerPresence(wasJoined);
 
     if (isStarting) return;               // our own startGame() is mid-flight
     const gs = data.gameState || null;
@@ -767,7 +798,7 @@
 
     if (hasJoined && gs.status === 'playing') {
       if (gs.gameId !== currentGameId) {
-        enterGame(gs);                    // partner started a new game while we were still in the old one
+        if (gs.spicy) { leaveGame(); toast(`${partnerName} started a spicy round — tap Join Now to play.`); } else enterGame(gs);
       } else if (gs.round !== currentRound) {
         currentRound = gs.round;
         currentQuestionText = gs.question;
@@ -784,7 +815,10 @@
       const gs = snap.exists() ? snap.data().gameState : null;
       if (!gs) return;
       if (gs.status === 'ludo') { window.location.href = 'ludo.html'; return; }
-      if (gs.status === 'playing') enterGame(gs);
+      if (gs.status === 'playing') {
+        if (gs.spicy && !(await askConfirm('Spicy round 🌶️', `${partnerName} picked Spicy Mode (adult, flirty questions). Join?`, 'Join'))) return;
+        enterGame(gs);
+      }
       else toast('That game has already ended.');
     } catch (e) {
       console.error(e);
@@ -793,6 +827,7 @@
   }
 
   async function goToLudo() {
+    if (lastGameState && lastGameState.status === 'playing' && !(await askConfirm('Switch game?', 'A quiz round is in progress. Switch to Ludo?', 'Switch'))) return;
     try {
       await setDoc(roomRef(), { gameState: { status: 'ludo' } }, { merge: true });
       window.location.href = 'ludo.html';
@@ -840,7 +875,9 @@
 
     try {
       const spicy = $('spicyToggle').checked;
-      const result = await fetchQuestions(mode, spicy ? 'spicy' : 'normal');
+      let result;
+      try { result = await fetchQuestions(mode, spicy ? 'spicy' : 'normal'); }
+      catch (err) { if (spicy) throw err; result = { questions: FALLBACK[mode] }; toast('Server unavailable — using built-in questions.'); }
       if (result.fallback) toast('Not enough spicy questions yet — using normal ones.');
 
       const questions = shuffle(result.questions).slice(0, 10);
@@ -869,6 +906,18 @@
     } catch (e) { /* not critical */ }
   }
 
+  // ---------- presence: both players must be in the game before the clock runs ----------
+  const markJoined = (gid) => setDoc(roomRef(), { joined: { [currentUser.toLowerCase()]: gid } }, { merge: true }).catch(() => {});
+  function onPartnerPresence(was) {
+    if (!hasJoined || !currentGameId) return;
+    const note = $('waitingStatus');
+    const roundOpen = !hasVoted && lastResultRound !== currentRound;
+    if (partnerJoined && !was && roundOpen && !timerInterval && !$('transition-overlay').classList.contains('active')) startTimer();
+    if (!partnerJoined && was && !(lastGameState && lastGameState.status === 'finished')) toast(`${partnerName} left the game.`);
+    if (!partnerJoined && roundOpen) { note.innerText = `Waiting for ${partnerName} to join…`; note.classList.remove('hidden'); }
+    else if (partnerJoined && !hasVoted) note.classList.add('hidden');
+  }
+
   // ---------- playing ----------
   function enterGame(gs) {
     clearGameTimers();
@@ -882,6 +931,7 @@
     summaryRendered = false; hasVoted = false;
     allVotes = []; lastResultRound = null; advancingRound = null;
     hasJoined = true;
+    markJoined(gs.gameId);
     updateJoinPrompt();
 
     navigateGame('page-game');
@@ -912,7 +962,7 @@
         lastResultRound = currentRound;
         showRoundResult(mine, theirs);
       }
-      if (isHost) scheduleAdvance(currentRound);
+      scheduleAdvance(currentRound);   // either player can advance (the host goes first, the guest is the fallback)
     }
   }
 
@@ -923,18 +973,19 @@
     advanceTO = setTimeout(async () => {
       if (gid !== currentGameId || round !== currentRound) return;
       try {
-        if (round >= currentQuestions.length) {
-          await updateDoc(roomRef(), { 'gameState.status': 'finished' });
-        } else {
-          await updateDoc(roomRef(), { 'gameState.round': round + 1, 'gameState.question': currentQuestions[round] });
-        }
+        await runTransaction(db, async (tx) => {
+          const g = ((await tx.get(roomRef())).data() || {}).gameState;
+          if (!g || g.gameId !== gid || g.round !== round || g.status !== 'playing') return;   // someone already advanced
+          if (round >= (g.questions || []).length) tx.update(roomRef(), { 'gameState.status': 'finished' });
+          else tx.update(roomRef(), { 'gameState.round': round + 1, 'gameState.question': g.questions[round] });
+        });
       } catch (e) {
         console.error(e);
         advancingRound = null;
         toast('Connection hiccup — retrying…');
         setTimeout(syncRoundState, 2000);
       }
-    }, RESULT_DELAY);
+    }, isHost ? RESULT_DELAY : RESULT_DELAY + 3500);
   }
 
   function clearGameTimers() {
@@ -1003,7 +1054,9 @@
 
     syncRoundState();   // picks up votes that already exist (e.g. after rejoining)
 
-    const needsTimer = () => !hasVoted && lastResultRound !== currentRound;
+    onPartnerPresence(partnerJoined);
+
+    const needsTimer = () => !hasVoted && lastResultRound !== currentRound && partnerJoined;
     if (withOverlay && !reducedMotion) {
       const overlay = $('transition-overlay');
       overlay.classList.add('active');
@@ -1041,16 +1094,10 @@
       addBtn('I have', 'True');
       addBtn("I haven't", 'False');
     } else {
-      let opt1 = 'A', opt2 = 'B';
-      const idx = currentQuestionText.indexOf(':');
-      if (idx !== -1) {
-        const text = currentQuestionText.slice(idx + 1).trim().replace(/\?$/, '');
-        const m = text.match(/\s+or\s+/i);
-        if (m) {
-          opt1 = text.slice(0, m.index).trim();
-          opt2 = text.slice(m.index + m[0].length).trim();
-        }
-      }
+      let opt1 = 'First option', opt2 = 'Second option';
+      const text = currentQuestionText.replace(/^\s*this or that\s*:\s*/i, '').trim().replace(/\?$/, '');
+      const m = text.match(/\s+or\s+/i);
+      if (m) { opt1 = text.slice(0, m.index).trim(); opt2 = text.slice(m.index + m[0].length).trim(); }
       addBtn(opt1, opt1);
       addBtn(opt2, opt2);
     }
@@ -1174,25 +1221,31 @@
 
   function leaveGame() {
     hasJoined = false;
+    markJoined('');
     clearGameTimers();
     if (unsubVotes) { unsubVotes(); unsubVotes = null; }
     currentGameId = null;
     showPage('page-lobby');
     updateJoinPrompt();
   }
-
-  function backToLobby() {
-    hasJoined = false;
-    clearGameTimers();
-    if (unsubVotes) { unsubVotes(); unsubVotes = null; }
-    currentGameId = null;
-    showPage('page-lobby');
-    updateJoinPrompt();
-  }
+  function backToLobby() { leaveGame(); }
 
   // ---------- chat ----------
+  function updateBadge() { document.querySelectorAll('.chat-badge').forEach(b => { b.textContent = unreadCount ? ` (${unreadCount})` : ''; }); }
+  function startChatWatch() {
+    if (unsubChatWatch) unsubChatWatch();
+    let first = true;
+    unsubChatWatch = onSnapshot(query(collection(db, 'rooms', roomId, 'messages'), orderBy('time', 'desc'), limit(1)), (snap) => {
+      if (first) { first = false; return; }
+      if (!snap.docChanges().some(c => c.type === 'added')) return;
+      const m = snap.docs[0] && snap.docs[0].data({ serverTimestamps: 'estimate' });
+      if (!m || m.user === currentUser || currentPage === 'page-chat') return;
+      unreadCount++; updateBadge(); toast(`💬 New message from ${m.user}`);
+    }, () => {});
+  }
   async function openChat() {
     if (currentPage !== 'page-chat') lastPageBeforeChat = currentPage || 'page-lobby';
+    unreadCount = 0; updateBadge();
     showPage('page-chat');
     $('typingIndicator').classList.add('hidden');
     if (unsubChat) unsubChat();
@@ -1278,6 +1331,7 @@
     if (unsubRoom) unsubRoom();
     if (unsubVotes) unsubVotes();
     if (unsubChat) unsubChat();
+    if (unsubChatWatch) unsubChatWatch();
     localStorage.removeItem('shizu_user');
     localStorage.removeItem('shizu_pass');
     localStorage.removeItem('shizu_room');
