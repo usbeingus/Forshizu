@@ -1,171 +1,45 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Shizu Ludo</title>
-
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="preload" as="image" href="ludo-board.jpg">
-  <link rel="preload" as="image" href="red-piece.png">
-
-  <style>
-    :root {
-      --bg: #100B12; --bg-sec: #19111C; --card: #211722;
-      --primary: #E879A5; --secondary: #B96A91; --text: #F8EAF0;
-      --muted: #A99AA5; --border: rgba(232, 121, 165, 0.16); --green: #4CAF50;
-    }
-
-    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
-    .hidden { display: none !important; }
-
-    body {
-      font-family: 'Inter', sans-serif; text-align: center;
-      padding: calc(14px + env(safe-area-inset-top)) 16px calc(14px + env(safe-area-inset-bottom));
-      background: var(--bg); color: var(--text); margin: 0;
-      overflow-x: hidden; min-height: 100dvh; display: flex; flex-direction: column; justify-content: center;
-    }
-
-    h1 { font-family: 'Playfair Display', serif; color: var(--primary); font-size: 2rem; margin: 0 0 4px; }
-    .container { max-width: 450px; margin: 0 auto; width: 100%; }
-    .status-text { color: var(--primary); font-weight: 600; font-size: 1.05rem; margin: 4px 0 10px; min-height: 26px; }
-
-    .players-bar { display: flex; gap: 8px; justify-content: center; margin-bottom: 10px; }
-    .pl { display: flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 20px; border: 1px solid var(--border); font-size: 13px; color: var(--muted); transition: border-color 0.2s, color 0.2s, background 0.2s; max-width: 48%; }
-    .pl span.name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .pl i { width: 10px; height: 10px; border-radius: 50%; flex: none; }
-    .pl.red i { background: #e53935; } .pl.green i { background: #43a047; }
-    .pl.active { color: var(--text); border-color: var(--primary); background: rgba(232, 121, 165, 0.12); }
-
-    .btn {
-      background: transparent; color: var(--text); border: 1px solid var(--border);
-      padding: 14px; margin: 8px 0; border-radius: 12px; font-family: 'Inter', sans-serif;
-      font-size: 15px; font-weight: 500; cursor: pointer; width: 100%;
-      transition: transform 0.15s ease, background 0.2s ease; min-height: 44px;
-    }
-    .btn:active { transform: scale(0.97); }
-    .btn-primary { background: linear-gradient(135deg, var(--primary), var(--secondary)); border: none; color: #fff; font-weight: 600; }
-
-    /* ---------- board ---------- */
-    .board-wrapper {
-      position: relative; width: min(100%, max(280px, calc(100dvh - 360px))); aspect-ratio: 1; margin: 0 auto 16px;
-      border: 2px solid var(--border); border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-      overflow: hidden; background-color: #111;
-    }
-    .board-bg { position: absolute; inset: 0; background-image: url('ludo-board.jpg'); background-size: 100% 100%; background-position: center; z-index: 1; }
-    #pieces-container { position: absolute; inset: 0; z-index: 5; }
-
-    .debug-grid { position: absolute; inset: 0; z-index: 4; display: grid; grid-template-columns: repeat(15, 1fr); grid-template-rows: repeat(15, 1fr); pointer-events: none; }
-    .debug-grid div { border: 1px dashed rgba(255,255,255,0.25); font-size: 8px; color: #ff0; display: flex; align-items: center; justify-content: center; }
-
-    #banner { position: absolute; left: 50%; top: 10px; transform: translate3d(-50%, -20px, 0); background: rgba(16, 11, 18, 0.92); border: 1px solid var(--primary); color: var(--text); padding: 8px 14px; border-radius: 20px; font-size: 13px; z-index: 50; opacity: 0; pointer-events: none; transition: opacity 0.25s, transform 0.25s; max-width: 90%; }
-    #banner.show { opacity: 1; transform: translate3d(-50%, 0, 0); }
-
-    /* ---------- pieces: outer element is positioned, inner element does the effects ---------- */
-    .piece {
-      position: absolute; left: 0; top: 0; width: 8.5%; height: 12.5%;
-      margin: -10.6% 0 0 -4.25%;
-      transition: transform 0.16s linear; will-change: transform; cursor: default;
-    }
-    .piece.flying { transition: transform 0.55s cubic-bezier(0.45, 0, 0.2, 1); }
-    .piece::after { content: ''; position: absolute; inset: -12%; }   /* bigger tap target */
-    .piece-shadow { position: absolute; left: 12%; bottom: 0; width: 76%; height: 14%; border-radius: 50%; background: rgba(0,0,0,0.45); transition: background 0.2s, box-shadow 0.2s; }
-    .piece-inner { position: absolute; inset: 0; }
-    .piece-img { position: absolute; inset: 0; background-image: url('red-piece.png'); background-size: contain; background-repeat: no-repeat; background-position: center bottom; pointer-events: none; }
-    .piece-green .piece-img { filter: hue-rotate(120deg) saturate(1.5); }
-    .piece-avatar { position: absolute; top: 13%; left: 50%; transform: translateX(-50%); width: 46%; aspect-ratio: 1; border-radius: 50%; background-size: cover; background-position: center; background-color: #222; box-shadow: inset 0 3px 6px rgba(0,0,0,0.8); pointer-events: none; }
-
-    .piece.movable { cursor: pointer; }
-    .piece.movable .piece-shadow { background: var(--primary); box-shadow: 0 0 10px 4px rgba(232, 121, 165, 0.85); }
-    .piece.movable .piece-inner { animation: bob 0.8s ease-in-out infinite; }
-    @keyframes bob { 50% { transform: translateY(-12%) scale(1.08); } }
-
-    /* ---------- dice ---------- */
-    .dice-container { display: flex; justify-content: center; align-items: center; gap: 18px; margin-top: 6px; }
-    .dice {
-      width: 72px; height: 72px; background: var(--bg-sec); color: var(--primary);
-      border: 2px solid var(--border); border-radius: 14px; display: flex; justify-content: center; align-items: center;
-      cursor: pointer; box-shadow: 0 5px 0 var(--card); transition: transform 0.1s, box-shadow 0.1s, opacity 0.2s;
-    }
-    .dice.ready { border-color: var(--primary); box-shadow: 0 5px 0 var(--card), 0 0 16px rgba(232, 121, 165, 0.55); animation: ready 1.2s ease-in-out infinite; }
-    @keyframes ready { 50% { transform: scale(1.06); } }
-    .dice:active:not(.disabled) { transform: translateY(5px); box-shadow: 0 0 0 var(--card); }
-    .dice.disabled { opacity: 0.55; cursor: not-allowed; }
-    .dice.rolling { animation: rollDiceAnim 0.45s infinite; }
-    @keyframes rollDiceAnim {
-      0% { transform: rotate(0deg) scale(1); } 25% { transform: rotate(-14deg) scale(1.1); }
-      50% { transform: rotate(14deg) scale(0.92); } 75% { transform: rotate(-8deg) scale(1.05); } 100% { transform: rotate(0deg) scale(1); }
-    }
-    .dice-face { display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr); width: 44px; height: 44px; gap: 2px; }
-    .dice-face i { border-radius: 50%; background: transparent; }
-    .dice-face i.on { background: var(--primary); }
-    .dice-idle { font-size: 34px; line-height: 1; }
-    #diceResult { color: var(--muted); font-weight: 600; font-size: 0.95rem; min-width: 110px; text-align: left; }
-
-    .bottom-controls { display: flex; gap: 10px; margin-top: 14px; }
-    .bottom-controls .btn { margin: 0; }
-    #skipBtn { margin-top: 10px; color: var(--primary); border-color: var(--primary); }
-
-    /* ---------- modal ---------- */
-    #customModal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: flex; justify-content: center; align-items: center; z-index: 9999; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
-    #customModal.active { opacity: 1; pointer-events: all; }
-    .modal-box { background: var(--card); border: 1px solid var(--border); padding: 20px; border-radius: 16px; width: 80%; max-width: 320px; text-align: center; transform: scale(0.9); transition: transform 0.2s; }
-    #customModal.active .modal-box { transform: scale(1); }
-    .modal-box h3 { color: var(--primary); margin: 0 0 10px; font-family: 'Playfair Display', serif; font-size: 1.4rem; }
-    .modal-box p { color: var(--text); font-size: 14px; margin: 0 0 16px; }
-    .modal-box .btn { margin: 5px 0; }
-
-    @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
-    }
-  </style>
-</head>
-<body>
-
-<div id="customModal">
-  <div class="modal-box">
-    <h3 id="modalTitle">Alert</h3>
-    <p id="modalMessage">Message</p>
-    <button class="btn btn-primary" id="modalConfirmBtn" onclick="closeModal(true)">OK</button>
-    <button class="btn hidden" id="modalCancelBtn" onclick="closeModal(false)">Cancel</button>
-  </div>
-</div>
-
-<div class="container">
-  <h1>Ludo</h1>
-  <div class="status-text" id="ludoTurnText" aria-live="polite">Loading...</div>
-
-  <div class="players-bar">
-    <div class="pl red" id="plRed"><i></i><span class="name" id="plRedName">-</span></div>
-    <div class="pl green" id="plGreen"><i></i><span class="name" id="plGreenName">-</span></div>
-  </div>
-
-  <div class="board-wrapper" id="board">
-    <div class="board-bg"></div>
-    <div id="pieces-container"></div>
-    <div id="banner"></div>
-  </div>
-
-  <div class="dice-container">
-    <div class="dice disabled" id="diceBtn" role="button" aria-label="Roll the dice" onclick="rollDice()"><div class="dice-face" id="diceFace"></div></div>
-    <div id="diceResult"></div>
-  </div>
-
-  <button class="btn hidden" id="skipBtn" onclick="skipTheirTurn()">Partner seems away — skip their turn</button>
-
-  <div class="bottom-controls">
-    <button class="btn" onclick="restartLudo()" style="color: var(--primary); border-color: var(--primary);">Restart Board</button>
-    <button class="btn" onclick="leaveLudo()" style="color: var(--muted);">Leave</button>
-  </div>
-</div>
-
+<!DOCTYPE html><html lang="en"><head><title>Ludo</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="theme-color" content="#100B12">
+<style>
+:root{--bg:#100B12;--bg2:#19111C;--card:#211722;--pri:#E879A5;--text:#F8EAF0;--muted:#A99AA5;--bd:rgba(232,121,165,.25)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,'Segoe UI',sans-serif;min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;align-items:center;padding:12px 12px calc(16px + env(safe-area-inset-bottom));gap:10px}
+h1{margin:0;font:600 1.6rem Georgia,serif;color:var(--pri)}
+button{font:inherit;color:var(--text);background:var(--bg2);border:1px solid var(--bd);border-radius:12px;padding:10px 14px;min-height:44px;cursor:pointer}
+button:disabled{opacity:.4;cursor:default}button.pri{background:#C2477E;border-color:#C2477E}
+button:focus-visible{outline:2px solid var(--pri);outline-offset:2px}
+.pc,.pc:focus,.pc:focus-visible{outline:none}.pc:focus-visible circle:not(.hit),.pc:focus-visible rect{stroke:#fff;stroke-width:.2}
+.row{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;width:100%}
+.hidden{display:none!important}
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--card);border:1px solid var(--pri);padding:10px 16px;border-radius:12px;z-index:50;max-width:90vw;text-align:center}
+</style>
+<style>
+.pl{display:flex;align-items:center;gap:8px;padding:6px 12px;border-radius:20px;border:1px solid var(--bd);color:var(--muted);font-size:14px}
+.pl.on{color:var(--text);border-color:var(--pri);background:rgba(232,121,165,.14)}
+.pl i{width:12px;height:12px;background:#e53935;border-radius:50%}.pl.g i{background:#43a047;border-radius:3px}
+body{-webkit-user-select:none;user-select:none}
+#st{color:var(--pri);font-weight:600;min-height:24px;text-align:center}
+#board{width:min(calc(100vw - 24px),calc(100vh - 320px),460px);min-width:260px;aspect-ratio:1;border-radius:14px;touch-action:manipulation}
+.pc{pointer-events:none}.pc.mv{pointer-events:all}#board.ready .pc{transition:transform .3s ease}.pc .hit{stroke:none!important;animation:none!important}.pc text{fill:#fff;font-weight:700;pointer-events:none}
+.pc circle,.pc rect{stroke:#fff;stroke-width:.06}.pc.mv{cursor:pointer}
+.pc.mv circle,.pc.mv rect{stroke:#ffd54f;stroke-width:.14;animation:p 1s infinite}@keyframes p{50%{stroke-width:.05}}
+#dice{width:76px;height:76px;font-size:2rem;font-weight:700;border-radius:18px;color:var(--pri)}
+#dice:not(:disabled){border-color:var(--pri);box-shadow:0 0 16px rgba(232,121,165,.5)}#dice.sh{animation:s .4s}
+@keyframes s{25%{transform:rotate(-12deg)}75%{transform:rotate(12deg)}}
+#ev{color:var(--muted);min-width:150px;font-size:14px}
+#win{position:fixed;inset:0;background:rgba(16,11,18,.9);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;z-index:40;font-size:1.5rem}
+</style></head><body>
+<h1>Ludo</h1>
+<div class="row"><span class="pl" id="pR"><i></i><b id="nR"></b></span><span class="pl g" id="pG"><i></i><b id="nG"></b></span></div>
+<div id="st">Loading…</div>
+<svg id="board" viewBox="0 0 15 15" role="img" aria-label="Ludo board"></svg>
+<div class="row"><button id="dice" aria-label="Roll the dice" disabled>🎲</button><span id="ev" aria-live="polite"></span></div>
+<div class="row"><button id="restart">Restart</button><button id="leave">Leave</button></div>
+<div id="win" class="hidden"><div id="wt"></div><button class="pri" id="again">Play again</button><button id="leave2">Back to lobby</button></div>
+<div id="toast" class="hidden" role="status"></div>
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-  import { getFirestore, doc, setDoc, updateDoc, onSnapshot, runTransaction } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
-  const firebaseConfig = {
+import {initializeApp} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import {getFirestore,doc,setDoc,onSnapshot,runTransaction} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+const firebaseConfig = {
     apiKey: "AIzaSyAQg9F4Sn3GsZOghWxSJqwbLMsJetvo03w",
     authDomain: "shizu-c984a.firebaseapp.com",
     projectId: "shizu-c984a",
@@ -173,536 +47,90 @@
     messagingSenderId: "512395203618",
     appId: "1:512395203618:web:496a2f959a3545975c667b"
   };
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-
-  // ================= CONFIG =================
-  // If your board image has a margin around the 15x15 grid, raise boardInset (percent of board width).
-  // Open ludo.html?debug=1 to draw the grid and track numbers on top of the image and calibrate.
-  const CONFIG = {
-    boardInset: 0,
-    stepMs: 170,            // time per square while a piece walks
-    rollMs: 900,            // dice roll animation
-    skipAfterMs: 30000,     // show "skip" button when the other player is idle this long
-    bonusOnCapture: true    // extra roll after capturing (set false for strict classic rules)
-  };
-
-  const $ = (id) => document.getElementById(id);
-  const sleep = (ms) => new Promise(r => setTimeout(r, ms));
-  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const vibrate = (ms) => { try { if (navigator.vibrate) navigator.vibrate(ms); } catch (e) {} };
-
-  // ================= SESSION =================
-  const currentUser = localStorage.getItem('shizu_user');
-  const roomId = localStorage.getItem('shizu_room');
-  const partnerName = localStorage.getItem('shizu_partner');
-  const valid = !!(currentUser && roomId && partnerName);
-  if (!valid) window.location.replace('index.html');
-
-  const isHost = valid && currentUser.toLowerCase() < partnerName.toLowerCase();
-  const myColor = isHost ? 'red' : 'green';
-  const oppColor = isHost ? 'green' : 'red';
-  const gameRef = valid ? doc(db, 'rooms', roomId, 'games', 'ludo') : null;
-  const roomRef = valid ? doc(db, 'rooms', roomId) : null;
-
-  // ================= BOARD GEOMETRY (15x15 grid, rows/cols are 1-based) =================
-  // 52 track squares. Red starts on index 0, green on index 26.
-  const row = (r, cols) => cols.map(c => ({ r, c }));
-  const col = (c, rows) => rows.map(r => ({ r, c }));
-  const TRACK = [
-    ...row(7, [2, 3, 4, 5, 6]),
-    ...col(7, [6, 5, 4, 3, 2, 1]), { r: 1, c: 8 },
-    ...col(9, [1, 2, 3, 4, 5, 6]),
-    ...row(7, [10, 11, 12, 13, 14, 15]), { r: 8, c: 15 },
-    ...row(9, [15, 14, 13, 12, 11, 10]),
-    ...col(9, [10, 11, 12, 13, 14, 15]), { r: 15, c: 8 },
-    ...col(7, [15, 14, 13, 12, 11, 10]),
-    ...row(9, [6, 5, 4, 3, 2, 1]), { r: 8, c: 1 }, { r: 7, c: 1 }
-  ];
-  // Piece positions: -1 = in base, 0..50 = track (51 squares walked), 51..55 = home column, 56 = finished
-  const HOME_RED = row(8, [2, 3, 4, 5, 6, 7]);
-  const HOME_GREEN = row(8, [14, 13, 12, 11, 10, 9]);
-  const BASE_RED = [{ r: 2.5, c: 2.5 }, { r: 2.5, c: 4.5 }, { r: 4.5, c: 2.5 }, { r: 4.5, c: 4.5 }];
-  const BASE_GREEN = [{ r: 11.5, c: 11.5 }, { r: 11.5, c: 13.5 }, { r: 13.5, c: 11.5 }, { r: 13.5, c: 13.5 }];
-  const SAFE = new Set([0, 8, 13, 21, 26, 34, 39, 47]);
-  const LAST_TRACK = 50, FINISH = 56;
-  const IDS = ['p1', 'p2', 'p3', 'p4'];
-
-  const absIndex = (color, pos) => (pos + (color === 'red' ? 0 : 26)) % 52;
-
-  function gridOf(color, id, pos) {
-    if (pos === -1) return (color === 'red' ? BASE_RED : BASE_GREEN)[parseInt(id.slice(1), 10) - 1];
-    if (pos <= LAST_TRACK) return TRACK[absIndex(color, pos)];
-    return (color === 'red' ? HOME_RED : HOME_GREEN)[pos - 51];
-  }
-
-  const canMove = (pos, dice) => dice > 0 && (pos === -1 ? dice === 6 : (pos >= 0 && pos + dice <= FINISH));
-
-  // ================= STATE =================
-  let ludoState = {};
-  let unsubLudo = null, unsubRoom = null, unsubMe = null, unsubOpp = null;
-  let myAvatar = '', oppAvatar = '';
-  let isRolling = false, isProcessing = false, leaving = false;
-  let lastActivity = Date.now();
-  let lastEventId = null, eventPrimed = false;
-  let winShown = false, winModalOpen = false;
-  let autoTO = null, diceAnimTimer = null, bannerTO = null;
-  let movable = [];
-
-  const pieces = {};        // key -> { el, color, id }
-  const display = {};       // key -> position currently shown on screen
-  const target = {};        // key -> position it should end up at
-  const running = {};       // key -> walk loop active
-
-  // ================= UI helpers =================
-  let modalResolve = null;
-  function showModal(title, msg, { confirm = false, okText = 'OK', cancelText = 'Cancel' } = {}) {
-    return new Promise((resolve) => {
-      if (modalResolve) modalResolve(false);
-      modalResolve = resolve;
-      $('modalTitle').innerText = title;
-      $('modalMessage').innerText = msg;
-      $('modalConfirmBtn').innerText = okText;
-      $('modalCancelBtn').innerText = cancelText;
-      $('modalCancelBtn').classList.toggle('hidden', !confirm);
-      $('customModal').classList.add('active');
-    });
-  }
-  function closeModal(result) {
-    $('customModal').classList.remove('active');
-    const fn = modalResolve;
-    modalResolve = null;
-    if (fn) fn(result);
-  }
-
-  function banner(text) {
-    const b = $('banner');
-    b.innerText = text;
-    b.classList.add('show');
-    clearTimeout(bannerTO);
-    bannerTO = setTimeout(() => b.classList.remove('show'), 2600);
-  }
-
-  const PIPS = { 1: [4], 2: [0, 8], 3: [0, 4, 8], 4: [0, 2, 6, 8], 5: [0, 2, 4, 6, 8], 6: [0, 2, 3, 5, 6, 8] };
-  function setDiceFace(n) {
-    const face = $('diceFace');
-    if (!n) { face.innerHTML = '<span class="dice-idle">🎲</span>'; face.style.display = 'flex'; face.style.alignItems = 'center'; face.style.justifyContent = 'center'; return; }
-    face.style.display = 'grid';
-    face.innerHTML = '';
-    for (let i = 0; i < 9; i++) {
-      const dot = document.createElement('i');
-      if (PIPS[n].includes(i)) dot.className = 'on';
-      face.appendChild(dot);
-    }
-  }
-
-  function startDiceAnim() {
-    if (diceAnimTimer) return;
-    $('diceBtn').classList.add('rolling');
-    diceAnimTimer = setInterval(() => setDiceFace(1 + Math.floor(Math.random() * 6)), 90);
-  }
-  function stopDiceAnim() {
-    if (diceAnimTimer) { clearInterval(diceAnimTimer); diceAnimTimer = null; }
-    $('diceBtn').classList.remove('rolling');
-  }
-
-  function safeAvatar(url) {
-    return (typeof url === 'string' && /^data:image\/(jpeg|png|webp|gif);base64,[A-Za-z0-9+/=]+$/.test(url)) ? url : '';
-  }
-
-  // ================= PIECES =================
-  function buildPieces() {
-    const container = $('pieces-container');
-    ['red', 'green'].forEach(color => {
-      IDS.forEach(id => {
-        const el = document.createElement('div');
-        el.className = `piece piece-${color}`;
-        el.innerHTML = '<div class="piece-shadow"></div><div class="piece-inner"><div class="piece-img"></div><div class="piece-avatar"></div></div>';
-        el.addEventListener('click', () => handlePieceClick(color, id));
-        container.appendChild(el);
-        pieces[`${color}-${id}`] = { el, color, id };
-      });
-    });
-  }
-
-  function applyAvatars() {
-    Object.values(pieces).forEach(({ el, color }) => {
-      const url = safeAvatar(color === myColor ? myAvatar : oppAvatar);
-      el.querySelector('.piece-avatar').style.backgroundImage = url ? `url("${url}")` : '';
-    });
-  }
-
-  // Positions every piece. Pieces on the same square are fanned out so none is hidden.
-  function layout(instant = false) {
-    const W = $('board').clientWidth;
-    if (!W) return;
-    const inset = (CONFIG.boardInset / 100) * W;
-    const cell = (W - 2 * inset) / 15;
-    const groups = {};
-
-    Object.keys(pieces).forEach(key => {
-      const { color, id } = pieces[key];
-      const pos = display[key];
-      if (pos === undefined) return;
-      const g = gridOf(color, id, pos);
-      if (!g) return;
-      (groups[`${g.r}_${g.c}`] = groups[`${g.r}_${g.c}`] || []).push({ key, g });
-    });
-
-    Object.values(groups).forEach(list => {
-      list.forEach((item, i) => {
-        const n = list.length;
-        const dx = n > 1 ? (i - (n - 1) / 2) * cell * 0.3 : 0;
-        const x = inset + (item.g.c - 0.5) * cell + dx;
-        const y = inset + (item.g.r - 0.5) * cell;
-        const el = pieces[item.key].el;
-        if (instant) el.style.transition = 'none';
-        el.style.transform = `translate3d(${x}px, ${y}px, 0)`;
-        el.style.zIndex = String(10 + Math.round(y) + (movable.includes(item.key) ? 1000 : 0));
-      });
-    });
-
-    if (instant) {
-      void $('board').offsetWidth;
-      Object.values(pieces).forEach(p => { p.el.style.transition = ''; });
-    }
-  }
-
-  function hop(key) {
-    const inner = pieces[key].el.querySelector('.piece-inner');
-    if (!reducedMotion && inner.animate) {
-      inner.animate([{ transform: 'translateY(0)' }, { transform: 'translateY(-30%)' }, { transform: 'translateY(0)' }], { duration: CONFIG.stepMs });
-    }
-  }
-
-  // Walks a piece square by square toward its target position (jumps/flies for captures & restarts)
-  async function walk(key) {
-    if (running[key]) return;
-    running[key] = true;
-    try {
-      while (display[key] !== target[key]) {
-        const from = display[key], to = target[key];
-        const el = pieces[key].el;
-        if (from < 0 || to < 0 || to < from) {
-          el.classList.add('flying');
-          display[key] = to;
-          layout();
-          await sleep(reducedMotion ? 30 : 600);
-          el.classList.remove('flying');
-        } else {
-          display[key] = from + 1;
-          hop(key);
-          layout();
-          await sleep(reducedMotion ? 30 : CONFIG.stepMs);
-        }
-      }
-    } finally {
-      running[key] = false;
-    }
-  }
-
-  function syncPieces() {
-    let first = false;
-    ['red', 'green'].forEach(color => {
-      const set = ludoState[color];
-      if (!set) return;
-      IDS.forEach(id => {
-        const key = `${color}-${id}`;
-        const pos = set[id];
-        if (pos === undefined) return;
-        target[key] = pos;
-        if (display[key] === undefined) { display[key] = pos; first = true; }
-        else if (display[key] !== pos) walk(key);
-      });
-    });
-    if (first) layout(true);
-  }
-
-  // ================= TURN UI =================
-  function computeMovable() {
-    if (!(ludoState.turn === currentUser && ludoState.hasRolled && !ludoState.winner) || !ludoState[myColor]) return [];
-    return IDS.filter(id => canMove(ludoState[myColor][id], ludoState.dice)).map(id => `${myColor}-${id}`);
-  }
-
-  function updateUI() {
-    if (!ludoState.red) return;
-    const s = ludoState;
-    const myTurn = s.turn === currentUser && !s.winner;
-    const redName = isHost ? currentUser : partnerName;
-    const greenName = isHost ? partnerName : currentUser;
-    $('plRedName').innerText = redName;
-    $('plGreenName').innerText = greenName;
-    $('plRed').classList.toggle('active', s.turn === redName && !s.winner);
-    $('plGreen').classList.toggle('active', s.turn === greenName && !s.winner);
-
-    // movable pieces
-    movable = computeMovable();
-    Object.keys(pieces).forEach(key => pieces[key].el.classList.toggle('movable', movable.includes(key)));
-    layout();
-
-    // status text
-    let text;
-    if (s.winner) text = `🏆 ${s.winner} wins!`;
-    else if (myTurn && !s.hasRolled) text = 'Your turn — tap the dice';
-    else if (myTurn && s.hasRolled) text = movable.length ? 'Pick a glowing piece' : 'No valid moves…';
-    else if (s.rolling) text = `${partnerName} is rolling…`;
-    else text = `${partnerName} is playing…`;
-    $('ludoTurnText').innerText = text;
-
-    // dice
-    const dice = $('diceBtn');
-    const canRollNow = myTurn && !s.hasRolled && !isRolling && !isProcessing;
-    dice.classList.toggle('disabled', !canRollNow);
-    dice.classList.toggle('ready', canRollNow);
-
-    if (s.rolling && s.turn !== currentUser) startDiceAnim();
-    else if (!isRolling) {
-      stopDiceAnim();
-      setDiceFace(s.dice || 0);
-    }
-    $('diceResult').innerText = (s.dice && !s.rolling) ? `${s.diceBy || ''} rolled ${s.dice}` : '';
-
-    // auto-move when every possible move is equivalent
-    clearTimeout(autoTO);
-    if (movable.length) {
-      const unique = new Set(movable.map(k => ludoState[myColor][k.split('-')[1]]));
-      if (unique.size === 1) autoTO = setTimeout(() => movePiece(movable[0].split('-')[1]), 700);
-    }
-  }
-
-  async function onStateChanged(prev) {
-    lastActivity = Date.now();
-
-    // announcements for both players
-    const ev = ludoState.event;
-    if (!eventPrimed) { eventPrimed = true; lastEventId = ev ? ev.id : null; }
-    else if (ev && ev.id !== lastEventId) { lastEventId = ev.id; banner(ev.text); }
-
-    syncPieces();
-    applyAvatars();
-    updateUI();
-
-    // win dialog
-    if (ludoState.winner && !winShown) {
-      winShown = true;
-      winModalOpen = true;
-      vibrate([60, 40, 60, 40, 120]);
-      const again = await showModal('🏆 ' + ludoState.winner + ' wins!', 'What a game! Play another round?', { confirm: true, okText: 'Play again', cancelText: 'Back to lobby' });
-      winModalOpen = false;
-      if (again === true) await resetBoard();
-      else if (again === false) leaveLudo();
-    } else if (!ludoState.winner && winShown) {
-      winShown = false;
-      if (winModalOpen) { winModalOpen = false; closeModal(null); }
-    }
-  }
-
-  // ================= GAME ACTIONS =================
-  const freshState = () => ({
-    turn: isHost ? currentUser : partnerName,
-    dice: 0, diceBy: '', hasRolled: false, rolling: false, sixCount: 0,
-    red: { p1: -1, p2: -1, p3: -1, p4: -1 },
-    green: { p1: -1, p2: -1, p3: -1, p4: -1 },
-    winner: null, event: null
-  });
-
-  async function rollDice() {
-    if (!(ludoState.turn === currentUser && !ludoState.hasRolled && !ludoState.winner) || isRolling || isProcessing) return;
-    isRolling = true;
-    vibrate(25);
-    $('diceBtn').classList.remove('ready');
-    $('diceBtn').classList.add('disabled');
-    startDiceAnim();
-    updateUI();
-
-    try {
-      updateDoc(gameRef, { rolling: true }).catch(() => {});   // lets your partner watch the dice roll
-      await sleep(CONFIG.rollMs);
-
-      const value = (crypto.getRandomValues(new Uint32Array(1))[0] % 6) + 1;
-      let six = value === 6 ? (ludoState.sixCount || 0) + 1 : 0;
-      const upd = { rolling: false, dice: value, diceBy: currentUser };
-
-      if (six >= 3) {
-        Object.assign(upd, { hasRolled: false, sixCount: 0, turn: partnerName, event: { id: Date.now(), text: `${currentUser} rolled three 6s — turn skipped` } });
-      } else {
-        const mine = ludoState[myColor];
-        const anyMove = IDS.some(id => canMove(mine[id], value));
-        if (!anyMove) Object.assign(upd, { hasRolled: false, sixCount: 0, turn: partnerName, event: { id: Date.now(), text: `${currentUser} rolled ${value} — no valid moves` } });
-        else Object.assign(upd, { hasRolled: true, sixCount: six });
-      }
-
-      stopDiceAnim();
-      setDiceFace(value);
-      await updateDoc(gameRef, upd);
-    } catch (e) {
-      console.error(e);
-      updateDoc(gameRef, { rolling: false }).catch(() => {});
-      showModal('Error', 'Could not roll. Check your connection and try again.');
-    } finally {
-      isRolling = false;
-      stopDiceAnim();
-      updateUI();
-    }
-  }
-
-  async function handlePieceClick(color, id) {
-    if (color !== myColor) return;
-    if (!(ludoState.turn === currentUser && ludoState.hasRolled && !ludoState.winner) || isProcessing) return;
-    if (!movable.includes(`${color}-${id}`)) { banner('Pick a glowing piece'); vibrate(10); return; }
-    movePiece(id);
-  }
-
-  async function movePiece(id) {
-    if (isProcessing) return;
-    if (!(ludoState.turn === currentUser && ludoState.hasRolled && !ludoState.winner)) return;
-
-    const dice = ludoState.dice;
-    const pos = ludoState[myColor][id];
-    if (!canMove(pos, dice)) return;
-
-    isProcessing = true;
-    clearTimeout(autoTO);
-    vibrate(20);
-
-    try {
-      const newPos = pos === -1 ? 0 : pos + dice;
-      const upd = { [`${myColor}.${id}`]: newPos };
-      let captured = 0;
-
-      if (newPos <= LAST_TRACK) {
-        const abs = absIndex(myColor, newPos);
-        if (!SAFE.has(abs)) {
-          IDS.forEach(op => {
-            const oppPos = ludoState[oppColor][op];
-            if (oppPos >= 0 && oppPos <= LAST_TRACK && absIndex(oppColor, oppPos) === abs) {
-              upd[`${oppColor}.${op}`] = -1;
-              captured++;
-            }
-          });
-        }
-      }
-
-      const win = IDS.every(p => (p === id ? newPos : ludoState[myColor][p]) === FINISH);
-      upd.hasRolled = false;
-
-      if (win) {
-        upd.winner = currentUser;
-      } else if (dice === 6) {
-        // extra roll, same player (sixCount keeps counting)
-      } else if (captured && CONFIG.bonusOnCapture) {
-        upd.sixCount = 0;
-      } else {
-        upd.turn = partnerName;
-        upd.sixCount = 0;
-      }
-      if (captured) upd.event = { id: Date.now(), text: `${currentUser} captured ${captured > 1 ? captured + ' pieces' : 'a piece'}! 💥` };
-
-      await updateDoc(gameRef, upd);
-    } catch (e) {
-      console.error(e);
-      showModal('Error', 'Could not move piece. Check your connection.');
-    } finally {
-      isProcessing = false;
-      updateUI();
-    }
-  }
-
-  async function skipTheirTurn() {
-    const ok = await showModal('Skip turn?', `${partnerName} has been idle for a while. Take over and play?`, { confirm: true, okText: 'Skip', cancelText: 'Wait' });
-    if (!ok) return;
-    try {
-      await updateDoc(gameRef, { turn: currentUser, hasRolled: false, rolling: false, sixCount: 0, event: { id: Date.now(), text: `${currentUser} skipped ${partnerName}'s turn` } });
-    } catch (e) { showModal('Error', 'Could not skip. Check your connection.'); }
-  }
-
-  async function resetBoard() {
-    try { await setDoc(gameRef, freshState()); }
-    catch (e) { showModal('Error', 'Could not restart. Check your connection.'); }
-  }
-
-  async function restartLudo() {
-    const ok = await showModal('Restart Board', 'Are you sure? All progress will be lost.', { confirm: true, okText: 'Restart' });
-    if (ok) await resetBoard();
-  }
-
-  async function leaveLudo() {
-    if (leaving) return;
-    leaving = true;
-    [unsubLudo, unsubRoom, unsubMe, unsubOpp].forEach(fn => { if (fn) fn(); });
-    // the host ending the session sends the lobby back to normal; the guest can rejoin from the lobby
-    if (isHost) {
-      try { await setDoc(roomRef, { gameState: { status: 'lobby' } }, { merge: true }); } catch (e) {}
-    }
-    window.location.href = 'index.html';
-  }
-
-  // ================= INIT =================
-  function drawDebugGrid() {
-    const grid = document.createElement('div');
-    grid.className = 'debug-grid';
-    for (let r = 1; r <= 15; r++) for (let c = 1; c <= 15; c++) {
-      const d = document.createElement('div');
-      const idx = TRACK.findIndex(t => t.r === r && t.c === c);
-      d.innerText = idx >= 0 ? String(idx) : '';
-      grid.appendChild(d);
-    }
-    $('board').appendChild(grid);
-  }
-
-  async function initGame() {
-    buildPieces();
-    if (new URLSearchParams(location.search).has('debug')) drawDebugGrid();
-    if ('ResizeObserver' in window) new ResizeObserver(() => layout(true)).observe($('board'));
-    else window.addEventListener('resize', () => layout(true));
-
-    unsubLudo = onSnapshot(gameRef, (snap) => {
-      if (!snap.exists()) return;
-      const prev = ludoState;
-      ludoState = snap.data();
-      onStateChanged(prev);
-    }, (err) => console.error('Ludo snapshot error:', err));
-
-    // create the game once (a transaction means two players can't overwrite each other's progress)
-    try {
-      await runTransaction(db, async (tx) => {
-        const snap = await tx.get(gameRef);
-        if (!snap.exists()) tx.set(gameRef, freshState());
-      });
-    } catch (e) {
-      console.error(e);
-      showModal('Error', 'Could not load the game. Check your connection.');
-    }
-
-    unsubMe = onSnapshot(doc(db, 'users', currentUser.toLowerCase()), (snap) => {
-      myAvatar = (snap.exists() && snap.data().avatar) || '';
-      applyAvatars();
-    });
-    unsubOpp = onSnapshot(doc(db, 'users', partnerName.toLowerCase()), (snap) => {
-      oppAvatar = (snap.exists() && snap.data().avatar) || '';
-      applyAvatars();
-    });
-
-    // if the host ends the session, take the guest back to the lobby
-    unsubRoom = onSnapshot(roomRef, async (snap) => {
-      if (leaving || !snap.exists()) return;
-      const gs = snap.data().gameState;
-      if (gs && gs.status && gs.status !== 'ludo') {
-        leaving = true;
-        await showModal('Game ended', 'The host left the Ludo table.');
-        window.location.href = 'index.html';
-      }
-    });
-
-    setInterval(() => {
-      const waiting = ludoState.turn && ludoState.turn !== currentUser && !ludoState.winner;
-      $('skipBtn').classList.toggle('hidden', !(waiting && Date.now() - lastActivity > CONFIG.skipAfterMs));
-    }, 1000);
-  }
-
-  Object.assign(window, { rollDice, leaveLudo, restartLudo, skipTheirTurn, closeModal });
-
-  if (valid) initGame();
-</script>
-</body>
-</html>
+const db=getFirestore(initializeApp(firebaseConfig));
+const $=id=>document.getElementById(id);
+const me=localStorage.getItem('shizu_user'),roomId=localStorage.getItem('shizu_room'),partner=localStorage.getItem('shizu_partner');
+if(!me||!roomId||!partner){location.replace('index.html');throw new Error('no session');}
+const myC=me.toLowerCase()<partner.toLowerCase()?'red':'green',oppC=myC==='red'?'green':'red';
+const names={[myC]:me,[oppC]:partner};
+const gameRef=doc(db,'rooms',roomId,'games','ludo2'),roomRef=doc(db,'rooms',roomId);
+// ENGINE START
+const OFF={red:0,green:26},SAFE=new Set([0,8,13,21,26,34,39,47]);
+const other=c=>c==='red'?'green':'red';
+const fresh=turn=>({red:[-1,-1,-1,-1],green:[-1,-1,-1,-1],turn,dice:0,rolled:false,sixes:0,winner:null,by:null,k:'',left:null,n:0});
+const movable=(s,c,d)=>s[c].map((p,i)=>p<0?(d===6?i:-1):(p+d<=56?i:-1)).filter(i=>i>=0);
+function rollState(s,d){
+  const n={...s,dice:d,n:s.n+1,by:s.turn,k:'',sixes:d===6?s.sixes+1:0};
+  if(n.sixes===3){n.k='forfeit';}
+  else if(!movable(s,s.turn,d).length){n.k='nomove';}
+  else{n.rolled=true;return n;}
+  n.turn=other(s.turn);n.rolled=false;n.sixes=0;return n;
+}
+function moveState(s,i){
+  const c=s.turn,o=other(c),d=s.dice,n={...s,red:[...s.red],green:[...s.green],n:s.n+1,by:c,k:''};
+  const p=n[c][i]<0?0:n[c][i]+d;n[c][i]=p;let cap=false;
+  if(p<=50){const x=(p+OFF[c])%52;if(!SAFE.has(x))n[o]=n[o].map(q=>(q>=0&&q<=50&&(q+OFF[o])%52===x)?(cap=true,-1):q);}
+  if(n[c].every(q=>q===56))n.winner=c;
+  n.rolled=false;n.k=cap?'cap':p===56?'home':'';
+  if(!n.winner&&(d===6||cap||p===56)){if(d!==6)n.sixes=0;}else if(!n.winner){n.turn=o;n.sixes=0;}
+  return n;
+}
+// ENGINE END
+const row=(r,cs)=>cs.map(c=>({r,c})),col=(c,rs)=>rs.map(r=>({r,c}));
+const TRACK=[...row(7,[2,3,4,5,6]),...col(7,[6,5,4,3,2,1]),{r:1,c:8},...col(9,[1,2,3,4,5,6]),...row(7,[10,11,12,13,14,15]),{r:8,c:15},...row(9,[15,14,13,12,11,10]),...col(9,[10,11,12,13,14,15]),{r:15,c:8},...col(7,[15,14,13,12,11,10]),...row(9,[6,5,4,3,2,1]),{r:8,c:1},{r:7,c:1}];
+const HOME={red:row(8,[2,3,4,5,6,7]),green:row(8,[14,13,12,11,10,9])};
+const BASE={red:[{r:2.5,c:2.5},{r:2.5,c:4.5},{r:4.5,c:2.5},{r:4.5,c:4.5}],green:[{r:11.5,c:11.5},{r:11.5,c:13.5},{r:13.5,c:11.5},{r:13.5,c:13.5}]};
+const where=(c,i,p)=>{const g=p<0?BASE[c][i]:p<=50?TRACK[(p+OFF[c])%52]:HOME[c][p-51];return{x:g.c-.5,y:g.r-.5};};
+function drawBoard(){
+  const R=(x,y,w,h,f,rx=0)=>`<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${rx}" fill="${f}"/>`;
+  const C=(g,f)=>`<rect x="${g.c-1}" y="${g.r-1}" width="1" height="1" fill="${f}" stroke="#6b5a74" stroke-width=".04"/>`;
+  let s=R(0,0,15,15,'#15101a')+R(.15,.15,5.7,5.7,'#8f1d1d',.4)+R(9.15,9.15,5.7,5.7,'#176b2a',.4)+R(9.15,.15,5.7,5.7,'#1e1824',.4)+R(.15,9.15,5.7,5.7,'#1e1824',.4);
+  BASE.red.concat(BASE.green).forEach(g=>s+=`<circle cx="${g.c-.5}" cy="${g.r-.5}" r=".55" fill="rgba(0,0,0,.35)" stroke="#fff" stroke-width=".05"/>`);
+  TRACK.forEach((g,i)=>{s+=C(g,i===0?'#7a2a2a':i===26?'#1f6a33':'#2a2030');if(SAFE.has(i))s+=`<text x="${g.c-.5}" y="${g.r-.22}" font-size=".8" text-anchor="middle" fill="${i%26===0?'#fff':'#E879A5'}">★</text>`;});
+  HOME.red.forEach((g,i)=>s+=C(g,i<5?'#c62828':'#8f1d1d'));HOME.green.forEach((g,i)=>s+=C(g,i<5?'#2e9e4a':'#176b2a'));
+  s+='<polygon points="6,6 7.5,7.5 6,9" fill="#c62828"/><polygon points="9,6 7.5,7.5 9,9" fill="#2e9e4a"/><polygon points="6,6 9,6 7.5,7.5" fill="#3a3040"/><polygon points="6,9 9,9 7.5,7.5" fill="#3a3040"/>';
+  for(const c of['red','green'])for(let i=0;i<4;i++){const sh=c==='red'?'<circle r=".4" fill="#e53935"/>':'<rect x="-.38" y="-.38" width=".76" height=".76" rx=".15" fill="#43a047"/>';
+    s+=`<g class="pc" data-c="${c}" data-i="${i}" role="${c===myC?'button':'img'}" aria-label="${c} piece ${i+1}" tabindex="-1"><circle class="hit" r=".7" fill="transparent"/>${sh}<text y=".13" font-size=".38" text-anchor="middle">${i+1}</text></g>`;}
+  $('board').innerHTML=s;
+}
+let S=null,autoKey=-1,leaving=false,busy=false,lastN=-1;
+const PC={};
+const toast=t=>{const e=$('toast');e.textContent=t;e.classList.remove('hidden');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.add('hidden'),2500);};
+async function act(fn){if(busy)return;busy=true;try{await runTransaction(db,async tx=>{const snap=await tx.get(gameRef);const n=fn(snap.exists()?snap.data():null);if(n)tx.set(gameRef,n);});}catch(e){console.error(e);toast('Connection problem — try again');}finally{busy=false;}}
+const roll=()=>act(s=>(s&&!s.winner&&s.turn===myC&&!s.rolled)?rollState(s,1+Math.floor(Math.random()*6)):null);
+const move=i=>act(s=>(s&&!s.winner&&s.turn===myC&&s.rolled&&movable(s,myC,s.dice).includes(i))?moveState(s,i):null);
+const restart=()=>act(s=>fresh(s&&s.winner?other(s.winner):'red'));
+const again=()=>act(s=>s&&s.winner?fresh(other(s.winner)):null);
+const bye=m=>{leaving=true;toast(m);setTimeout(()=>location.href='index.html',1600);};
+function layout(s){
+  const g={};for(const c of['red','green'])s[c].forEach((p,i)=>{const q=where(c,i,p);(g[q.x+','+q.y]=g[q.x+','+q.y]||[]).push({c,i,q});});
+  for(const k in g){const a=g[k];a.forEach((o,j)=>{const dx=a.length>1?(j-(a.length-1)/2)*.32:0;PC[o.c+o.i].style.transform=`translate(${o.q.x+dx}px,${o.q.y}px) scale(${a.length>1?.75:1})`;});}
+}
+function render(s){
+  if(!s)return;const newRoll=s.n!==lastN&&lastN>=0&&s.dice;lastN=s.n;S=s;layout(s);if(!$('board').classList.contains('ready'))requestAnimationFrame(()=>requestAnimationFrame(()=>$('board').classList.add('ready')));
+  const mine=s.turn===myC&&!s.winner,mv=mine&&s.rolled?movable(s,myC,s.dice):[];
+  for(const k in PC){const el=PC[k],on=el.dataset.c===myC&&mv.includes(+el.dataset.i);el.classList.toggle('mv',on);el.setAttribute('tabindex',on?'0':'-1');}
+  $('dice').disabled=!(mine&&!s.rolled);$('dice').textContent=s.dice||'🎲';
+  if(newRoll){$('dice').classList.add('sh');setTimeout(()=>$('dice').classList.remove('sh'),400);}
+  $('pR').classList.toggle('on',s.turn==='red'&&!s.winner);$('pG').classList.toggle('on',s.turn==='green'&&!s.winner);
+  $('st').textContent=(s.left&&s.left!==myC)?`${partner} left the game`:s.winner?`${names[s.winner]} wins!`:mine?(s.rolled?'Tap a glowing piece':'Your turn — roll the dice'):`${partner}'s turn`;
+  const nm=names[s.by]||'';
+  $('ev').textContent=({nomove:`${nm} rolled ${s.dice} — no move`,forfeit:`${nm} rolled three 6s — turn lost`,cap:`${nm} captured a piece!`,home:`${nm} got a piece home!`})[s.k]||(s.dice&&s.by?`${nm} rolled ${s.dice}`:'');
+  $('win').classList.toggle('hidden',!s.winner);if(s.winner)$('wt').textContent=`${names[s.winner]} wins! 🎉`;
+  if(mv.length&&autoKey!==s.n){autoKey=s.n;if(new Set(mv.map(i=>s[myC][i])).size===1)setTimeout(()=>move(mv[0]),600);}
+}
+async function leave(){leaving=true;const w=[setDoc(gameRef,{left:myC},{merge:true}).catch(()=>{})];if(myC==='red')w.push(setDoc(roomRef,{gameState:{status:'lobby'}},{merge:true}).catch(()=>{}));await Promise.race([Promise.all(w),new Promise(r=>setTimeout(r,1500))]);location.href='index.html';}
+async function boot(){
+  drawBoard();document.querySelectorAll('.pc').forEach(e=>PC[e.dataset.c+e.dataset.i]=e);
+  $('nR').textContent=names.red+(myC==='red'?' (you)':'');$('nG').textContent=names.green+(myC==='green'?' (you)':'');
+  $('dice').onclick=roll;$('leave').onclick=$('leave2').onclick=leave;$('again').onclick=again;
+  let rc=0;$('restart').onclick=()=>{const b=$('restart');if(!rc){b.textContent=`Tap again — ${partner} loses progress too`;rc=setTimeout(()=>{rc=0;b.textContent='Restart';},3500);}else{clearTimeout(rc);rc=0;b.textContent='Restart';restart();}};
+  $('board').addEventListener('click',e=>{const g=e.target.closest('.pc');if(g&&g.dataset.c===myC)move(+g.dataset.i);});
+  $('board').addEventListener('keydown',e=>{const g=e.target.closest('.pc');if(g&&(e.key==='Enter'||e.key===' ')){e.preventDefault();move(+g.dataset.i);}});
+  await act(s=>!s?fresh('red'):(s.left===myC?{...s,left:null}:null));
+  onSnapshot(gameRef,snap=>render(snap.data()),()=>{$('st').textContent='Cannot connect — check internet and Firestore rules';toast('Connection lost');});
+  onSnapshot(roomRef,snap=>{const st=snap.data()&&snap.data().gameState&&snap.data().gameState.status;if(!leaving&&st&&st!=='ludo')bye('The game was closed.');});
+  onSnapshot(doc(db,'users',me.toLowerCase()),snap=>{if(!leaving&&snap.exists()&&snap.data().roomId!==roomId)bye('You are no longer paired.');});
+}
+boot();
+</script></body></html>
