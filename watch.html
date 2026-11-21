@@ -1,0 +1,94 @@
+<!DOCTYPE html><html lang="en"><head><title>Watch Together</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="theme-color" content="#100B12">
+<style>
+:root{--bg:#100B12;--bg2:#19111C;--card:#211722;--pri:#E879A5;--text:#F8EAF0;--muted:#A99AA5;--bd:rgba(232,121,165,.25)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,'Segoe UI',sans-serif;min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;align-items:center;padding:12px 12px calc(16px + env(safe-area-inset-bottom));gap:10px}
+h1{margin:0;font:600 1.6rem Georgia,serif;color:var(--pri)}
+button{font:inherit;color:var(--text);background:var(--bg2);border:1px solid var(--bd);border-radius:12px;padding:10px 14px;min-height:44px;cursor:pointer}
+button:disabled{opacity:.4;cursor:default}button.pri{background:#C2477E;border-color:#C2477E}
+button:focus-visible,.pc:focus-visible{outline:2px solid var(--pri);outline-offset:2px}
+.row{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;width:100%}
+.hidden{display:none!important}
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--card);border:1px solid var(--pri);padding:10px 16px;border-radius:12px;z-index:50;max-width:90vw;text-align:center}
+</style>
+<style>
+.top{display:flex;align-items:center;gap:10px;width:100%;max-width:760px}
+.bar{display:flex;gap:8px;width:100%;max-width:760px}
+input[type=text]{flex:1;min-width:0;background:var(--bg2);color:var(--text);border:1px solid var(--bd);border-radius:12px;padding:12px;font:inherit}
+#stage{width:100%;max-width:760px;background:#000;border-radius:14px;overflow:hidden;position:relative}
+#player{aspect-ratio:16/9;width:100%;background:#000}#player video,#player iframe{width:100%;height:100%;border:0;display:block}#player iframe{pointer-events:none}
+#tap{position:absolute;inset:0 0 54px 0;background:rgba(16,11,18,.82);color:var(--text);border:0;border-radius:0;font-size:1.1rem}
+.ctl{display:flex;align-items:center;gap:6px;padding:6px;background:var(--bg2)}.ctl button{padding:6px 10px;min-height:40px}
+#seek{flex:1;min-width:0;accent-color:#E879A5}#tm{font-size:12px;color:var(--muted);min-width:78px;text-align:center}
+#msg{color:var(--muted);font-size:14px;text-align:center;max-width:760px;min-height:20px}
+</style></head><body>
+<div class="top"><button id="back" aria-label="Back">←</button><h1>Watch Together</h1></div>
+<div class="bar"><input type="text" id="url" inputmode="url" aria-label="Video link" placeholder="Paste a YouTube or direct video link"><button class="pri" id="load">Load</button></div>
+<div id="stage"><div id="player"></div><button id="tap" class="hidden">▶ Tap to join playback</button>
+<div class="ctl"><button id="pp" aria-label="Play or pause" disabled>▶</button><button id="b10" aria-label="Back 10 seconds" disabled>−10</button><button id="f10" aria-label="Forward 10 seconds" disabled>+10</button><input type="range" id="seek" min="0" max="1000" value="0" aria-label="Seek" disabled><span id="tm">0:00</span><button id="mute" aria-label="Mute">🔊</button><button id="fs" aria-label="Fullscreen">⛶</button></div></div>
+<div id="msg">Both of you open this page, then either of you can load a link. Play, pause and seeking stay in sync.</div>
+<div id="toast" class="hidden" role="status"></div>
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import {getFirestore,doc,setDoc,onSnapshot,getDocFromServer,serverTimestamp} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+const firebaseConfig = {
+    apiKey: "AIzaSyAQg9F4Sn3GsZOghWxSJqwbLMsJetvo03w",
+    authDomain: "shizu-c984a.firebaseapp.com",
+    projectId: "shizu-c984a",
+    storageBucket: "shizu-c984a.firebasestorage.app",
+    messagingSenderId: "512395203618",
+    appId: "1:512395203618:web:496a2f959a3545975c667b"
+  };
+const db=getFirestore(initializeApp(firebaseConfig));
+const $=id=>document.getElementById(id);
+const me=localStorage.getItem('shizu_user'),roomId=localStorage.getItem('shizu_room');
+if(!me||!roomId){location.replace('index.html');throw new Error('no session');}
+const watchRef=doc(db,'rooms',roomId,'games','watch'),roomRef=doc(db,'rooms',roomId);
+let S=null,A=null,off=0,unlocked=false,drag=false,building=0;
+const msg=t=>$('msg').textContent=t;
+const fmt=t=>{t=Math.max(0,Math.floor(t||0));return Math.floor(t/60)+':'+String(t%60).padStart(2,'0');};
+async function calibrate(){try{const p=doc(db,'rooms',roomId,'games','ping_'+me.toLowerCase());await setDoc(p,{t:serverTimestamp()});const s=await getDocFromServer(p);off=s.data().t.toMillis()-Date.now();}catch(e){off=0;}}
+function parse(u){u=u.trim();let m=u.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/|live\/))([\w-]{11})/);if(m)return{kind:'yt',id:m[1]};
+  if(/^https?:\/\/.+\.(mp4|webm|ogv|ogg|mov|m4v|m3u8|mp3)([?#].*)?$/i.test(u))return{kind:'file',src:u};return null;}
+const ytReady=new Promise(r=>{if(window.YT&&YT.Player)return r();window.onYouTubeIframeAPIReady=r;const s=document.createElement('script');s.src='https://www.youtube.com/iframe_api';document.head.appendChild(s);});
+async function build(url){
+  const id=++building;A=null;$('player').innerHTML='';unlocked=false;ui();
+  const c=parse(url);if(!c){msg('This link cannot be synced. Use a YouTube link or a direct video file (.mp4, .webm, .m3u8). For Netflix and similar sites, share your screen on a call instead.');return;}
+  msg('Loading…');
+  if(c.kind==='file'){
+    const v=document.createElement('video');v.playsInline=true;v.preload='auto';v.src=c.src;v.onerror=()=>msg('Could not play this file (blocked or unsupported format).');$('player').appendChild(v);
+    A={play:()=>v.play().catch(()=>{}),pause:()=>v.pause(),seek:t=>{v.currentTime=t;},time:()=>v.currentTime||0,playing:()=>!v.paused,dur:()=>v.duration||0,mute:()=>(v.muted=!v.muted)};
+  }else{
+    await ytReady;if(id!==building)return;const d=document.createElement('div');$('player').appendChild(d);
+    const yt=await new Promise(res=>{const p=new YT.Player(d,{videoId:c.id,playerVars:{controls:0,playsinline:1,rel:0,disablekb:1,modestbranding:1},events:{onReady:()=>res(p),onError:()=>msg('This video cannot be embedded.')}});});
+    if(id!==building)return;
+    A={play:()=>yt.playVideo(),pause:()=>yt.pauseVideo(),seek:t=>yt.seekTo(t,true),time:()=>yt.getCurrentTime()||0,playing:()=>yt.getPlayerState()===1,dur:()=>yt.getDuration()||0,mute:()=>{yt.isMuted()?yt.unMute():yt.mute();return yt.isMuted();}};
+  }
+  msg('');$('tap').classList.remove('hidden');ui();
+}
+const target=s=>s.pos+(s.playing?Math.max(0,(Date.now()+off-s.at)/1000):0);
+function apply(){
+  if(!A||!S||!unlocked)return;const t=target(S);
+  if(Math.abs(A.time()-t)>1.5)A.seek(t);
+  if(S.playing&&!A.playing())A.play();else if(!S.playing&&A.playing())A.pause();
+}
+function ui(){
+  const on=!!A&&unlocked;['pp','b10','f10','seek'].forEach(i=>$(i).disabled=!on);
+  if(!A||!S)return;$('pp').textContent=S.playing?'⏸':'▶';const d=A.dur();$('tm').textContent=fmt(A.time())+' / '+fmt(d);
+  if(!drag&&d)$('seek').value=Math.round(A.time()/d*1000);
+}
+const put=o=>setDoc(watchRef,{...S,...o,at:Date.now()+off,by:me,seq:((S&&S.seq)||0)+1}).catch(()=>toast('Connection problem'));
+const toast=t=>{const e=$('toast');e.textContent=t;e.classList.remove('hidden');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.add('hidden'),2500);};
+$('load').onclick=async()=>{const u=$('url').value.trim();if(!u)return;if(!parse(u)){msg('Use a YouTube link or a direct video file link (.mp4, .webm, .m3u8).');return;}
+  await put({url:u,playing:false,pos:0});setDoc(roomRef,{watchPing:{by:me,ts:Date.now()}},{merge:true}).catch(()=>{});$('url').value='';};
+$('tap').onclick=()=>{unlocked=true;$('tap').classList.add('hidden');A.play();if(!S.playing)setTimeout(()=>A.pause(),60);apply();ui();};
+$('pp').onclick=()=>put({playing:!S.playing,pos:A.time()});
+$('b10').onclick=()=>put({pos:Math.max(0,A.time()-10)});$('f10').onclick=()=>put({pos:A.time()+10});
+$('seek').oninput=()=>{drag=true;};$('seek').onchange=()=>{drag=false;const d=A.dur();if(d)put({pos:$('seek').value/1000*d});};
+$('mute').onclick=()=>{if(A)$('mute').textContent=A.mute()?'🔇':'🔊';};
+$('fs').onclick=()=>{const e=$('stage');(e.requestFullscreen||e.webkitRequestFullscreen||(()=>{})).call(e);};
+$('back').onclick=()=>location.href='index.html';
+$('url').addEventListener('keydown',e=>{if(e.key==='Enter')$('load').click();});
+onSnapshot(watchRef,snap=>{const n=snap.data();if(!n)return;const ch=!S||n.url!==S.url;S=n;if(ch)build(n.url).then(apply);else{apply();ui();}},()=>toast('Connection lost'));
+setInterval(apply,2000);setInterval(ui,500);calibrate();
+</script></body></html>
