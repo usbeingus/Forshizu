@@ -2,7 +2,7 @@
 <style>
 :root{--bg:#100B12;--bg2:#19111C;--card:#211722;--pri:#E879A5;--text:#F8EAF0;--muted:#A99AA5;--bd:rgba(232,121,165,.25)}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,'Segoe UI',sans-serif;min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;align-items:center;padding:12px 12px calc(16px + env(safe-area-inset-bottom));gap:10px}
+body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,'Segoe UI',sans-serif;min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;align-items:center;padding:12px 12px calc(16px + env(safe-area-inset-bottom) + var(--chat-h,0px));gap:10px;transition:padding-bottom .3s}
 h1{margin:0;font:600 1.6rem Georgia,serif;color:var(--pri)}
 button{font:inherit;color:var(--text);background:var(--bg2);border:1px solid var(--bd);border-radius:12px;padding:10px 14px;min-height:44px;cursor:pointer}
 button:disabled{opacity:.4;cursor:default}button.pri{background:#C2477E;border-color:#C2477E}
@@ -18,7 +18,7 @@ button:focus-visible{outline:2px solid var(--pri);outline-offset:2px}
 .pl i{width:12px;height:12px;background:#e53935;border-radius:50%}.pl.g i{background:#43a047;border-radius:3px}
 body{-webkit-user-select:none;user-select:none}
 #st{color:var(--pri);font-weight:600;min-height:24px;text-align:center}
-#board{width:min(calc(100vw - 24px),calc(100vh - 320px),460px);min-width:260px;aspect-ratio:1;border-radius:14px;touch-action:manipulation}
+#board{width:min(calc(100vw - 24px),calc(100vh - 320px),460px);width:min(calc(100vw - 24px),calc(100dvh - 320px),460px);min-width:260px;aspect-ratio:1;border-radius:14px;touch-action:manipulation}
 .pc{pointer-events:none}.pc.mv{pointer-events:all}#board.ready .pc{transition:transform .3s ease}.pc .hit{stroke:none!important;animation:none!important}.pc text{fill:#fff;font-weight:700;pointer-events:none}
 .pc circle,.pc rect{stroke:#fff;stroke-width:.06}.pc.mv{cursor:pointer}
 .pc.mv circle,.pc.mv rect{stroke:#ffd54f;stroke-width:.14;animation:p 1s infinite}@keyframes p{50%{stroke-width:.05}}
@@ -27,17 +27,32 @@ body{-webkit-user-select:none;user-select:none}
 @keyframes s{25%{transform:rotate(-12deg)}75%{transform:rotate(12deg)}}
 #ev{color:var(--muted);min-width:150px;font-size:14px}
 #win{position:fixed;inset:0;background:rgba(16,11,18,.9);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;z-index:40;font-size:1.5rem}
+body{background:radial-gradient(60% 40% at 12% 0%,rgba(232,121,165,.16),transparent 70%),radial-gradient(50% 40% at 100% 100%,rgba(70,160,110,.12),transparent 70%),var(--bg)}
+body.shz-open #board{width:min(calc(100vw - 24px),calc(100vh - 200px - var(--chat-h)),460px);width:min(calc(100vw - 24px),calc(100dvh - 200px - var(--chat-h)),460px);min-width:200px}
+body.shz-open h1,body.shz-open #ctl2{display:none}
+#board{box-shadow:0 12px 40px rgba(0,0,0,.5),0 0 0 1px rgba(232,121,165,.18)}
+.pl{transition:all .3s}.pl.on{animation:chipP 1.8s ease-in-out infinite}@keyframes chipP{50%{box-shadow:0 0 18px rgba(232,121,165,.55)}}
+#st.pop{animation:stPop .4s cubic-bezier(.2,1.5,.4,1)}@keyframes stPop{from{transform:scale(.85);opacity:.3}}
+#dice{transition:transform .2s}#dice:not(:disabled){animation:dP 1.4s ease-in-out infinite}@keyframes dP{50%{transform:scale(1.07)}}#dice.sh{animation:s .4s linear infinite}
+.tw{animation:tw 2.6s ease-in-out infinite}@keyframes tw{50%{opacity:.4}}
+.pc .in{transform-box:fill-box;transform-origin:50% 100%}.pc.hop .in{animation:hop .24s ease-out}@keyframes hop{40%{transform:translateY(-.42px) scale(1.15)}}
+.bst{fill:none;stroke:#ffd54f;stroke-width:.14;transform-box:fill-box;transform-origin:center;animation:bst .8s ease-out forwards;pointer-events:none}@keyframes bst{from{transform:scale(.4);opacity:1}to{transform:scale(5);opacity:0}}
+#cf{position:absolute;inset:0;overflow:hidden;pointer-events:none}#cf i{position:absolute;top:-16px;width:9px;height:15px;border-radius:2px;animation:fall linear infinite}@keyframes fall{to{transform:translateY(105vh) rotate(720deg)}}
+#win>*:not(#cf){position:relative}#wt{animation:wIn .7s cubic-bezier(.2,1.4,.4,1) both}@keyframes wIn{from{transform:scale(.5);opacity:0}}
+@media (prefers-reduced-motion:reduce){.pl.on,#dice,.tw,#cf i{animation:none!important}}
+#ev:empty{display:none}#wt{font:700 2.4rem Georgia,serif;color:var(--pri);text-shadow:0 0 24px rgba(232,121,165,.7)}
 </style></head><body>
 <h1>Ludo</h1>
 <div class="row"><span class="pl" id="pR"><i></i><b id="nR"></b></span><span class="pl g" id="pG"><i></i><b id="nG"></b></span></div>
 <div id="st">Loading…</div>
 <svg id="board" viewBox="0 0 15 15" role="img" aria-label="Ludo board"></svg>
 <div class="row"><button id="dice" aria-label="Roll the dice" disabled>🎲</button><span id="ev" aria-live="polite"></span></div>
-<div class="row"><button id="restart">Restart</button><button id="leave">Leave</button></div>
-<div id="win" class="hidden"><div id="wt"></div><button class="pri" id="again">Play again</button><button id="leave2">Back to lobby</button></div>
+<div class="row" id="ctl2"><button id="restart">Restart</button><button id="leave">Leave</button></div>
+<div id="win" class="hidden"><div id="cf" aria-hidden="true"></div><div id="wt"></div><button class="pri" id="again">Play again</button><button id="leave2">Back to lobby</button></div>
 <div id="toast" class="hidden" role="status"></div>
 <script type="module">
 import {initializeApp} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import {initChat} from './chat.js';
 import {getFirestore,doc,setDoc,onSnapshot,runTransaction} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 const firebaseConfig = {
     apiKey: "AIzaSyAQg9F4Sn3GsZOghWxSJqwbLMsJetvo03w",
@@ -57,17 +72,17 @@ const gameRef=doc(db,'rooms',roomId,'games','ludo2'),roomRef=doc(db,'rooms',room
 // ENGINE START
 const OFF={red:0,green:26},SAFE=new Set([0,8,13,21,26,34,39,47]);
 const other=c=>c==='red'?'green':'red';
-const fresh=turn=>({red:[-1,-1,-1,-1],green:[-1,-1,-1,-1],turn,dice:0,rolled:false,sixes:0,winner:null,by:null,k:'',left:null,n:0});
+const fresh=turn=>({red:[-1,-1,-1,-1],green:[-1,-1,-1,-1],turn,dice:0,rolled:false,sixes:0,winner:null,by:null,k:'',mv:-1,left:null,n:0});
 const movable=(s,c,d)=>s[c].map((p,i)=>p<0?(d===6?i:-1):(p+d<=56?i:-1)).filter(i=>i>=0);
 function rollState(s,d){
-  const n={...s,dice:d,n:s.n+1,by:s.turn,k:'',sixes:d===6?s.sixes+1:0};
+  const n={...s,dice:d,n:s.n+1,by:s.turn,k:'',mv:-1,sixes:d===6?s.sixes+1:0};
   if(n.sixes===3){n.k='forfeit';}
   else if(!movable(s,s.turn,d).length){n.k='nomove';}
   else{n.rolled=true;return n;}
   n.turn=other(s.turn);n.rolled=false;n.sixes=0;return n;
 }
 function moveState(s,i){
-  const c=s.turn,o=other(c),d=s.dice,n={...s,red:[...s.red],green:[...s.green],n:s.n+1,by:c,k:''};
+  const c=s.turn,o=other(c),d=s.dice,n={...s,red:[...s.red],green:[...s.green],n:s.n+1,by:c,k:'',mv:i};
   const p=n[c][i]<0?0:n[c][i]+d;n[c][i]=p;let cap=false;
   if(p<=50){const x=(p+OFF[c])%52;if(!SAFE.has(x))n[o]=n[o].map(q=>(q>=0&&q<=50&&(q+OFF[o])%52===x)?(cap=true,-1):q);}
   if(n[c].every(q=>q===56))n.winner=c;
@@ -86,11 +101,11 @@ function drawBoard(){
   const C=(g,f)=>`<rect x="${g.c-1}" y="${g.r-1}" width="1" height="1" fill="${f}" stroke="#6b5a74" stroke-width=".04"/>`;
   let s=R(0,0,15,15,'#15101a')+R(.15,.15,5.7,5.7,'#8f1d1d',.4)+R(9.15,9.15,5.7,5.7,'#176b2a',.4)+R(9.15,.15,5.7,5.7,'#1e1824',.4)+R(.15,9.15,5.7,5.7,'#1e1824',.4);
   BASE.red.concat(BASE.green).forEach(g=>s+=`<circle cx="${g.c-.5}" cy="${g.r-.5}" r=".55" fill="rgba(0,0,0,.35)" stroke="#fff" stroke-width=".05"/>`);
-  TRACK.forEach((g,i)=>{s+=C(g,i===0?'#7a2a2a':i===26?'#1f6a33':'#2a2030');if(SAFE.has(i))s+=`<text x="${g.c-.5}" y="${g.r-.22}" font-size=".8" text-anchor="middle" fill="${i%26===0?'#fff':'#E879A5'}">★</text>`;});
+  TRACK.forEach((g,i)=>{s+=C(g,i===0?'#7a2a2a':i===26?'#1f6a33':'#2a2030');if(SAFE.has(i))s+=`<text class="tw" style="animation-delay:${(i%7)*.4}s" x="${g.c-.5}" y="${g.r-.22}" font-size=".8" text-anchor="middle" fill="${i%26===0?'#fff':'#E879A5'}">★</text>`;});
   HOME.red.forEach((g,i)=>s+=C(g,i<5?'#c62828':'#8f1d1d'));HOME.green.forEach((g,i)=>s+=C(g,i<5?'#2e9e4a':'#176b2a'));
   s+='<polygon points="6,6 7.5,7.5 6,9" fill="#c62828"/><polygon points="9,6 7.5,7.5 9,9" fill="#2e9e4a"/><polygon points="6,6 9,6 7.5,7.5" fill="#3a3040"/><polygon points="6,9 9,9 7.5,7.5" fill="#3a3040"/>';
   for(const c of['red','green'])for(let i=0;i<4;i++){const sh=c==='red'?'<circle r=".4" fill="#e53935"/>':'<rect x="-.38" y="-.38" width=".76" height=".76" rx=".15" fill="#43a047"/>';
-    s+=`<g class="pc" data-c="${c}" data-i="${i}" role="${c===myC?'button':'img'}" aria-label="${c} piece ${i+1}" tabindex="-1"><circle class="hit" r=".7" fill="transparent"/>${sh}<text y=".13" font-size=".38" text-anchor="middle">${i+1}</text></g>`;}
+    s+=`<g class="pc" data-c="${c}" data-i="${i}" role="${c===myC?'button':'img'}" aria-label="${c} piece ${i+1}" tabindex="-1"><circle class="hit" r=".7" fill="transparent"/><g class="in">${sh}<text y=".13" font-size=".38" text-anchor="middle">${i+1}</text></g></g>`;}
   $('board').innerHTML=s;
 }
 let S=null,autoKey=-1,leaving=false,busy=false,lastN=-1;
@@ -102,25 +117,43 @@ const move=i=>act(s=>(s&&!s.winner&&s.turn===myC&&s.rolled&&movable(s,myC,s.dice
 const restart=()=>act(s=>fresh(s&&s.winner?other(s.winner):'red'));
 const again=()=>act(s=>s&&s.winner?fresh(other(s.winner)):null);
 const bye=m=>{leaving=true;toast(m);setTimeout(()=>location.href='index.html',1600);};
-function layout(s){
-  const g={};for(const c of['red','green'])s[c].forEach((p,i)=>{const q=where(c,i,p);(g[q.x+','+q.y]=g[q.x+','+q.y]||[]).push({c,i,q});});
+let shown=null,T=null,tumbling=0,burstN=-1,cfOn=0;const walking={};
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+function layout(){
+  const g={};for(const c of['red','green'])shown[c].forEach((p,i)=>{const q=where(c,i,p);(g[q.x+','+q.y]=g[q.x+','+q.y]||[]).push({c,i,q});});
   for(const k in g){const a=g[k];a.forEach((o,j)=>{const dx=a.length>1?(j-(a.length-1)/2)*.32:0;PC[o.c+o.i].style.transform=`translate(${o.q.x+dx}px,${o.q.y}px) scale(${a.length>1?.75:1})`;});}
 }
+async function walk(c,i){
+  const k=c+i;if(walking[k])return;walking[k]=1;
+  while(shown[c][i]!==T[c][i]){
+    const cur=shown[c][i],to=T[c][i],step=(cur>=0&&to>cur&&to-cur<=6)||(cur<0&&to>=0);
+    shown[c][i]=cur>=0&&to>cur&&to-cur<=6?cur+1:(cur<0&&to>=0?0:to);layout();
+    if(step){const e=PC[k];e.classList.remove('hop');void e.getBoundingClientRect();e.classList.add('hop');}
+    await sleep(step?130:300);
+  }
+  walking[k]=0;
+}
+function tumble(f){const d=$('dice');clearInterval(tumbling);let i=0;d.classList.add('sh');tumbling=setInterval(()=>{d.textContent=1+Math.floor(Math.random()*6);if(++i>7){clearInterval(tumbling);tumbling=0;d.textContent=f;d.classList.remove('sh');}},60);}
+function burst(q){const NS='http://www.w3.org/2000/svg';for(let k=0;k<2;k++){const e=document.createElementNS(NS,'circle');e.setAttribute('cx',q.x);e.setAttribute('cy',q.y);e.setAttribute('r','.3');e.setAttribute('class','bst');e.style.animationDelay=k*.12+'s';$('board').appendChild(e);setTimeout(()=>e.remove(),950);}}
+function confetti(){const b=$('cf');b.textContent='';for(let i=0;i<46;i++){const e=document.createElement('i');e.style.cssText=`left:${Math.random()*100}%;background:hsl(${Math.random()*360} 85% 60%);animation-delay:${Math.random()*1.5}s;animation-duration:${2.2+Math.random()*1.6}s`;b.appendChild(e);}}
 function render(s){
-  if(!s)return;const newRoll=s.n!==lastN&&lastN>=0&&s.dice;lastN=s.n;S=s;layout(s);if(!$('board').classList.contains('ready'))requestAnimationFrame(()=>requestAnimationFrame(()=>$('board').classList.add('ready')));
+  if(!s)return;const newRoll=s.n!==lastN&&lastN>=0&&s.dice;lastN=s.n;S=s;T={red:[...s.red],green:[...s.green]};if(!shown){shown={red:[...s.red],green:[...s.green]};layout();}else for(const c of['red','green'])for(let i=0;i<4;i++)if(shown[c][i]!==T[c][i])walk(c,i);if(!$('board').classList.contains('ready'))requestAnimationFrame(()=>requestAnimationFrame(()=>$('board').classList.add('ready')));
   const mine=s.turn===myC&&!s.winner,mv=mine&&s.rolled?movable(s,myC,s.dice):[];
   for(const k in PC){const el=PC[k],on=el.dataset.c===myC&&mv.includes(+el.dataset.i);el.classList.toggle('mv',on);el.setAttribute('tabindex',on?'0':'-1');}
-  $('dice').disabled=!(mine&&!s.rolled);$('dice').textContent=s.dice||'🎲';
-  if(newRoll){$('dice').classList.add('sh');setTimeout(()=>$('dice').classList.remove('sh'),400);}
+  $('dice').disabled=!(mine&&!s.rolled);if(!tumbling)$('dice').textContent=s.dice||'🎲';
+  if(newRoll)tumble(s.dice);
   $('pR').classList.toggle('on',s.turn==='red'&&!s.winner);$('pG').classList.toggle('on',s.turn==='green'&&!s.winner);
   $('st').textContent=(s.left&&s.left!==myC)?`${partner} left the game`:s.winner?`${names[s.winner]} wins!`:mine?(s.rolled?'Tap a glowing piece':'Your turn — roll the dice'):`${partner}'s turn`;
   const nm=names[s.by]||'';
   $('ev').textContent=({nomove:`${nm} rolled ${s.dice} — no move`,forfeit:`${nm} rolled three 6s — turn lost`,cap:`${nm} captured a piece!`,home:`${nm} got a piece home!`})[s.k]||(s.dice&&s.by?`${nm} rolled ${s.dice}`:'');
-  $('win').classList.toggle('hidden',!s.winner);if(s.winner)$('wt').textContent=`${names[s.winner]} wins! 🎉`;
+  $('win').classList.toggle('hidden',!s.winner);if(s.winner){$('wt').textContent=`${names[s.winner]} wins! 🎉`;if(!cfOn){cfOn=1;confetti();}}else{cfOn=0;$('cf').textContent='';}
+  if(s.k==='cap'&&s.n!==burstN){burstN=s.n;const c=s.by,i=s.mv;if(i>=0)setTimeout(()=>burst(where(c,i,s[c][i])),180+130*s.dice);}
   if(mv.length&&autoKey!==s.n){autoKey=s.n;if(new Set(mv.map(i=>s[myC][i])).size===1)setTimeout(()=>move(mv[0]),600);}
 }
 async function leave(){leaving=true;const w=[setDoc(gameRef,{left:myC},{merge:true}).catch(()=>{})];if(myC==='red')w.push(setDoc(roomRef,{gameState:{status:'lobby'}},{merge:true}).catch(()=>{}));await Promise.race([Promise.all(w),new Promise(r=>setTimeout(r,1500))]);location.href='index.html';}
 async function boot(){
+  initChat({db,roomId,me,partner});
+  let lastSt='';new MutationObserver(()=>{const t=$('st').textContent;if(t===lastSt)return;lastSt=t;$('st').classList.remove('pop');void $('st').offsetWidth;$('st').classList.add('pop');}).observe($('st'),{childList:true,characterData:true,subtree:true});
   drawBoard();document.querySelectorAll('.pc').forEach(e=>PC[e.dataset.c+e.dataset.i]=e);
   $('nR').textContent=names.red+(myC==='red'?' (you)':'');$('nG').textContent=names.green+(myC==='green'?' (you)':'');
   $('dice').onclick=roll;$('leave').onclick=$('leave2').onclick=leave;$('again').onclick=again;
