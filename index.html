@@ -164,6 +164,48 @@
       .splash-logo, .splash-sub { opacity: 1; }
       .heart-particle { display: none; }
     }
+  
+    /* ===== v2 polish: looks + animations ===== */
+    body::before { content: ''; position: fixed; inset: -20%; z-index: -2; pointer-events: none;
+      background: radial-gradient(40% 35% at 20% 20%, rgba(232,121,165,.16), transparent 70%), radial-gradient(35% 30% at 85% 75%, rgba(147,80,160,.14), transparent 70%), radial-gradient(30% 30% at 70% 15%, rgba(255,170,120,.07), transparent 70%);
+      animation: aurora 22s ease-in-out infinite alternate; }
+    @keyframes aurora { to { transform: translate3d(4%, 3%, 0) scale(1.08); } }
+    .card { -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); box-shadow: 0 10px 34px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.05); }
+    .btn, .btn-vote, .game-card { position: relative; overflow: hidden; transition: transform .18s cubic-bezier(.3,1.4,.5,1), box-shadow .25s, filter .2s, border-color .25s, background-color .25s; }
+    .btn:active:not(:disabled), .btn-vote:active:not(:disabled) { transform: scale(.96); }
+    .btn-primary { background: linear-gradient(135deg, #C2477E, #9B3A6B, #C2477E); background-size: 200% 200%; animation: sheen 6s ease infinite; }
+    @keyframes sheen { 50% { background-position: 100% 50%; } }
+    .game-card:hover { transform: translateY(-3px); box-shadow: 0 12px 28px rgba(232,121,165,.18); }
+    .game-icon { display: inline-block; animation: bob 3.2s ease-in-out infinite; }
+    @keyframes bob { 50% { transform: translateY(-4px) rotate(-4deg); } }
+    .ripple { position: absolute; width: 10px; height: 10px; margin: -5px 0 0 -5px; border-radius: 50%; background: rgba(255,255,255,.35); pointer-events: none; animation: rip .65s ease-out forwards; }
+    @keyframes rip { to { transform: scale(30); opacity: 0; } }
+    .btn-vote.selected { animation: pick .45s cubic-bezier(.2,1.5,.4,1); }
+    @keyframes pick { 40% { transform: scale(1.07); } }
+    .result-card { animation: resultIn .6s cubic-bezier(.2,1.3,.4,1) both; }
+    @keyframes resultIn { from { transform: translateY(16px) scale(.92); opacity: 0; } }
+    .result-match.yes { text-shadow: 0 0 20px rgba(232,121,165,.85); animation: matchPop .7s cubic-bezier(.2,1.6,.4,1) both; }
+    .result-card:has(.result-match.yes) { box-shadow: 0 0 34px rgba(232,121,165,.4); animation: resultIn .6s cubic-bezier(.2,1.3,.4,1) both, glow 2.2s ease-in-out .6s infinite; }
+    @keyframes matchPop { from { transform: scale(.4); opacity: 0; } 60% { transform: scale(1.18); } }
+    @keyframes glow { 50% { box-shadow: 0 0 48px rgba(232,121,165,.75); } }
+    .msg { animation: msgIn .28s ease-out; }
+    @keyframes msgIn { from { transform: translateY(8px) scale(.96); opacity: 0; } }
+    #timerBar { background: linear-gradient(90deg, #E879A5, #ffb199); }
+    .join-prompt { animation: resultIn .5s cubic-bezier(.2,1.3,.4,1) both; }
+    .game-card:has(.game-icon) { display: grid; grid-template-columns: 58px 1fr; column-gap: 14px; align-items: center; text-align: left; padding: 14px 40px 14px 16px; }
+    .game-card:has(.game-icon) .game-icon { grid-row: 1 / 3; width: 58px; height: 58px; display: grid; place-items: center; font-size: 28px; margin: 0; border-radius: 18px; background: linear-gradient(135deg, rgba(232,121,165,.28), rgba(155,58,107,.16)); box-shadow: inset 0 0 18px rgba(232,121,165,.22); }
+    .game-card:has(.game-icon) h3 { margin: 0; font-size: 1.05rem; }
+    .game-card:has(.game-icon) p { margin: 3px 0 0; font-size: 13px; }
+    .game-card:has(.game-icon)::after { content: '›'; position: absolute; right: 16px; top: 50%; transform: translateY(-50%); font-size: 28px; color: var(--primary); opacity: .65; transition: transform .2s; }
+    .game-card:has(.game-icon):hover::after { transform: translate(4px, -50%); }
+    .game-card { animation: cardIn .5s cubic-bezier(.2,1.2,.4,1) backwards; }
+    .game-card:nth-child(2) { animation-delay: .06s; } .game-card:nth-child(3) { animation-delay: .12s; } .game-card:nth-child(4) { animation-delay: .18s; } .game-card:nth-child(5) { animation-delay: .24s; } .game-card:nth-child(6) { animation-delay: .3s; }
+    @keyframes cardIn { from { opacity: 0; transform: translateY(16px) scale(.97); } }
+    .summary-item { animation: cardIn .45s cubic-bezier(.2,1.2,.4,1) backwards; }
+    .summary-item:nth-child(2) { animation-delay: .05s; } .summary-item:nth-child(3) { animation-delay: .1s; } .summary-item:nth-child(4) { animation-delay: .15s; } .summary-item:nth-child(5) { animation-delay: .2s; } .summary-item:nth-child(n+6) { animation-delay: .25s; }
+    .badge, .timer-text { font-variant-numeric: tabular-nums; }
+    @media (prefers-reduced-motion: reduce) { .game-card, .summary-item { animation: none !important; } }
+    @media (prefers-reduced-motion: reduce) { body::before, .btn-primary, .game-icon, .result-match, .ripple { animation: none !important; } }
   </style>
 </head>
 <body>
@@ -276,7 +318,8 @@
       </div>
 
       <div class="game-card" onclick="window.location.href='watch.html'">
-          <h3>🎬 Watch Together</h3>
+          <div class="game-icon">🎬</div>
+          <h3>Watch Together</h3>
           <p>Paste a video link and watch in sync.</p>
         </div>
 
@@ -339,6 +382,8 @@
     limit, serverTimestamp, getDocs, where, deleteDoc, runTransaction, writeBatch
   } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
+  import { initChat } from './chat.js';
+  import { pickQuestions } from './questions.js';
   const firebaseConfig = {
     apiKey: "AIzaSyAQg9F4Sn3GsZOghWxSJqwbLMsJetvo03w",
     authDomain: "shizu-c984a.firebaseapp.com",
@@ -362,11 +407,8 @@
   // Two-person app: put the two lowercase usernames here (and in firestore.rules) so nobody else can sign up or be paired.
   const ALLOWED_USERS = [];
   const MODE_LABELS = { moreLikely: 'Who is more likely to...', neverHaveIEver: 'Never Have I Ever', thisOrThat: 'This or That' };
-  const FALLBACK = {
-    moreLikely: ['fall asleep during a movie', 'get lost with a map in hand', 'cry at a wedding', 'forget an anniversary', 'adopt ten pets', 'win an argument', 'burn dinner', 'say sorry first', 'be late', 'plan a surprise'].map(t => `Who is most likely to ${t}?`),
-    neverHaveIEver: ['sent a text to the wrong person', 'pretended to like a gift', 'fallen asleep in public', 'laughed at the wrong moment', 'gotten lost on purpose', 'sung in the shower', 'talked to a pet like a person', 'forgotten someone\'s name', 'binged a show all night', 'eaten dessert first'].map(t => `Never have I ever ${t}.`),
-    thisOrThat: ['Beach or mountains', 'Coffee or tea', 'Movie night or game night', 'Sunrise or sunset', 'Pizza or sushi', 'Morning or night', 'Sweet or salty', 'Road trip or flight', 'Cats or dogs', 'Summer or winter'].map(t => `This or That: ${t}?`)
-  };
+  // Where questions come from: 'builtin' (large built-in bank, works offline), 'server' (Apps Script only), 'auto' (server, then built-in)
+  const QUESTION_SOURCE = 'builtin';
 
   const $ = (id) => document.getElementById(id);
   const sleep = (ms) => new Promise(r => setTimeout(r, ms));
@@ -875,9 +917,13 @@
 
     try {
       const spicy = $('spicyToggle').checked;
-      let result;
-      try { result = await fetchQuestions(mode, spicy ? 'spicy' : 'normal'); }
-      catch (err) { if (spicy) throw err; result = { questions: FALLBACK[mode] }; toast('Server unavailable — using built-in questions.'); }
+      const spice = spicy ? 'spicy' : 'normal';
+      let result = { questions: [] };
+      if (QUESTION_SOURCE !== 'builtin') {
+        try { result = await fetchQuestions(mode, spice); }
+        catch (err) { if (QUESTION_SOURCE === 'server') throw err; toast('Server unavailable — using built-in questions.'); }
+      }
+      if (!result.questions || result.questions.length < 10) result = { questions: pickQuestions(mode, spice, 10) };
       if (result.fallback) toast('Not enough spicy questions yet — using normal ones.');
 
       const questions = shuffle(result.questions).slice(0, 10);
@@ -1152,7 +1198,7 @@
     box.innerHTML = `
       <div class="result-card">
         <div style="margin-bottom:10px;">You: <b>${escapeHTML(displayVote(mine.target))}</b> | ${escapeHTML(partnerName)}: <b>${escapeHTML(displayVote(theirs.target))}</b></div>
-        <div class="result-match">${isMatch ? 'MATCH! 💖' : 'Different choices!'}</div>
+        <div class="result-match ${isMatch ? 'yes' : ''}">${isMatch ? 'MATCH! 💖' : 'Different choices!'}</div>
       </div>`;
     if (isMatch) { burstHearts(); vibrate([30, 40, 30]); }
   }
@@ -1234,14 +1280,13 @@
   function updateBadge() { document.querySelectorAll('.chat-badge').forEach(b => { b.textContent = unreadCount ? ` (${unreadCount})` : ''; }); }
   function startChatWatch() {
     if (unsubChatWatch) unsubChatWatch();
-    let first = true;
-    unsubChatWatch = onSnapshot(query(collection(db, 'rooms', roomId, 'messages'), orderBy('time', 'desc'), limit(1)), (snap) => {
-      if (first) { first = false; return; }
-      if (!snap.docChanges().some(c => c.type === 'added')) return;
-      const m = snap.docs[0] && snap.docs[0].data({ serverTimestamps: 'estimate' });
-      if (!m || m.user === currentUser || currentPage === 'page-chat') return;
-      unreadCount++; updateBadge(); toast(`💬 New message from ${m.user}`);
-    }, () => {});
+    const c = initChat({
+      db, roomId, me: currentUser, partner: partnerName, widget: false,
+      shouldPopup: () => currentPage !== 'page-chat',
+      onIncoming: () => { if (currentPage !== 'page-chat') { unreadCount++; updateBadge(); } },
+      onPopupClick: () => openChat()
+    });
+    unsubChatWatch = c.destroy;
   }
   async function openChat() {
     if (currentPage !== 'page-chat') lastPageBeforeChat = currentPage || 'page-lobby';
@@ -1338,6 +1383,20 @@
     localStorage.removeItem('shizu_partner');
     window.location.reload();
   }
+
+  $('myPairCode').style.cursor = 'pointer';
+  $('myPairCode').title = 'Tap to copy';
+  $('myPairCode').addEventListener('click', async () => {
+    const t = $('myPairCode').innerText.trim(); if (!t) return;
+    try { await navigator.clipboard.writeText(t); toast('Code copied 💕'); } catch (e) { toast('Your code: ' + t); }
+  });
+
+  document.addEventListener('pointerdown', (e) => {
+    const b = e.target.closest('.btn,.game-card,.btn-vote'); if (!b || b.disabled) return;
+    const r = b.getBoundingClientRect(), sp = document.createElement('span');
+    sp.className = 'ripple'; sp.style.left = (e.clientX - r.left) + 'px'; sp.style.top = (e.clientY - r.top) + 'px';
+    b.appendChild(sp); setTimeout(() => sp.remove(), 700);
+  }, { passive: true });
 
   Object.assign(window, {
     toggleAuth, handleAuth, linkPartner, leavePartner, startGame, openChat, closeChat, sendChat,
